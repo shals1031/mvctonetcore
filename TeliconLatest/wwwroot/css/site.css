@@ -1,0 +1,229 @@
+﻿a.navbar-brand {
+    white-space: normal;
+    text-align: center;
+    word-break: break-all;
+}
+
+/* Provide sufficient contrast against white background */
+a {
+    color: #0366d6;
+}
+
+.btn-primary {
+    color: #fff;
+    background-color: #1b6ec2;
+    border-color: #1861ac;
+}
+
+.nav-pills .nav-link.active, .nav-pills .show > .nav-link {
+    color: #fff;
+    background-color: #1b6ec2;
+    border-color: #1861ac;
+}
+
+/* Sticky footer styles
+-------------------------------------------------- */
+html {
+    font-size: 14px;
+}
+
+@media (min-width: 768px) {
+    html {
+        font-size: 16px;
+    }
+}
+
+.border-top {
+    border-top: 1px solid #e5e5e5;
+}
+
+.border-bottom {
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.box-shadow {
+    box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .05);
+}
+
+button.accept-policy {
+    font-size: 1rem;
+    line-height: inherit;
+}
+
+/* Sticky footer styles
+-------------------------------------------------- */
+html {
+    position: relative;
+    min-height: 100%;
+}
+
+body {
+    /* Margin bottom by footer height */
+    margin-bottom: 60px;
+    font-family: 'Roboto', sans-serif !important;
+}
+
+.footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    line-height: 20px;
+    padding: 20px 0;
+}
+
+.form-check {
+    width: 18px;
+    height: 18px;
+}
+
+.jobsign label {
+    font-size: 15px;
+}
+
+.jobsign .form-control {
+    margin-bottom: 20px;
+}
+
+.jobsign h6 {
+    padding: 10px 0 10px 0;
+}
+
+.worktask th {
+    font-size: 15px;
+    font-weight: 500;
+}
+
+.m-b-20 {
+    margin-bottom: 20px;
+}
+
+footer p {
+    font-size: 15px;
+    font-weight: 400;
+    margin: 0;
+}
+
+.equipment .form-control {
+    margin-bottom: 0;
+}
+
+.header p {
+    line-height: 22px;
+    font-size: 15px;
+}
+
+.header .navbar-brand {
+    padding-bottom: 0;
+}
+
+.header h5 {
+    padding-top: 5%;
+}
+
+.header {
+    padding-bottom: 30px;
+    padding-top: 1%;
+}
+
+@media screen and (max-width:991px) {
+    .container {
+        max-width: 100%;
+    }
+}
+
+@media screen and (max-width:767px) {
+    table, thead, tbody, th, td, tr {
+        display: block;
+    }
+
+    .worktask th {
+        display: none;
+    }
+
+    .worktask thead tr {
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
+    }
+
+    .worktask tr {
+        border: 1px solid #ccc;
+    }
+
+    .worktask td {
+        border: none;
+        border-bottom: 1px solid #eee;
+        position: relative;
+        padding-left: 80%;
+    }
+
+        .worktask td:before {
+            position: absolute;
+            top: 6px;
+            left: 6px;
+            width: 45%;
+            white-space: nowrap;
+            text-align: left;
+            padding-left: 10px;
+        }
+
+        /*
+	Label the data
+	*/
+        .worktask td:nth-of-type(1):before {
+            content: "NEW";
+        }
+
+        .worktask td:nth-of-type(2):before {
+            content: "EXISTING";
+        }
+
+        .worktask td:nth-of-type(3):before {
+            content: "REWIRE OF CABLE";
+        }
+
+        .worktask td:nth-of-type(4):before {
+            content: "ADD OUTLET";
+        }
+
+        .worktask td:nth-of-type(5):before {
+            content: "SERVICE REPAIR ORDER";
+        }
+
+        .worktask td:nth-of-type(6):before {
+            content: "NOT DONE";
+        }
+
+        .worktask td:nth-of-type(7):before {
+            content: "SERVICE CALL";
+        }
+
+    .worktask.service td:nth-of-type(1):before {
+        content: "WATCH";
+    }
+
+    .worktask.service td:nth-of-type(2):before {
+        content: "TALK";
+    }
+
+    .worktask.service td:nth-of-type(3):before {
+        content: "CLICK";
+    }
+
+    .navbar > .container, .navbar > .container-fluid {
+        display: table;
+        text-align: center;
+    }
+
+    .header h5 {
+        margin-left: 0;
+    }
+
+    .header {
+        text-align: center;
+    }
+
+    .footer {
+        padding:10px 0px;
+    }
+}

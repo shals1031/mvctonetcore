@@ -1,0 +1,52 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Telicon</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" />
+    <link rel="stylesheet" href="~/css/signature-pad.css" />
+    <!--[if IE]>
+      <link rel="stylesheet" type="text/css" href="css/ie9.css">
+    <![endif]-->
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+</head>
+<body>
+    <header>
+        <div class="header">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-5">
+                        <a class="navbar-brand" asp-area="" asp-controller="CustomerSign" asp-action="Index"><img src="~/Images/logo.png" alt="Telicon.com" /></a><br />
+                        <p>
+                            1A Goodwood Terrace, Kingston 10, Jamaica W.I. <br />
+                            Tel: (876) 630-5276; Email: <a href="mailto:admin@telicongroup.com">admin@telicongroup.com</a>
+                        </p>
+                    </div>
+                    <div class="col-md-7">
+                        <h5>FLOW CONTRACTOR<br />JOB SIGN-OFF SHEET</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    <div class="container">
+        <main role="main" class="pb-0">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="border-top footer text-muted">
+        <div class="container text-center">
+            <p><i>One Call, One Stop! "CONNECTING NEXT GENERATION NETWORKS"</i></p>
+        </div>
+    </footer>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+    <script src="~/js/signature_pad.umd.js" asp-append-version="true"></script>
+    <script src="~/js/app.js" asp-append-version="true"></script>
+</body>
+</html>

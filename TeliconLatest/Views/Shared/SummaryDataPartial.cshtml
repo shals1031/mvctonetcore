@@ -1,0 +1,23 @@
+﻿@model ClientData
+<div class="top clearfix">
+    <div class="comp-dets">
+    </div>
+    <img src="@Url.Content("~/images/flow_logo.jpg")" alt="telicon" />
+    @if (Model.InvoiceNo > 0) { 
+        <div class="inv-dets">
+        </div>
+    }
+</div>
+<div class="center clearfix">
+    <div class="client-dets">
+        @*<h1><span>Invoice #:</span>@Telicon.Reusables.Customs.MakeGenericInvoiceNo(Model.InvoiceNo)</h1>*@
+        <h1><span>PO #:</span>@Model.PONo</h1><br />
+        <h1><span>Region:</span>@Model.Region</h1>  <br />      
+        <h1><span>Vendor #:</span>10038549</h1>
+    </div>
+    <div class="admin-dets">
+        @*<h1><span>Co. Name:</span>@Telicon.Reusables.Customs.GetSettingsFileValue("Name")</h1>
+        <h1><span>Address:</span>@(Telicon.Reusables.Customs.GetSettingsFileValue("Street") + ", " + Telicon.Reusables.Customs.GetSettingsFileValue("City"))</h1>*@
+        <h1><span>Work Period:</span>@(string.Format("{0:MMM dd, yy}", Model.FromDate) + " - " + string.Format("{0:MMM dd, yy}", Model.ToDate))</h1>
+    </div>
+</div>

@@ -1,0 +1,27 @@
+﻿@model TeliconLatest.DataEntities.ADM01400
+@{
+    ViewBag.Title = "Area";
+    Layout = "~/Views/Shared/_FormLayout.cshtml";
+}
+
+@using (Html.BeginForm("createorupdate", "Area", FormMethod.Post))
+{
+    @Html.ValidationSummary(true)
+    <table>
+        <tr><td colspan="2">@Html.LabelFor(x => x.zoneID)</td></tr>
+        <tr>
+            <td colspan="2">
+                @Html.DropDownListFor(x => x.zoneID, (List<SelectListItem>)ViewBag.Zones, new { @class = "long" })
+                @Html.ValidationMessageFor(x => x.zoneID)
+            </td>
+        </tr>
+        <tr><td colspan="2">@Html.LabelFor(x => x.areaName)</td></tr>
+        <tr>
+            <td colspan="2">
+                @Html.HiddenFor(x => x.areaID, new { @class = "tel-form-id" })
+                @Html.TextBoxFor(x => x.areaName, new { @class = "long" })
+                @Html.ValidationMessageFor(x => x.areaName)
+            </td>
+        </tr>
+    </table>
+}

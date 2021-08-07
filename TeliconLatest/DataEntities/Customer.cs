@@ -48,9 +48,11 @@ namespace TeliconLatest.DataEntities
         [Required(ErrorMessage = "Time Out is required")]
         public TimeSpan TimeOut { get; set; }
         [Required(ErrorMessage = "Customer Signature is required")]
+        [StringLength(500)]
         public string CustSignature { get; set; }
         public DateTime CustDate { get; set; }
         [Required(ErrorMessage = "Technician Signature is required")]
+        [StringLength(500)]
         public string TechSignature { get; set; }
         public DateTime TechDate { get; set; }
         public DateTime CreatedDate { get; set; } = DateTime.Now;

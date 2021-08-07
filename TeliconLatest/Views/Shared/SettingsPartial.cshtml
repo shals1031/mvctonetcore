@@ -1,0 +1,98 @@
+﻿@model Settings
+@{
+    Layout = null;
+}
+<div class="modal fade">
+    <div class="modal-dialog">
+        <div id="settings-box" class="tel-form modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title"><i class="fe-cog-1"></i>Telicon Settings</h4>
+                <h2 class="msg-bar"><i class="fe-info-1"></i><span>Update your Settings</span></h2>
+            </div>
+            @using (Html.BeginForm("save", "settings", FormMethod.Post))
+            {
+                <div class="modal-body">
+                    <table>
+                        <tr><td colspan="2"><label>Company Name</label></td></tr>
+                        <tr>
+                            <td colspan="2">
+                                @Html.TextBoxFor(model => model.Name, new { @class = "long" })
+                                @Html.ValidationMessageFor(x=> x.Name)
+                            </td>
+                        </tr>
+                        <tr><td colspan="2"><label>Street</label></td></tr>
+                        <tr>
+                            <td colspan="2">
+                                @Html.TextBoxFor(model => model.Street, new { @class = "long" })
+                                @Html.ValidationMessageFor(x=> x.Street)
+                            </td>
+                        </tr>
+                        <tr><td><label>City</label></td><td><label>Parish</label></td><td></td></tr>
+                        <tr>
+                            <td>
+                                @Html.TextBoxFor(model => model.City)
+                                @Html.ValidationMessageFor(x=> x.City)
+                            </td>
+                            <td>
+                                @Html.DropDownListFor(model => model.Parish, (List<SelectListItem>)ViewBag.Parishes)
+                                @Html.ValidationMessageFor(x=> x.Parish)
+                            </td>
+                        </tr>
+                        <tr><td><label>Main Phone</label></td><td><label>Alternative Phone</label></td></tr>
+                        <tr>
+                            <td>
+                                @Html.TextBoxFor(model => model.Phone1)
+                                @Html.ValidationMessageFor(x=> x.Phone1)
+                            </td>
+                            <td>
+                                @Html.TextBoxFor(model => model.Phone2)
+                                @Html.ValidationMessageFor(x=> x.Phone2)
+                            </td>
+                        </tr>
+                        <tr><td><label>Fax</label></td><td><label>Email</label></td></tr>
+                        <tr>
+                            <td>
+                                @Html.TextBoxFor(model => model.Fax)
+                                @Html.ValidationMessageFor(x=> x.Fax)
+                            </td>
+                            <td>
+                                @Html.TextBoxFor(model => model.Email)
+                                @Html.ValidationMessageFor(x=> x.Email)
+                            </td>
+                        </tr>
+                        <tr><td><label>G.C.T Registration #</label></td><td><label>G.C.T Rate</label></td></tr>
+                        <tr>
+                            <td>
+                                @Html.TextBoxFor(model => model.GctReg)
+                                @Html.ValidationMessageFor(x=> x.GctReg)
+                            </td>
+                            <td>
+                                @Html.TextBoxFor(model => model.DefaultTaxRate)
+                                @Html.ValidationMessageFor(x => x.DefaultTaxRate)
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><label>Team Max</label></td>
+                            <td><label>Time (in secs.) before Logging out</label></td>
+                        </tr>
+                        <tr>
+                            <td>
+                                @Html.TextBoxFor(model => model.TeamMax)
+                                @Html.ValidationMessageFor(x=> x.TeamMax)
+                            </td>
+                            <td>
+                                @Html.TextBoxFor(model => model.TimeOut)
+                                @Html.ValidationMessageFor(x=> x.TimeOut)
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            }
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default exit" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary update saver">Update</button>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,44 @@
+﻿@model LoginModel
+@{
+    Layout = "~/Views/Shared/_AuthLayout.cshtml";
+    ViewBag.Title = "Sign in";
+}
+<div asp-validation-summary="All" class="animated fadeInDown"></div>
+<form asp-action="login" asp-controller="auth" method="post" class="login-form">
+    <div id="login-box">
+        <h2 class="semi-logo">TELi<span>CON</span> Admin</h2>
+        <h1 class="title animated flipInX">Welcome back!</h1>
+        <div class="holder">
+            <div class="txt-holder">
+                <input type="text" asp-for="UserName" placeholder="Username" />
+                <i class="fe-user"></i>
+            </div>
+            <div class="txt-holder">
+                <input type="password" asp-for="Password" placeholder="Password" />
+                <i class="fe-lock-open"></i>
+            </div>
+            <button type="submit">Login</button>
+            <div class="bottom clearfix">
+                <label>
+                    <button><i class="fe-check"></i></button>
+                    <span>Remember Me</span>
+                    <input type="hidden" asp-for="RememberMe" value="false" />
+                </label>
+                <a id="fgtpwd" href="@Url.Action("forgetpassword","auth")">Forgot your password?</a>&nbsp;&nbsp;
+                <a href="@Url.Action("Index","CustomerSign")">Customer Form</a>
+            </div>
+        </div>
+    </div>
+</form>
+@section scripts{
+    <script type="text/javascript">
+        $(window).load(function () {
+            $(".bottom label").click(function (e) {
+                var label = $(".bottom label");
+                label.toggleClass("checked");
+                label.find("input").val(label.hasClass("checked"))
+                e.preventDefault();
+            })
+        });
+    </script>
+}

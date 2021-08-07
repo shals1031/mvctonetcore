@@ -1,0 +1,52 @@
+[
+  {
+    "outputFileName": "wwwroot/css/resources/css-resources.css",
+    "inputFiles": [
+      "wwwroot/css/resources/animate.css",
+      "wwwroot/css/resources/animations.css",
+      "wwwroot/css/resources/datepicker.css",
+      "wwwroot/css/resources/entypo.css",
+      "wwwroot/css/resources/materialdesignicons.css",
+      "wwwroot/css/resources/perfect-scrollbar.css",
+      "wwwroot/css/resources/select2.css"
+    ],
+    "minify": {
+      "enabled": true,
+      "renameLocals": true
+    }
+  },
+  {
+    "outputFileName": "wwwroot/css/admin-min.css",
+    "inputFiles": [
+      "wwwroot/css/reusables.css",
+      "wwwroot/css/admin.css"
+    ],
+    "minify": {
+      "enabled": true,
+      "renameLocals": true
+    }
+  },
+  {
+    "outputFileName": "wwwroot/js/telicon-bundle.js",
+    "inputFiles": [
+      "wwwroot/js/jquery.idletimer.js",
+      "wwwroot/js/jquery.idletimeout.js",
+      "wwwroot/js/bootstrap-datepicker.js",
+      "wwwroot/js/mutate.events.js",
+      "wwwroot/js/mutate.js",
+      "wwwroot/js/jquery.dotdotdot.js",
+      "wwwroot/js/perfect-scrollbar.js",
+      "wwwroot/js/jquery.easing.1.3.js",
+      "wwwroot/js/toDictionary.js",
+      "wwwroot/js/select2.js",
+      "wwwroot/js/date.js",
+      "wwwroot/js/telicon.jQuery.plugins.js",
+      "wwwroot/js/telicon.reusables.js",
+      "wwwroot/js/telicon.js"
+    ],
+    "minify": {
+      "enabled": true,
+      "renameLocals": true
+    }
+  }
+]

@@ -1,0 +1,7 @@
+﻿@{
+    Layout = null;
+}
+
+@model DateTime?
+
+@Html.TextBox("", (Model.HasValue ? Model.Value.ToShortDateString() : string.Empty), new { @class = "date-box", @readonly = "readonly" })

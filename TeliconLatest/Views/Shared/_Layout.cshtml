@@ -1,46 +1,256 @@
-﻿<!DOCTYPE html>
+﻿@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Telicon</title>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" />
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <meta name="description" content="Admin side of TELiCON" />
+    <meta name="viewport" content="width=device-width" />
+    <noscript>
+        <meta http-equiv="refresh" content="0; url=@Url.Action("nojavascript", "error")" />
+    </noscript>
+    <title>TELiCON | @ViewBag.Title</title>
+    <link href="~/favicon.ico" rel="shortcut icon" type="image/x-icon" />
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,300,700|Montserrat:400,700' rel="stylesheet" type="text/css" />
+    <link href="~/css/jquery.dataTables.css" rel="stylesheet" />
+    <link type="text/css" rel="stylesheet" href="~/css/resources/css-resources.css" />
+    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/themes/smoothness/jquery-ui.css" />
+    <link rel="stylesheet" href="~/css/bootstrap.min.css" />
+    <link href="~/css/font-awesome.min.css" rel="stylesheet" />
+    <link type="text/css" rel="stylesheet" href="~/css/admin-min.css" />
+    <script src="~/js/jquery-2.1.1.min.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            var windowWidth = window.innerWidth;
+            if (windowWidth <= 768) {
+                $(this).toggleClass("open");
+                var sidebar = $("#sidebar");
+                var subHolder = $(".sub-holder");
+                $("body").toggleClass("sml big");
+                if (!$("body").hasClass("sml")) {
+                    $("#logo h1").hide();
+                    $("#nav").hide();
+                    sidebar[0].style.height = '60px';
+                    subHolder[0].style.left = '0px';
+                    //$(".overlay").addClass("big");//.animate({ left: 85 }, 200);
+                }
+                else {
+                    $(this).toggleClass("open");
+                    var sidebar = $("#sidebar");
+                    var subHolder = $(".sub-holder");
+                    $("body").toggleClass("sml big");
+                    if (!$("body").hasClass("sml")) {
+                        $("#logo h1").hide();
+                        subHolder[0].style.left = '75px';
+                        sidebar.find("li > a > span, li > a > .nav-arrow").hide()
+                        sidebar.animate({ width: 75 }, 200);
+                        subHolder.animate({ left: 75 }, 200);
+                        $(".listing-selected, #header").animate({ left: 75 }, 200);
+                    }
+                }
+            }
+        });
+    </script>
 </head>
-<body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container">
-                <a class="navbar-brand" asp-area="" asp-controller="CustomerSign" asp-action="Index"><img src="~/Images/logo.png" alt="Telicon.com" /></a>
-                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
+<body class="sml @(ViewBag.BodyClass != null ? ViewBag.BodyClass : "")">
+    <div class="animated fadeInDown" style="width:100%; text-align: center; color:red; position:absolute; top:0; z-index:99999; padding-top:20px;">@TempData["message"]</div>
+    <div class="main-holder">
+        <div id="sidebar">
+            <div id="logo">
+                <button class="navicon-button">
+                    <span class="navicon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="CustomerSign" asp-action="Index">Customer Form</a>
-                        </li>                        
-                    </ul>
-                </div>
+                <a href="@Url.Action("index", "home")">
+                    <h1>TELiCON Admin</h1>
+                </a>
             </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
-
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2021 - Telicon
+            <ul id="nav">
+                <li>
+                    <a href="@Url.Action("index", "home")">
+                        <i class="fe-megaphone-1"></i>
+                        <span>Dashboard</span>
+                        <i class="nav-arrow fe-right-open-mini"></i>
+                    </a>
+                </li>
+                <li class="has-sub">
+                    <a href="#administration"><i class="fe-params"></i><span>Administration</span><i class="nav-arrow fe-right-open-mini"></i></a>
+                    <ul>
+                        @{
+                            if (HttpContextAccessor.HttpContext.User.IsInRole("AppAdmin") || HttpContextAccessor.HttpContext.User.IsInRole("SuperAdmin"))
+                            {
+                                <li><a href="@Url.Action("index", "user")">Users</a></li>
+                            }
+                        }
+                        <li><a href="@Url.Action("index", "client")">Clients</a></li>
+                        <li><a href="@Url.Action("index", "contractor")">Contractors</a></li>
+                        <li><a href="@Url.Action("index", "activity")">Activities</a></li>
+                        <li><a href="@Url.Action("index", "material")">Materials</a></li>
+                        <li><a href="@Url.Action("index", "classification")">Classifications</a></li>
+                        <li><a href="@Url.Action("index", "department")">Departments</a></li>
+                        @*<li><a href="@Url.Action("index", "deduction")">Deductions</a></li>*@
+                        @*<li><a href="@Url.Action("index", "Fixcode")">Fixcodes</a></li>*@
+                        <li><a href="@Url.Action("index", "Period")">Periods</a></li>
+                        <li><a href="@Url.Action("index", "Vehicle")">Vehicles</a></li>
+                        <li><a href="@Url.Action("index", "zone")">Zones</a></li>
+                        <li><a href="@Url.Action("index", "area")">Areas</a></li>
+                        <li><a href="@Url.Action("index", "po")">POs</a></li>
+                        <li><a href="@Url.Action("index", "role")">Roles</a></li>
+                        <li><a href="@Url.Action("index", "bank")">Banks</a></li>
+                        <li><a href="@Url.Action("index", "branch")">Branches</a></li>
+                    </ul>
+                </li>
+                <li>
+                    <a href="@Url.Action("index", "workorder")"><i class="fe-calendar-1"></i><span>Work Orders</span><i class="nav-arrow fe-right-open-mini"></i></a>
+                </li>
+                <li class="has-sub">
+                    <a href="#invoicing"><i class="fe-note-1"></i><span>Invoicing</span><i class="nav-arrow fe-right-open-mini"></i></a>
+                    <ul>
+                        <li><a href="@Url.Action("index", "invoice")">Work Order Invoice</a></li>
+                        @*<li><a href="@Url.Action("summary", "invoice")">Invoice Summary</a></li>*@
+                        <li><a href="@Url.Action("batch", "invoice")">Batches</a></li>
+                        <li><a href="@Url.Action("MultipleInvoice", "invoice")">Print Multiple Invoices</a></li>
+                        <li><a href="@Url.Action("index", "quotation")">Quotation</a></li>
+                        <li><a href="@Url.Action("InvoiceExportToExcel", "invoice")">Invoice Export to Excel</a></li>
+                        <li><a href="@Url.Action("index", "StandbyInvoice")">Standby Invoice</a></li>
+                    </ul>
+                </li>
+                <li class="has-sub">
+                    <a href="#reports"><i class="fe-doc-1"></i><span>Reports</span><i class="nav-arrow fe-right-open-mini"></i></a>
+                    <ul>
+                        <li><a href="@Url.Action("contractorstatements", "report")">Contractor Earnings</a></li>
+                        <li><a href="@Url.Action("workOrderSplit", "report")">Work Order Splits</a></li>
+                        <li><a href="@Url.Action("PaymentDetails", "report")">Payment Detail</a></li>
+                        <li><a href="@Url.Action("CategoryInvoice", "report")">Invoice By Category</a></li>
+                        <li><a href="@Url.Action("DispatchedWO", "report")">Dispatched WO</a></li>
+                        <li><a href="@Url.Action("YTDPayment", "report")">Annual Contractor Payment</a></li>
+                        <li><a href="@Url.Action("ContractorPaymentsBankFile", "report")">Contractor Bank Payments</a></li>
+                        <li><a href="@Url.Action("ContractorPaySlip", "report")">Contractor Pay Slip</a></li>
+                        <li><a href="@Url.Action("POTracking", "report")">PO Tracking</a></li>
+                        <li><a href="@Url.Action("POSummary", "report")">PO Summary</a></li>
+                        <li><a href="@Url.Action("MaterialUsage", "report")">Material Usage</a></li>
+                        <li><a href="@Url.Action("AnnualPayroll", "report")">Annual Payroll</a></li>
+                    </ul>
+                </li>
+                <li class="has-sub">
+                    <a href="#export"><i class="fe-paper-plane-1"></i><span>Transfer Data</span><i class="nav-arrow fe-right-open-mini"></i></a>
+                    <ul>
+                        <li><a href="#">Import Data</a></li>
+                        <li><a href="#">Export Data</a></li>
+                    </ul>
+                </li>
+                <li class="has-sub">
+                    <a href="#backuprestore"><i class="fe-database-1"></i><span>Database</span><i class="nav-arrow fe-right-open-mini"></i></a>
+                    <ul>
+                        <li><a href="#">Backup</a></li>
+                        <li><a href="#">Restore</a></li>
+                    </ul>
+                </li>
+            </ul>
         </div>
-    </footer>
-    
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
-    @await RenderSectionAsync("Scripts", required: false)
+        <div id="header">
+            @*<div class="menu-toggler">
+                    <a href="#menu" title="hide/show menu"><i class="fe-menu"></i></a>
+                </div>*@
+            <ul id="breadcrumbs">
+                @RenderSection("Breadcrumbs", false)
+            </ul>
+            <ul id="subnav">
+                <li><a href="#settings" id="nav-settings" title="Settings" data-url="@Url.Action("index", "settings")"><i class="fe-cog-1"></i></a></li>
+                <li><a href="#" title="Updates"><i class="fe-diamond"></i></a></li>
+                <li><a href="#" title="About"><i class="fe-comment-1"></i></a></li>
+                <li class="user-holder">
+                    <a href="#" class="user-dropdown" title="User"><i class="fe-user-1"></i></a>
+                    <ul class="animated flipInY">
+                        <li class="static">
+                            @{
+                                var name = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.GivenName).Value;
+                                var role = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Role).Value;
+                            }
+                            <h1>@name</h1>
+                            <h2>@TeliconLatest.Models.DataDictionaries.AllRoles[role]</h2>
+                        </li>
+                        <li class="link" id="nav-password"><a href="javascript:;">Change Password</a></li>
+                        <li class="link">
+                            <form asp-action="logoff" asp-controller="auth" method="post" id="logoutform">
+                                <button>Logout</button>
+                            </form>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+        <div class="sub-holder">
+            <div id="body">
+                @RenderBody()
+            </div>
+            <div id="footer">
+            </div>
+        </div>
+    </div>
+    <div class="overlay animated">
+        <button class="hide-close"><i class="fe-cancel"></i></button>
+        <div class="overlay-body">
+        </div>
+    </div>
+    <div id="drillDown" class="overlaydrill animated" style="z-index:4000;">
+        <button class="hide-close"><i class="fe-cancel"></i></button>
+        <div class="overlay-body">
+        </div>
+    </div>
+    @{
+        var title = "<i class=fe-stopwatch></i>Your about to be logged out!";
+    }
+    <div id="timeoutDialog" title="@title">
+        <p>
+            You will be logged off in <span id="dialog-countdown"></span> seconds.
+        </p>
+        <p>Do you want to continue your session?</p>
+    </div>
+    <script src="~/js/jquery-ui.min.js"></script>
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/bootstrap.min.js"></script>
+    <script src="~/js/jquery.dataTables.min.js"></script>
+    <script src="~/js/jquery.globalize/globalize.js"></script>
+    <script src="~/js/dx.chartjs.js"></script>
+    <script src="~/js/telicon-bundle.js"></script>
+    <script type="text/javascript">
+            $(window).load(function () {
+                $("#timeoutDialog").dialog({
+                    dialogClass: "tel-timeout animated tada",
+                    autoOpen: false,
+                    modal: true,
+                    width: 300,
+                    height: 180,
+                    closeOnEscape: false,
+                    draggable: false,
+                    resizable: false,
+                    buttons: {
+                        'Yes, Keep Working': function () {
+                            $(this).dialog('close');
+                        },
+                        'No, Logoff': function () {
+                            $.idleTimeout.options.onTimeout.call(this);
+                        }
+                    }
+                });
+                var $countdown = $("#dialog-countdown");
+                $.idleTimeout('#timeoutDialog', 'div.ui-dialog-buttonpane button:first', {
+                    idleAfter: parseInt('3000'),
+                    pollingInterval: 120,
+                    keepAliveURL: '@Url.Action("keepalive", "auth")',
+                    serverResponseEquals: 'OK',
+                    onTimeout: function () {
+                        $("#logoutform").submit();
+                    },
+                    onIdle: function () {
+                        $(this).dialog("open");
+                    },
+                    onCountdown: function (counter) {
+                        $countdown.html(counter);
+                    }
+                });
+            });
+    </script>
+    @RenderSection("scripts", required: false)
+    @RenderSection("html", required: false)
 </body>
 </html>

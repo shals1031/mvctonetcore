@@ -1,0 +1,30 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Telicon | Page Not Found</title>
+    <link type="text/css" rel="stylesheet" href="~/css/error.css" />
+    <link href='https://fonts.googleapis.com/css?family=Paytone+One|Open+Sans' rel="stylesheet" type="text/css" />
+</head>
+<body class="pgnf">
+    <div class="error-desc">
+        <div id="logo">
+            <span>
+                <img src="@Url.Content("~/images/tca-logo.png")" alt="logo" />
+            </span>
+            <h1>TELiCON Admin</h1>
+        </div>
+        <img src="@Url.Content("~/images/404-pencil.png")" class="error-img" />
+        <h1>404</h1>
+        <h2>Uh oh! Looks like something broke.</h2>
+        <form asp-action="redirector" asp-controller="error" method="post">
+            <button class="head-back">Take Me To Telicon</button>
+        </form>
+    </div>
+</body>
+</html>

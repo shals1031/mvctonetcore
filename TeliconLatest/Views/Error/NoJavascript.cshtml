@@ -1,0 +1,50 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Telicon | No JS</title>
+    <link type="text/css" rel="stylesheet" href="~/css/error.css" />
+    <link href='https://fonts.googleapis.com/css?family=Paytone+One|Open+Sans' rel="stylesheet" type="text/css" />
+</head>
+<body class="no-js">
+    <div class="error-desc">
+        <div id="logo">
+            <span>
+                <img src="@Url.Content("~/images/tca-logo.png")" alt="logo" />
+            </span>
+            <h1>TELiCON Admin</h1>
+        </div>
+        <img src="@Url.Content("~/images/javascript.png")" class="error-img" />
+        <h1>NO JAVASCRIPT</h1>
+        <h2>Sorry but you need JavaScript if you are going to use this application.</h2>
+        <h2>It might just be disabled. If you dont know how to re-enable it use one the links below to see how.</h2>
+        <ul class="browsers">
+            <li class="clearfix">
+                <img src="@Url.Content("~/images/chrome-icon.png")" alt="chrome" />
+                <a href="https://support.google.com/adsense/answer/12654?hl=en" target="_blank">Google Chrome</a>
+            </li>
+            <li class="clearfix">
+                <img src="@Url.Content("~/images/firefox-icon.png")" alt="firefox" />
+                <a href="https://support.mozilla.org/en-US/kb/javascript-settings-for-interactive-web-pages" target="_blank">Firefox</a>
+            </li>
+            <li class="clearfix">
+                <img src="@Url.Content("~/images/ie-icon.png")" alt="ie" />
+                <a href="http://support.microsoft.com/gp/howtoscript" target="_blank">Internet Explorer</a>
+            </li>
+            <li class="clearfix">
+                <img src="@Url.Content("~/images/safari-icon.png")" alt="safari" />
+                <a href="http://support.apple.com/kb/HT1677" target="_blank">Safari</a>
+            </li>
+            <li class="clearfix">
+                <img src="@Url.Content("~/images/opera-icon.png")" alt="opera" />
+                <a href="http://www.opera.com/docs/browserjs/" target="_blank">Opera</a>
+            </li>
+        </ul>
+    </div>
+</body>
+</html>

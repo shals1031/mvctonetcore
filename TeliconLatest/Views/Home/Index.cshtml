@@ -1,8 +1,124 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@model WorkOrderSummary
+@{
+    ViewBag.Title = "Dashboard";
+    ViewBag.BodyClass = "dash";
 }
-
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="dashboard-section">
+    <div class="dash-wo clearfix">
+        <div class="dash-wo-left">
+            <h1 class="title">Work Orders</h1>
+            <ul class="clearfix">
+                <li><h1><b>@Model.Verified</b>Verified</h1></li>
+                <li><h1><b>@Model.Submitted</b>Submitted</h1></li>
+                <li><h1><b>@Model.Processing</b>Processing</h1></li>
+                <li><h1><b>@Model.New</b>New</h1></li>
+            </ul>
+            <p>
+                @{
+                    var tot = Model.New + Model.Processing + Model.Submitted + Model.Verified + Model.Invoiced;
+                }
+                A Total of <b>@tot</b> Work Orders
+                with <b>@Model.Invoiced</b> Invoiced produced by
+                <b>@Model.Contractors</b> who Contractors worked at
+                <b>@Model.Locations</b> Locations and completed
+                <b>@Model.Activities</b> activities.
+            </p>
+        </div>
+        <div class="dash-wo-right">
+            <div class="chart chart-wo" style="height:300px;"></div>
+        </div>
+    </div>
 </div>
+<div class="dashboard-section">
+    <div class="dash-ranges clearfix">
+        <select style="width:150px;" id="range-setter">
+            <option value="f">Fortnightly</option>
+            <option value="m" selected="selected">Monthly</option>
+            <option value="q">Quartertly</option>
+            <option value="y">Annually</option>
+        </select>
+        @Html.DropDownList("years", (List<SelectListItem>)ViewBag.Years, new { style = "width:100px" })
+    </div>
+    <div class="chart chart-rev" style="height:400px;"></div>
+</div>
+@section Breadcrumbs{
+    <li>Dashboard</li>
+}
+@section scripts{
+    <script type="text/javascript">
+        $(window).load(function () {
+            $("select").select2({ minimumResultsForSearch: -1, width: "resolve" });
+            $("#range-setter").change(function(){
+                var self = $(this);
+                if(self.val() == "y")
+                    $("#s2id_years").addClass("hidden").fadeOut(200);
+                else
+                    $("#s2id_years").removeClass("hidden").fadeIn(200);
+                setDataForRevenueChart();
+            });
+            $("#years").change(setDataForRevenueChart);
+            var revDataSource = @Html.Raw(Json.Serialize(Model.RevenueIncome));
+            var woDataSource = [
+                { status: "New", value: parseInt("@Model.New"), color:"#000000" },
+                { status: "Submitted", value: parseInt("@Model.Submitted") },
+                { status: "Verified", value: parseInt("@Model.Verified") },
+                { status: "Processing", value: parseInt("@Model.Processing") }
+            ];
+
+            $(".chart-wo").dxPieChart({
+                palette: "Soft Pastel",
+                dataSource: woDataSource,
+                commonSeriesSettings: {
+                    argumentField: "status",
+                    hoverMode: "allArgumentPoints",
+                    selectionMode: "allArgumentPoints",
+                    label: {
+                        visible: true,
+                        precision: 0,
+                    },
+                    showInLegend: false
+                },
+                series: [
+                    { valueField: "value" },
+                ]
+            });
+            $(".chart-rev").dxChart({
+                dataSource: revDataSource,
+                palette: "Soft Pastel",
+                equalBarWidth: false,
+                commonSeriesSettings: {
+                    argumentField: "Period",
+                    type: "bar",
+                    hoverMode: "allArgumentPoints",
+                    selectionMode: "allArgumentPoints"
+                },
+                series: [
+                    { valueField: "Payments", name: "Contractor", color: "#00AAE8" },
+                    { valueField: "Revenue", name: "Telicon", color: "#D93B3B" }
+                ],
+                legend: {
+                    verticalAlignment: "top",
+                    horizontalAlignment: "center",
+                    itemTextPosition: "right"
+                },
+                title: "Revenue vs. Income",
+                tooltip: {
+                    format: "currency",
+                    argumentFormat: "currency",
+                    precision: 0,
+                    enabled: true
+                }
+            });
+        });
+        function setDataForRevenueChart(){
+            var type = $("#range-setter").val();
+            var year = !$("#s2id_years").is(".hidden") ? $("#years").val() : null;
+            loading(false);
+            $.get('@Url.Action("GetRevenueDataForChart", "Home")', { type: type, year: year }, function (dataSource) {
+                removeLoader(false, 500, function () {
+                    $('.chart-rev').dxChart('instance').option('dataSource', dataSource);
+                });
+            });
+        }
+    </script>
+}

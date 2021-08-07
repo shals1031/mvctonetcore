@@ -1,5 +1,3 @@
-using System;
-
 namespace TeliconLatest.Models
 {
     public class ErrorViewModel

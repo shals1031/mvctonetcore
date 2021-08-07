@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Template>
+  <ForgotPassword>
+    <Subject>Telicon Account New Password</Subject>
+    <Body>
+      <![CDATA[
+    <html><body><div>Dear <b>@@@USERNAME</b>,<br/> <br/>
+    Your password has been reset successfully.
+    Your password is <b>@@@PASSWORD</b><br><br/>
+    For further assistance, please email us at info@telicon.support<br/><br/>Regards,<br/>The Telicon Team<br/><br/><hr/> <span style='font-size: 11px; font-style:italic;'></span>
+</div><body></html>
+    ]]>
+    </Body>
+  </ForgotPassword>
+</Template>

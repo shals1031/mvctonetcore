@@ -1,0 +1,20 @@
+﻿@{
+    Layout = null;
+}
+<div class="modal fade">
+    <div class="modal-dialog">
+        <div class="tel-form modal-content @ViewBag.AddClass">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title"><i class="fe-note-1"></i>Manage @ViewBag.Title</h4>
+                <h2 class="msg-bar"><i class="fe-info-1"></i><span>Create or Update a/an @ViewBag.Title</span></h2>
+            </div>
+            <div class="modal-body">
+                @RenderBody()
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary update saver">Save</button>
+            </div>
+        </div>
+    </div>
+</div>

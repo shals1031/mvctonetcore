@@ -1,0 +1,36 @@
+﻿@model ClientData
+<div class="top clearfix">
+    <div class="comp-dets">
+        <h1>P.O. BOX 3069</h1>
+        <h1>Kingston 8</h1>
+        <h1>Tel: (876) 630-5278</h1>
+        <h1>Email: admin@telicongroup.com</h1>
+    </div>
+    <img src="@Url.Content("~/images/print-logo.png")" alt="telicon" />
+    @if (Model.InvoiceNo > 0) { 
+        <div class="inv-dets">
+            @*<h1><span>Invoice #:</span>@Telicon.Reusables.Customs.MakeGenericInvoiceNo(Model.InvoiceNo)</h1>*@
+            <h1><span>GCT #:</span>@Model.GCTNo</h1>
+            <h1><span>Vendor #:</span>10038549</h1>
+        </div>
+    }
+</div>
+<div class="center clearfix">
+    <div class="client-dets">
+        <h1><span>Co. Name:</span>@Model.ClientName</h1>
+        <h1><span>Attn.:</span>@Model.Attention</h1>
+        <h1><span>Address:</span>@Model.Address</h1>
+        <h1><span>Phone:</span>@Model.Phone</h1>
+        <h1><span>Email:</span>@Model.Email</h1>
+    </div>
+    <div class="admin-dets">
+        <h1><span>Date:</span>@string.Format("{0:dd/MM/yyyy}", Model.Date)</h1>
+        <h1><span>Prepared By:</span>@Model.User</h1>
+        <h1><span>Currency:</span>@Model.Currency</h1>
+        @if (Model.InvoiceNo > 0)
+        {
+            <h1><span>Ticket #:</span>@Model.ReferenceNo</h1>
+        }
+        <h1><span>PO #:</span>@Model.PONo</h1>
+    </div>
+</div>

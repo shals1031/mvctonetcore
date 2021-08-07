@@ -1,0 +1,31 @@
+﻿@model TechnicianStat
+@{
+    Layout = null;
+}
+<div id="sub-head" class="clearfix" data-id="@ViewBag.ContractorID">
+    <div id="info" class="clearfix">
+        <div class="info-img-holder">
+            <img src="@Url.Content("~/images/technicians/" + Model.ID + ".jpg")" />
+        </div>
+        <div class="info-text">
+            <h1>@Model.Name</h1>
+            <h2>@Model.Type - <span>@Model.ID</span></h2>
+        </div>
+    </div>
+    <ul id="stat" class="clearfix">
+        <li><span>@Model.Total</span><a href="#" data-val="a" id="refDetail">Total Orders</a></li>
+        <li><span>@Model.Invoiced</span><a href="#" data-val="i">Invoiced</a></li>
+        <li><span>@Model.Submitted</span><a href="#" data-val="s">Submitted</a></li>
+        <li><span>@Model.Processing</span><a href="#" data-val="p">Processing</a></li>
+        <li><span>@Model.New</span><a href="#" data-val="n">New</a></li>
+    </ul>
+    @if (Model.HasSettings)
+    {
+        <a href="#" id="settings"><i class="fe-cog-2"></i></a>
+        <div id="settings-under">
+            <h1>Settings</h1>
+            <ul><li><a href="#" id="nav-password">Change Password</a></li></ul>
+        </div>
+    }
+</div>
+

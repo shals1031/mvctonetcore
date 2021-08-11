@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
 using TeliconLatest.DataEntities;
@@ -7,53 +8,61 @@ using TeliconLatest.Models;
 
 namespace TeliconLatest.Controllers
 {
-    public class AreaController : Controller
+    public class BranchController : Controller
     {
         private readonly TeliconDbContext db;
-        public AreaController(TeliconDbContext db)
+        public BranchController(TeliconDbContext db)
         {
             this.db = db;
         }
-        public IActionResult Index()
+        // GET: Branch
+        //[TeliconAuthorize(TaskId = 38)]
+        public ActionResult Index()
         {
             return View();
         }
-        public IActionResult Create()
+
+        //[TeliconAuthorize(TaskId = 38)]
+        public ActionResult Create()
         {
-            ADM01400 model = new ADM01400
+            var model = new ADM02200();
+            var bnks = db.ADM02100.ToList();
+            var fstBnk = db.ADM02100.Find("99");
+            bnks.Remove(bnks.Find(x => x.BankId == "99"));
+            bnks.Insert(0, fstBnk);
+            ViewBag.Banks = bnks.Select(x => new SelectListItem
             {
-                areaID = 0
-            };
-            ViewBag.Zones = db.ADM26100.Select(x => new SelectListItem
-            {
-                Text = x.Name,
-                Value = x.ZoneID.ToString()
+                Text = x.BankName,
+                Value = x.BankId
             }).ToList();
             return View("CreateOrUpdate", model);
         }
-        public IActionResult Edit(int id)
+        //[TeliconAuthorize(TaskId = 38)]
+        public ActionResult Edit(int id)
         {
-            ViewBag.Zones = db.ADM26100.Select(x => new SelectListItem
+            ViewBag.Banks = db.ADM02100.Select(x => new SelectListItem
             {
-                Text = x.Name,
-                Value = x.ZoneID.ToString()
+                Text = x.BankName,
+                Value = x.BankId
             }).ToList();
-            return View("CreateOrUpdate", db.ADM01400.Find(id));
+            return View("CreateOrUpdate", db.ADM02200.Find(id));
         }
+
         [HttpPost]
-        //[TeliconAuthorize(TaskId = 13, Mode = ActionMode.Write)]
-        public JsonResult CreateOrUpdate(ADM01400 model)
+        //[ValidateAntiForgeryToken]
+        //[TeliconAuthorize(TaskId = 38, Mode = ActionMode.Write)]
+        public JsonResult CreateOrUpdate(ADM02200 model)
         {
             try
             {
-                if (model.areaID == 0)
-                    db.ADM01400.Add(model);
+                if (model.RecID == 0)
+                    db.ADM02200.Add(model);
                 else
-                    db.Entry(model).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+                    db.Entry(model).State = EntityState.Modified;
                 db.SaveChanges();
                 return Json(new JsonReturnParams
                 {
-                    Additional = model.areaID,
+                    Additional = model.RecID,
                     Code = "100",
                     Msg = ""
                 });
@@ -63,19 +72,19 @@ namespace TeliconLatest.Controllers
                 return Json(new JsonReturnParams
                 {
                     Additional = e.StackTrace,
-                    Code = model.areaID == 0 ? "200" : "300",
+                    Code = model.RecID == 0 ? "200" : "300",
                     Msg = e.Message
                 });
             }
         }
 
         [HttpPost]
-        //[TeliconAuthorize(TaskId = 13, Mode = ActionMode.Write)]
+        //[TeliconAuthorize(TaskId = 38, Mode = ActionMode.Write)]
         public JsonResult Delete(int id)
         {
             try
             {
-                db.ADM01400.Remove(db.ADM01400.Find(id));
+                db.ADM02200.Remove(db.ADM02200.Find(id));
                 return Json(new JsonReturnParams
                 {
                     Additional = db.SaveChanges(),

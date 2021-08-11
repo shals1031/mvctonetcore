@@ -1,0 +1,131 @@
+﻿@model IEnumerable<TeliconLatest.Models.ActMaterialList>
+@{
+    Layout = null;
+}
+
+<script type="text/javascript">
+    var isCalled = false;
+        $(document).ready(function () {
+            $(document).on("click", "#roletask .bottom button", function (e) {
+                if (isCalled)
+                    return;
+                isCalled = true;
+                var rows = $(".tasks-holder table > tbody  > tr");
+                if (rows.length < 1) {
+                    var htmlMsg = "<p>No <b class='loc-col'>Material(s)</b> have been selected for <b class='date-col'>Assign</b>. First select your desired <b class='loc-col'>Material(s)</b> then try again.</p>";
+                    var htmlTitle = "<i class='fe-comment'></i>Cannot Assign";
+                    displayDialogMsg(htmlMsg, htmlTitle);
+                }
+                else {
+                    rows = $.grep(rows, function (row) {
+                        var self = $(row).find("button");
+                        var isChecked = $(self).is(".active");
+                        return isChecked;
+                    });
+                    var list = $.map(rows, function (elm) {
+                        var qtyElm = $(elm).find(".mat-qty");
+                        var idElm = $(elm).find(".act-mat-id");
+                        return {
+                            ActMatId: $(idElm).val(),
+                            MatId: $(elm).attr("id").replace("tr-", ""),
+                            Qty: $(qtyElm).val()
+                        };
+                    });
+                    if (list.length > 0) {
+                        var buttons = [
+                            { text: "Continue", click: function () { $(this).dialog("close"); SaveActivityMaterials(list, $(this)); } },
+                            { text: "Cancel", click: function () { $(this).dialog("close"); isCalled = false; } }
+                        ];
+                        var msg = "<p>Selected <b class='date-col'>Material(s)</b>, will be <b class='default-col'>Assign</b> to the role. Are you sure you want to Continue?</p></div>";
+                        displayConfirmationMsg(msg, 'Confirmation', buttons);
+                    }
+                    else {
+                        var htmlMsg = "<p>No <b class='loc-col'>Task(s)</b> have been selected for <b class='date-col'>Assign</b>. First select your desired <b class='loc-col'>Task(s)</b> then try again.</p>";
+                        var htmlTitle = "<i class='fe-comment'></i>Cannot Assign";
+                        displayDialogMsg(htmlMsg, htmlTitle);
+                    }
+                }
+                e.preventDefault();
+            });
+        });        
+
+        function SaveActivityMaterials(list, dBox) {
+            isCalled = false;
+            loading(true);
+            $.ajax({
+                url: "@Url.Action("saveactmaterials", "activity")",
+                data: $.toDictionary({ matList: list, actId: $("#actIdHidden").val() }),
+                type: "post",
+                success: function (r) {
+                    removeLoader(true, 200, function () {
+                        var htmlMsg = "";
+                        var htmlTitle = "";
+                        if (r.Code == "100") {
+                            $("#actIdHidden").val(r.Additional);
+                            try {
+                                dBox.dialog("close");
+                            }
+                            catch (e) {
+
+                            }
+                            $("#tasks").removeClass("fadeInRight").addClass("fadeOutUp").one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function () {
+                                $(this).remove();
+                                $(".btm-overlay").fadeOut(200, function () { $(this).remove(); });
+                            });
+                        }
+                        else {
+                            htmlMsg = r.Msg;
+                            htmlTitle = "<i class='fe-comment'></i>Cannot Assign";
+                            displayDialogMsg(htmlMsg, htmlTitle);
+                        }
+
+                    });
+                }
+            });
+        }
+</script>
+
+<div id="tasks" class="animated bounceInRight">
+    <input type="hidden" id="actIdHidden" value="@ViewBag.actId" />
+    <button class="close"><i class="fe-cancel"></i></button>
+    <div id="roletask" class="roletask-holder">
+        <div class="top title clearfix">
+            <span style="float:left; margin:15px 15px;">Activity Materials</span>
+        </div>
+        <div class="center">
+            <div class="tasks-holder">
+                @if (Model.Any())
+                {
+                    <table class="tasks">
+                        <thead>
+                            <tr>
+                                <th><button class="check-box"><i class="fe-ok"></i></button></th>
+                                <th>Material</th>
+                                <th width="80">Qty</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr id="tr-@item.MatId">
+                                    <td><button class="check-box @(item.IsSelected ? "active" : "")"><i class="fe-ok"></i></button></td>                                    
+                                    <td>@item.MatName</td>
+                                    <td>
+                                        <input type="text" class="mat-qty dataTable-textbox" style="width:80px;" value="@item.Qty" />
+                                        <input type="hidden" class="act-mat-id" value="@item.ActMatId"/>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
+        </div>
+        <div class="bottom clearfix">            
+            <button class="roleTask-save-btn"><i class="glyphicon-floppy-save"></i>Save<i class="glyphicon-floppy-save"></i></button>
+        </div>
+    </div>
+</div>
+@section Scripts{
+    
+}

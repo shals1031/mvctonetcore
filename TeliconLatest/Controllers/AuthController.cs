@@ -50,7 +50,8 @@ namespace TeliconLatest.Controllers
                 {
                     new Claim(ClaimTypes.Name, model.UserName),
                     new Claim(ClaimTypes.Email, users.Membership.Email),
-                    new Claim(ClaimTypes.GivenName,profileInfo.FirstName.Substring(0, 1) + ". " + profileInfo.LastName)
+                    new Claim(ClaimTypes.GivenName,profileInfo.FirstName.Substring(0, 1) + ". " + profileInfo.LastName),
+                    new Claim(ClaimTypes.Version, users.ApplicationId),
                 };
 
                 string[] roles = db.UsersInRoles.Where(x => x.UserId == users.UserId).Select(p => p.Roles.RoleName).ToArray();

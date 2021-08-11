@@ -1,0 +1,22 @@
+﻿@{
+    Layout = null;
+    int x = 0;
+    if (ViewBag.AID != null)
+    {
+        x = Convert.ToInt32(ViewBag.AID);
+    }
+}
+<div id="con-wo" class="animated bounceInRight">
+    <div class="con-wo-head clearfix">Activity Client Rate List <button><i class="fe-cancel-1"></i></button></div>
+
+    <input type="hidden" id="CurActivity" value="@x" />
+    <div class="tbl-holder active">
+        <button id="0" class="add-new AddClientRate add_btn">New</button>
+        <table class="admin-tbl workorder" data-name="Work Order">
+            <thead>
+                <tr><th>Activity Name</th><th>Amount</th><th>Start Date</th><th>End Date</th><th></th></tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>

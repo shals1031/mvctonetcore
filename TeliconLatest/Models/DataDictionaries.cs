@@ -17,26 +17,26 @@ namespace TeliconLatest.Models
         public static Dictionary<int, string> ClientClass = new Dictionary<int, string>()
         {
             { 0, "Regular" },
-	        { 1, "Special" }
+            { 1, "Special" }
         };
         public static Dictionary<string, string> WordOrderStatuses = new Dictionary<string, string>()
-	    {
+        {
             { "a", "All" },
-	        { "n", "New" },
+            { "n", "New" },
             { "s", "Submitted" },
             { "p", "Processing" },
             { "v", "Verified" },
             { "l", "Locked" },
             { "d", "Details Added" },
             { "i", "Invoiced" }
-	    };
+        };
         public static Dictionary<string, string> InvoiceStatuses = new Dictionary<string, string>()
-	    {
+        {
             { "o", "OK" },
             { "b", "Batched" },
-	        { "r", "Reversed" },
+            { "r", "Reversed" },
             { "c", "Cancelled" }
-	    };
+        };
         public static Dictionary<int, string> UserTypes = new Dictionary<int, string>()
         {
             { 0, "Technician" },
@@ -63,14 +63,14 @@ namespace TeliconLatest.Models
         public static Dictionary<string, string> Parishes = new Dictionary<string, string>()
         {
             { "KGN", "Kingston" },
-	        { "HAN", "Hanover" },
+            { "HAN", "Hanover" },
             { "AND", "St. Andrew" },
             { "MAN", "Manchester" },
             { "POR", "Portland" },
             { "ANN", "St. Ann" },
             { "CAT", "St. Catherine" },
             { "ELI", "St. Elizabeth" },
-	        { "JAM", "St. James" },
+            { "JAM", "St. James" },
             { "MAR", "St. Mary" },
             { "THO", "St. Thomas" },
             { "TRE", "Trelawny" },
@@ -86,7 +86,8 @@ namespace TeliconLatest.Models
             { "FN", "Per Fortnight" },
             { "MT", "Per Month" },
             { "SM", "Per Sqaure Meter" },
-            { "PF", "Per Foot" }
+            { "PF", "Per Foot" },
+            { "SP", "Per Sqaure Piece" }
         };
         public static Dictionary<int, string> Months = new Dictionary<int, string>()
         {

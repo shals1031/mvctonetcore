@@ -99,8 +99,9 @@ namespace TeliconLatest.Reusables
         public static List<Period> GetPeriods(int? min, int? max)
         {
             using TeliconDbContext db = new TeliconDbContext(GetDbContextOptions());
-            var minYear = min ?? db.TRN23110.Min(x => x.ActDate.Year);
-            var maxYear = max ?? db.TRN23110.Max(x => x.ActDate.Year);
+            List<TRN23110> tRN23110s = db.TRN23110.ToList();
+            var minYear = min ?? tRN23110s.Min(x => x.ActDate.Year);
+            var maxYear = max ?? tRN23110s.Max(x => x.ActDate.Year);
             var periods = db.ADM16100.Where(x => x.periodYear >= minYear && x.periodYear <= maxYear).Select(x => new Period
             {
                 PayDate = x.PayDate,
@@ -117,7 +118,7 @@ namespace TeliconLatest.Reusables
             IConfiguration Configuration = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory()).AddJsonFile("appsettings.json").Build();
 
             return new DbContextOptionsBuilder<TeliconDbContext>()
-                             .UseMySQL(Configuration.GetConnectionString("DefaultConnection"))
+                             .UseMySql(Configuration.GetConnectionString("DefaultConnection"), ServerVersion.AutoDetect(Configuration.GetConnectionString("DefaultConnection")))
                              .Options;
         }
     }

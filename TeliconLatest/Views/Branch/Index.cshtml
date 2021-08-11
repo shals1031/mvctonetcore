@@ -1,0 +1,34 @@
+﻿@{
+    ViewBag.Title = "Branches";
+}
+<table class="admin-tbl" data-url="@Url.Action("index", "branch")" data-name="Branches">
+    <thead>
+        <tr><th>Branch Code</th><th>Branch Name</th><th>Bank</th><th></th></tr>
+    </thead>
+    <tbody></tbody>
+</table>
+@section Breadcrumbs{
+    <li>Administration</li>
+    <li>Branches</li>
+}
+@section Scripts{
+    <script type="text/javascript">
+        $(document).ready(function () {
+            dataTableOptions.ajax.url = "@Url.Action("branches", "list")";
+            dataTableOptions.columnDefs = [
+                    { "targets": 0, "name": "BranchId", "data": "BranchId", "class": "dt-item-title" },
+                    { "targets": 1, "name": "BranchName", "data": "BranchName", "class": "dt-item-title" },
+                    { "targets": 2, "name": "BankId", "data": "BankName", "class": "dt-item-title", "searchable": false },
+                    {
+                        "targets": 3, "class": "actions",
+                        "orderable": false, "searchable": false, "data": null,
+                        "defaultContent": "<a href='#edit' class='dt-edit'><i class='fe-pencil-2'></i></a>" +
+                            "<a href='#delete' class='dt-delete'><i class='fe-cancel'></i></a>"
+                    }
+            ];
+            dataTableOptions.order = [[0, 'asc']];
+            dTable = $("table").DataTable(dataTableOptions);
+            dTable.search('').draw();
+        });
+    </script>
+}

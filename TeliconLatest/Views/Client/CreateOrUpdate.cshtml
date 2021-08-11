@@ -1,0 +1,123 @@
+﻿@model TeliconLatest.DataEntities.ADM03200Extended
+
+@{
+    ViewBag.Title = "Client";
+    Layout = "~/Views/Shared/_FormLayout.cshtml";
+}
+
+@using (Html.BeginForm("createorupdate", "client", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(true)
+
+    <table>
+        <tr><td colspan="2">@Html.LabelFor(x => x.ClientCode)</td></tr>
+        <tr>
+            <td colspan="2">
+                @Html.HiddenFor(x => x.CustID, new { @class = "tel-form-id" })
+                @Html.Hidden("initialID", Model.CustID == -1 ? "" : Model.ClientCode)
+                @Html.TextBoxFor(x => x.ClientCode, new { @class = "long" })
+                @Html.ValidationMessageFor(x => x.ClientCode)
+            </td>
+        </tr>
+        <tr><td colspan="2">@Html.LabelFor(x => x.CustName)</td></tr>
+        <tr>
+            <td colspan="2">
+                @Html.TextBoxFor(x => x.CustName, new { @class = "long" })
+                @Html.ValidationMessageFor(x => x.CustName)
+            </td>
+        </tr>
+        <tr>
+            <td>@Html.LabelFor(x => x.Phone1)</td>
+            <td>@Html.LabelFor(x => x.Phone2)</td>
+        </tr>
+        <tr>
+            <td>
+                @Html.TextBoxFor(x => x.Phone1)
+                @Html.ValidationMessageFor(x => x.Phone1)
+            </td>
+            <td>
+                @Html.TextBoxFor(x => x.Phone2)
+                @Html.ValidationMessageFor(x => x.Phone2)
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">@Html.LabelFor(x => x.Email)</td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                @Html.TextBoxFor(x => x.Email)
+                @Html.ValidationMessageFor(x => x.Email)
+            </td>
+        </tr>
+        <tr>
+            <td>@Html.LabelFor(x => x.CustClass)</td>
+            <td>@Html.LabelFor(x => x.Currency)</td>
+        </tr>
+        <tr>
+            <td>
+                @Html.DropDownListFor(x => x.CustClass, (List<SelectListItem>)ViewBag.Classes)
+                @Html.ValidationMessageFor(x => x.CustClass)
+            </td>
+            <td>
+                @Html.DropDownListFor(x => x.Currency, (List<SelectListItem>)ViewBag.Currencies)
+                @Html.ValidationMessageFor(x => x.Currency)
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">@Html.LabelFor(x => x.Street)</td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                @Html.TextBoxFor(x => x.Street, new { @class = "long" })
+                @Html.ValidationMessageFor(x => x.Street)
+            </td>
+        </tr>
+        <tr>
+            <td>@Html.LabelFor(x => x.City)</td>
+            <td>@Html.LabelFor(x => x.Parish)</td>
+        </tr>
+        <tr>
+            <td>
+                @Html.TextBoxFor(x => x.City)
+                @Html.ValidationMessageFor(x => x.City)
+            </td>
+            <td>
+                @Html.DropDownListFor(x => x.Parish, (List<SelectListItem>)ViewBag.Parishes)
+                @Html.ValidationMessageFor(x => x.Parish)
+            </td>
+        </tr>
+        <tr>
+            <td>@Html.LabelFor(x => x.StartDt)</td>
+            <td>@Html.LabelFor(x => x.EndDt)</td>
+        </tr>
+        <tr>
+            <td>
+                <div class="tel-date">
+                    <input type="text" asp-for="StartDt" value="@(Model.StartDt.HasValue ? Model.StartDt.Value.ToString("MM/dd/yyyy") : "")" asp-format="{0:MM/dd/yyyy}" class="date-box" readonly="readonly" style="margin-left:10px;" />
+                    <span asp-validation-for="StartDt"></span>
+                </div>
+            </td>
+            <td>
+                <div class="tel-date">
+                    <input type="text" asp-for="EndDt" value="@(Model.EndDt.HasValue ? Model.EndDt.Value.ToString("MM/dd/yyyy") : "")" asp-format="{0:MM/dd/yyyy}" class="date-box" readonly="readonly" style="margin-left:10px;" />
+                    <span asp-validation-for="EndDt"></span>                    
+                </div>
+            </td>
+        </tr>
+        @if (Model.CustID == 0)
+        {
+            <tr>
+                <td colspan="2">
+                    @Html.LabelFor(x => x.CopyActClientId)
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    @Html.DropDownListFor(x => x.CopyActClientId, (List<SelectListItem>)ViewBag.Clients, "Select a Client for Copy Activities", new { @style = " width:97%;" })
+                    @Html.ValidationMessageFor(x => x.CopyActClientId)
+                </td>
+            </tr>
+        }
+    </table>
+}

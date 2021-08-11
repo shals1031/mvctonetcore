@@ -1,0 +1,184 @@
+﻿@using TeliconLatest.Reusables;
+@{
+    ViewBag.Title = "Contractors";
+}
+<input type="hidden" id="CurrentContractor" />
+<table class="admin-tbl" data-url="@Url.Action("index", "contractor")" data-name="Contractor">
+    <thead>
+        <tr><th></th><th>First Name</th><th>Last Name</th><th>Department</th><th>Pay Scale</th><th>Level</th><th>Email</th><th></th></tr>
+    </thead>
+    <tbody></tbody>
+</table>
+@section Breadcrumbs{
+    <li>Administration</li>
+    <li>Contractors</li>
+}
+@section Scripts{
+    <script type="text/javascript">
+        $(document).ready(function () {
+            dataTableOptions.ajax.url = "@Url.Action("contractors","list")";
+            dataTableOptions.columnDefs = [
+                    { "targets": 0, "class": "more-details", "orderable": false, "searchable":false, "data": null, "defaultContent": "<span><i class='fe-plus'></i></span>" },
+                    { "targets": 1, "name": "FirstName", "data": "FirstName", "class": "dt-item-title" },
+                    { "targets": 2, "name": "LastName", "data": "LastName", "class": "dt-item-title" },
+                    { "targets": 3, "name": "DepartmentID", "data": "Department", "searchable":false },
+                    { "targets": 4, "name": "PayScale", "data": "PayScale", "searchable":false },
+                    { "targets": 5, "name": "ConClass", "data": "Level", "searchable":false },
+                    { "targets": 6, "name": "Email", "data": "Email" },
+                    {
+                        "targets": 7, "class": "actions",
+                        "orderable": false, "searchable": false, "data": null,
+                        "defaultContent":
+                            '<a href="#edit" class="dt-edit"><i class="fe-pencil-2"></i></a>' +
+                            '<a href="#delete" class="dt-delete"><i class="fe-cancel"></i></a>' +
+                            '<a href="#details" class="dt-wo-details"><i class="fe-news"></i></a>' +
+                            //'<a href="#deductions" class="dt-condeduction"><i class="fe-money"></i></a>' +
+                            '<a href="#payslip" class="dt-conpayslip"><i class="fe-print-1"></i></a>'
+                            //'<div class="btn-group">' +
+                            //              '<button type="button" class="btn dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">' +
+                            //              '<i class="fe-news"></i><span class="caret"></span></button>' +
+                            //              '<ul class="dropdown-menu" style="min-width:60px;">' +
+                            //              '<li></li>' +
+                            //              '<li></li>' +
+                            //              '</ul></div>'
+                    }
+            ];
+            dataTableOptions.order = [[1, 'asc']];
+            dTable = $("table").DataTable(dataTableOptions);
+
+            $(".dataTables_wrapper .sub-top .dataTables_filter label")
+                .after('@Html.Raw(Html.DropDownList("status", (List<SelectListItem>)ViewBag.Statuses).ToHtmlString().Replace(Environment.NewLine, ""))');
+            dTable.search('').draw();
+            $(document).on("change", "#con_wo_status", function () {
+                aDtable.draw();
+            });
+            $(document).on("click", "#stat li a", function (e) {
+                var val = $(this).data("val");
+                $("#con_wo_status").select2("val", val, true);
+                e.preventDefault();
+            });
+            $(document).on("click", ".dt-wo-details", function (e) {
+                var id = $(this).parents("tr").attr("id");
+                $("#CurrentContractor").val(id);
+                loading(false);
+                $.get("@Url.Action("GetContractorWorkOrders", "Contractor")", { id: id }, function (html) {
+                    removeLoader(false, 500, function () {
+                        $("body").append("<div class='btm-overlay'></div>");
+                        $(".btm-overlay").fadeIn(200);
+                        $("body").append(html);
+                        aDtable = $("#con-wo table.workorder").DataTable({
+                            dom: '<"top"<"sub-top clearfix"fr>pl>t',
+                            pagingType: 'full_numbers',
+                            autoWidth: false,
+                            language: { "lengthMenu": "_MENU_" },
+                            scrollY: "350px",
+                            scrollCollapse: true,
+                            columnDefs: [
+                                { "targets": 0, "name": "Wo_title", "data": "Title" },
+                                { "targets": 1, "name": "Requestdt", "data": "RequestDate" },
+                                { "targets": 2, "name": "Status", "data": "Status", "class": "dt-flag" },
+                                { "targets": 3, "name": "IsLead", "data": "IsLead", "class": "dt-check", "searchable": false, "orderable": false },
+                                { "targets": 4, "name": "button", "data": "Button", "class":"button", "searchable": false, "orderable": false }
+                            ],
+                            drawCallback: function (settings) {
+                                $("[title]").tooltip({ placement: "right" });
+                                $(".dataTables_wrapper.no-footer .dataTables_scrollBody").perfectScrollbar('update');
+                            },
+                            order: [[0, 'asc']],
+                            processing: true,
+                            serverSide: true,
+                            ajax: {
+                                url: "@Url.Action("contractororders","list")", type: "POST",
+                                data: function (d) {
+                                    d.additional = (typeof $("#con_wo_status").val() === 'undefined' ? "a" : $("#con_wo_status").val()) + "|" + id;
+                                    d.year = $("#year").val();
+                                    return $.toDictionary(d);
+                                }
+                            }
+                        });
+                        $("#con-wo .dataTables_wrapper .sub-top .dataTables_filter label")
+                        .after('@Html.Raw(Html.DropDownList("con_wo_status", (List<SelectListItem>)ViewBag.WoStatuses).ToHtmlString().Replace(Environment.NewLine, ""))');
+                        $("#con-wo .dataTables_wrapper .sub-top .dataTables_filter label")
+                        .after('@Html.Raw(Html.DropDownList("year", (List<SelectListItem>)ViewBag.Years).ToHtmlString().Replace(Environment.NewLine, ""))');
+                        $(document).on("change", "#year", function () {
+                            aDtable.draw();
+                        });
+                        dTable.search('').draw();
+                        $("#con-wo select").select2({ minimumResultsForSearch: -1, width: "resolve" });
+                        $("#year select").select2({ minimumResultsForSearch: -1, width: "resolve" });
+                        var options = {
+                            dom:'<"top"<"sub-top tech-prt clearfix"fr>pl>t',
+                            pagingType: 'full_numbers',
+                            autoWidth: false,
+                            language: { "lengthMenu": "_MENU_" },
+                            searching: false,
+                            columnDefs: [
+                                { "targets": 0, "name": "PeriodNo", "data": "PeriodNo" },
+                                { "targets": 1, "name": "DateFrom", "data": "From" },
+                                { "targets": 2, "name": "DateTo", "data": "To" },
+                                { "targets": 3, "name": "DueDate", "data": "DueDate" },
+                                { "targets": 4, "name": "PayDate", "data": "PayDate" },
+                                { "targets": 5, "name": "Total", "data": "Total", "class": "money" },
+                                {
+                                    "targets": 6, "class": "button", "orderable": false, "searchable": false, "data": null,
+                                    "defaultContent": "<button class='manage-dets tt-details'><i class='fe-doc-text-1'></i></button>" +
+                                        "<button class='manage-dets tt-print'><i class='fe-print-1'></i></button>" +
+                                        "<button class='manage-dets tt-print-payslip'><i class='fe-money'></i></button>"
+                                },
+                            ],
+                            order: [[1, 'desc']],
+                            processing: true,
+                            serverSide: true,
+                            scrollY: "350px",
+                            scrollCollapse: true,
+                            ajax: {
+                                url: "/list/technicianstatement", type: "POST",
+                                data: function (d) {
+                                    var from = $(".tech-prt .input-daterange input[name='start']").val();
+                                    var to = $(".tech-prt .input-daterange input[name='end']").val();
+                                    var id = $(".tech-tbl").data("id")
+                                    if ((typeof to !== 'undefined' && typeof from !== 'undefined') && (to !== "" && from !== ""))
+                                        data = id + "|" + from + "|" + to;
+                                    else
+                                        data = id + "||";
+                                    d.additional = data;
+                                    return $.toDictionary(d);
+                                }
+                            }
+                        }
+                        setupTechPrintOuts(options);
+                        $(".dataTables_wrapper.no-footer .dataTables_scrollBody").perfectScrollbar();
+                        dTable.search('').draw();
+                    });
+                });
+                e.preventDefault();
+            });
+            $(document).on("click", "#con-wo .con-wo-head button", function (e) {
+                $("#con-wo").removeClass("fadeInRight").addClass("fadeOutUp").one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function () {
+                    $(this).remove();
+                    $(".btm-overlay").fadeOut(200, function () { $(this).remove(); });
+                });
+            });
+            $(document).on("click", ".con-switcher", function () {
+                $("#con-wo .tbl-holder.active").hide("slide", { direction: "right" }, 200, function () {
+                    var other = $(this);
+                    $("#con-wo .tbl-holder:not(.active)").show("slide", { direction: "left" }, 200, function () {
+                        $(this).addClass("active");
+                        other.removeClass("active");
+                        aDtable.columns.adjust().draw();
+                        techTable.columns.adjust().draw();
+                    });
+                })
+            });
+
+            $(document).on("click", "#constructor .cancel", function (e) {
+                var ID = $("#CurrentContractor").val();
+                $.get("@Url.Action("RefreshTechnicianState", "Contractor")", { id: ID }, function (html) {
+                    $("#headerstate").html('');
+                    $("#headerstate").html(html);
+                });
+                $("#refDetail").click();
+            });
+        });
+    </script>
+}

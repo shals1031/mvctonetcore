@@ -28,4 +28,20 @@ namespace TeliconLatest.Models
     {
         public string Period { get; set; }
     }
+    public class TechnicianStatementDetail
+    {
+        public string Wo_title { get; set; }
+        public string Location { get; set; }
+        public DateTime ActDate { get; set; }
+        public string RateUnit { get; set; }
+        public DateTime? PaidDate { get; set; }
+        public int ActivityID { get; set; }
+        public decimal OActQty { get; set; }
+        public string RateDescr { get; set; }
+        public double Cost { get; set; }
+        public double? PenalizeAmount { get; set; }
+        public double PenalizeCost { get; set; }
+        public bool AddMaterial { get; set; }
+        public int Penalty { get; set; }
+    }
 }

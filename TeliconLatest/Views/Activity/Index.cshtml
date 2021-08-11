@@ -1,0 +1,286 @@
+﻿@using TeliconLatest.Reusables;
+@{
+    ViewBag.Title = "Activities";
+}
+<table class="admin-tbl" data-url="@Url.Action("index", "activity")" data-name="Activity">
+    <thead>
+        <tr><th>Company</th><th>Description</th><th>Unit</th><th>Department</th><th>Active</th><th>Materials</th><th></th></tr>
+    </thead>
+    <tbody></tbody>
+</table>
+@section Breadcrumbs{
+    <li>Administration</li>
+    <li>Activities</li>
+}
+@section Scripts{
+    <script type="text/javascript">
+        $(document).ready(function () {
+            dataTableOptions.ajax.url = "@Url.Action("activities","list")";
+            dataTableOptions.columnDefs = [
+                { "targets": 0, "name": "ClientID", "data": "Company", "searchable": false },
+                    { "targets": 1, "name": "RateDescr", "data": "Description", "class": "dt-item-title" },
+                    { "targets": 2, "name": "RateUnit", "data": "Unit" },
+                    { "targets": 3, "name": "DepartmentID", "data": "Department", "searchable": false },
+                    //{ "targets": 4, "name": "RateAmount", "data": "Amount", },
+                    { "targets": 4, "name": "Active", "data": "Active", "class": "dt-check", "searchable": false },
+                    { "targets": 5, "name": "HasMaterials", "data": "HasMaterials", "class": "dt-check", "searchable": false },
+                    {
+                        "targets": 6, "class": "actions", "orderable": false, "searchable": false, "data": null,
+                        "defaultContent": "<a href='#edit' class='dt-edit'><i class='fe-pencil-2'></i></a>"
+                            + "<a class='dt-wo-details' href='#ClientRate' title='Client Rate'><i class='fe-clipboard-1'></i></a>"
+                            + "<a class='dt-wo-Payment' href='#PaymentRate' title='Payment Rate'><i class='fe-clipboard-1'></i></a>"
+                            + "<a class='dt-act-mat' href='#Materials' title='Materials'><i class='mdi mdi-server'></i></a>"
+                            + "<a href='#delete' class='dt-delete'><i class='fe-cancel'></i></a>"
+                    },
+            ];
+            dataTableOptions.order = [[0, 'asc']];
+            //dataTableOptions.fnFilterClear();
+            dTable = $("table").DataTable(dataTableOptions);
+
+            $(".dataTables_wrapper .sub-top .dataTables_filter label")
+                .after('@Html.Raw(Html.DropDownList("status", (List<SelectListItem>)ViewBag.Departments, new { @style = "width:200px;" }).ToHtmlString().Replace(Environment.NewLine, ""))');
+            $(".dataTables_wrapper .sub-top .dataTables_filter label")
+                .after('@Html.Raw(Html.DropDownList("clients", (List<SelectListItem>)ViewBag.Clients, new { @style = "width:200px;" }).ToHtmlString().Replace(Environment.NewLine, ""))');
+
+            dTable.search('').draw();
+
+            $(document).on("change", "#clients", function () {
+                dTable.draw();
+            });
+
+            $(document).on("click", "#con-wo .con-wo-head button", function (e) {
+                $("#con-wo").removeClass("fadeInRight").addClass("fadeOutUp").one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function () {
+                    $(this).remove();
+                    $(".btm-overlay").fadeOut(200, function () { $(this).remove(); });
+                });
+            });
+            $(document).on("click", ".modal-header .close", function (e) {
+                $(".modal").remove();
+                $(".modal-backdrop").remove();
+            });
+            $(document).on("click", "#con-wo .AddClientRate", function (e) {
+                var id = $(this).attr('id');
+                var Act = $("#CurActivity").val();
+                loading(true);
+
+                var url = '@Url.Action("CreateUpdateClientRate", "Activity")';
+                $.get(url, { ID: id, Activity: Act }, function (html) {
+                    removeLoader(true, 200, function () {
+                        $("body").append(html);
+                        $('.modal').find(".number").onlyNumbers({ neagtive: false, decimal: true });
+                        $('.modal .date-box').datepicker({ format: "mm/dd/yyyy", "setDate": new Date() }).on('changeDate', function (ev) {
+                            $(this).datepicker('hide');
+                        });
+
+                        $(".modal").addClass("in");
+                        $(".modal").show();
+                        $.validator.unobtrusive.parse($(".tel-form form"));
+                    });
+                    setTimeout('$($(".long")[0]).focus()', 1500);
+                });
+                e.preventDefault();
+            });
+
+            //Delete Activity Rate
+            $(document).on("click", ".dt-deleteClient", function (e) {
+                var self = $(this).attr('id');
+                var itemType = "Client Rate";
+                var buttons = [
+                        { text: "Continue", click: function () { $(this).dialog("close"); deleteClientrate(self); } },
+                        { text: "Cancel", click: function () { $(this).dialog("close"); } }
+                ];
+                var msg = '<p>Are you sure you want to <b class="default-col">Delete</b> <b>Client Rate</b> record?</p></div>';
+                displayConfirmationMsg(msg, 'Delete ' + itemType, buttons);
+                e.preventDefault();
+            });
+
+            $(document).on("click", ".dt-wo-details", function (e) {
+                var id = $(this).parents("tr").attr("id");
+                loading(false);
+                $.get("@Url.Action("GetClientRateList", "Activity")", { id: id }, function (html) {
+                    removeLoader(false, 500, function () {
+                        $("body").append("<div class='btm-overlay'></div>");
+                        $(".btm-overlay").fadeIn(200);
+                        $("body").append(html);
+                        dTable = $("#con-wo table.workorder").DataTable({
+                            dom: '<"top"<"sub-top clearfix"r>pl>t',
+                            pagingType: 'full_numbers',
+                            autoWidth: false,
+                            language: { "lengthMenu": "_MENU_" },
+                            scrollY: "350px",
+                            scrollCollapse: true,
+                            columnDefs: [
+                               { "targets": 0, "name": "Name", "data": "Name", "orderable": false },
+                                { "targets": 1, "name": "Amount", "data": "Amount", "orderable": false },
+                                { "targets": 2, "name": "StartDate", "data": "StartDate", "orderable": false },
+                                { "targets": 3, "name": "EndDate", "data": "EndDate", "orderable": false },
+                                { "targets": 4, "name": "button", "data": "Button", "orderable": false }
+                            ],
+                            drawCallback: function (settings) {
+                                $("[title]").tooltip({ placement: "right" });
+                                $(".dataTables_wrapper.no-footer .dataTables_scrollBody").perfectScrollbar('update');
+                            },
+                            order: [[0, 'asc']],
+                            processing: true,
+                            serverSide: true,
+                            ajax: {
+                                url: "@Url.Action("GetActivityAmount", "list")", type: "POST",
+                                data: function (d) {
+                                    d.additional = (typeof $("#con_wo_status").val() === 'undefined' ? "a" : $("#con_wo_status").val()) + "|" + id;
+                                    return $.toDictionary(d);
+                                }
+                            }
+                        });
+                        $(".dataTables_wrapper.no-footer .dataTables_scrollBody").perfectScrollbar();
+                        dTable.search('').draw();
+                    });
+                });
+
+            });
+
+            $(document).on("click", ".dt-act-mat", function (e) {
+                var id = $(this).parents("tr").attr("id");
+                $.post("@Url.Action("ActivityAllowedForMaterials", "Activity")", { actId: id }, function (d) {
+                    if (d.Additional) {
+                        loading(false);
+                        $("body").append("<div class='btm-overlay'></div>");
+                        $(".btm-overlay").fadeIn(200);
+                        $.get("@Url.Action("ActivityMaterials", "Activity")", { id: id }, function (html) {
+                            removeLoader(false, 500, function () {
+                                $("body").append(html);
+                                $("#roletask .center").perfectScrollbar();
+                            });
+                        });
+                    }
+                    else {
+                        var htmlMsg = "<p>Not <b class='loc-col'>Allowed</b> to <b class='date-col'>Assign Material(s)</b>. First change the <b class='loc-col'>Activity Detail</b> then try again.</p>";
+                        var htmlTitle = "<i class='fe-comment'></i>Warning";
+                        displayDialogMsg(htmlMsg, htmlTitle);
+                    }
+                });
+
+            });
+
+            //Payment Rate Related Code Section
+            $(document).on("click", ".dt-wo-Payment", function (e) {
+                var id = $(this).parents("tr").attr("id");
+                loading(false);
+                $.get("@Url.Action("GetPaymentRateList", "Activity")", { id: id }, function (html) {
+                    removeLoader(false, 500, function () {
+                        $("body").append("<div class='btm-overlay'></div>");
+                        $(".btm-overlay").fadeIn(200);
+                        $("body").append(html);
+                        dTable = $("#con-wo table.workorder").DataTable({
+                            dom: '<"top"<"sub-top clearfix"r>pl>t',
+                            pagingType: 'full_numbers',
+                            autoWidth: false,
+                            language: { "lengthMenu": "_MENU_" },
+                            scrollY: "350px",
+                            scrollCollapse: true,
+                            columnDefs: [
+                                { "targets": 0, "name": "Name", "data": "Name", "orderable": false },
+                                { "targets": 1, "name": "Amount", "data": "Amount", "orderable": false },
+                                { "targets": 2, "name": "StartDate", "data": "StartDate", "orderable": false },
+                                { "targets": 3, "name": "EndDate", "data": "EndDate", "orderable": false },
+                                { "targets": 4, "name": "button", "data": "Button", "orderable": false }
+                            ],
+                            drawCallback: function (settings) {
+                                $("[title]").tooltip({ placement: "right" });
+                                $(".dataTables_wrapper.no-footer .dataTables_scrollBody").perfectScrollbar('update');
+                            },
+                            order: [[0, 'asc']],
+                            processing: true,
+                            serverSide: true,
+                            ajax: {
+                                url: "@Url.Action("GetActivityPaymnetAmount", "list")", type: "POST",
+                                data: function (d) {
+                                    d.additional = (typeof $("#con_wo_status").val() === 'undefined' ? "a" : $("#con_wo_status").val()) + "|" + id;
+                                    return $.toDictionary(d);
+                                }
+                            }
+                        });
+                        $(".dataTables_wrapper.no-footer .dataTables_scrollBody").perfectScrollbar();
+                        dTable.search('').draw();
+                    });
+                });
+            });
+
+            $(document).on("click", "#con-wo .AddPaymentRate", function (e) {
+                var id = $(this).attr('id');
+                var Act = $("#CurActivity").val();
+                loading(true);
+
+                var url = '@Url.Action("CreateUpdatePaymentRate", "Activity")';
+                $.get(url, { ID: id, Activity: Act }, function (html) {
+                    removeLoader(true, 200, function () {
+                        $("body").append(html);
+                        $('.modal').find(".number").onlyNumbers({ neagtive: false, decimal: true });
+                        $('.modal .date-box').datepicker({ format: "mm/dd/yyyy", "setDate": new Date() }).on('changeDate', function (ev) {
+                            $(this).datepicker('hide');
+                        });
+                        $(".modal").addClass("in");
+                        $(".modal").show();
+                        $.validator.unobtrusive.parse($(".tel-form form"));
+                    });
+                    setTimeout('$($(".long")[0]).focus()', 1500);
+                });
+                e.preventDefault();
+            });
+
+            $(document).on("click", ".dt-deletePayment", function (e) {
+                var self = $(this).attr('id');
+                var itemType = "Payment Rate";
+                var buttons = [
+                        { text: "Continue", click: function () { $(this).dialog("close"); deletePaymentrate(self); } },
+                        { text: "Cancel", click: function () { $(this).dialog("close"); } }
+                ];
+                var msg = '<p>Are you sure you want to <b class="default-col">Delete</b> <b>Payment Rate</b> record?</p></div>';
+                displayConfirmationMsg(msg, 'Delete ' + itemType, buttons);
+                e.preventDefault();
+            });
+        });
+
+
+        function deleteClientrate(elm) {
+            var url = '/Activity/DeleteClientRate/'
+            loading(true);
+            $.post(url, { id: elm }, function (data) {
+                removeLoader(true, 300, function () {
+                    if (data.Additional > 0) {
+                        $(".tel-confirm-dialog").dialog("close");
+                        var page = dTable.page();
+                        dTable.page(page).draw(false);
+                        //dTable.draw();
+                    }
+                    else {
+                        $(".tel-confirm-dialog").dialog("close");
+                        var htmlMsg = "<p>This record cannot be <b class='default-col'>Deleted</b> because it is still <b>Linked</b> to other records in the Database.</p>";
+                        var htmlTitle = "<i class='fe-comment'></i>Cannot Delete";
+                        displayDialogMsg(htmlMsg, htmlTitle);
+                    }
+                });
+            });
+        }
+
+        function deletePaymentrate(elm) {
+            var url = '/Activity/DeletePaymentRate/'
+            loading(true);
+            $.post(url, { id: elm }, function (data) {
+                removeLoader(true, 300, function () {
+                    if (data.Additional > 0) {
+                        $(".tel-confirm-dialog").dialog("close");
+                        var page = dTable.page();
+                        dTable.page(page).draw(false);
+                        //dTable.draw();
+                    }
+                    else {
+                        $(".tel-confirm-dialog").dialog("close");
+                        var htmlMsg = "<p>This record cannot be <b class='default-col'>Deleted</b> because it is still <b>Linked</b> to other records in the Database.</p>";
+                        var htmlTitle = "<i class='fe-comment'></i>Cannot Delete";
+                        displayDialogMsg(htmlMsg, htmlTitle);
+                    }
+                });
+            });
+        }
+    </script>
+}

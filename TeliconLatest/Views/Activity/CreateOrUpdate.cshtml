@@ -1,0 +1,75 @@
+﻿@model TeliconLatest.Models.CustomActivityModel
+@{
+    ViewBag.Title = "Activity";
+    Layout = "~/Views/Shared/_FormLayout.cshtml";
+}
+@using (Html.BeginForm("createorupdate", "activity", FormMethod.Post))
+{
+    @*@Html.AntiForgeryToken()*@
+    @Html.ValidationSummary(true)
+    <table>
+        <tr><td colspan="3">@Html.LabelFor(x => x.ClientID)</td></tr>
+        <tr>
+            <td colspan="3">
+                @Html.HiddenFor(x => x.RateID, new { @class = "tel-form-id" })
+                @Html.DropDownListFor(x => x.ClientID, (List<SelectListItem>)ViewBag.Clients, new { @class = "long" })
+                @Html.ValidationMessageFor(x => x.ClientID)
+            </td>
+        </tr>
+        <tr><td colspan="3">@Html.LabelFor(x => x.RateDescr)</td></tr>
+        <tr>
+            <td colspan="3">
+                @Html.TextBoxFor(x => x.RateDescr, new { @class = "long" })
+                @Html.ValidationMessageFor(x => x.RateDescr)
+            </td>
+        </tr>
+        <tr>
+            <td>@Html.LabelFor(x => x.RateUnit)</td>
+            <td>@Html.LabelFor(x => x.DepartmentID)</td>
+        </tr>
+        <tr>
+            <td>
+                @Html.DropDownListFor(x => x.RateUnit, (List<SelectListItem>)ViewBag.Units)
+                @Html.ValidationMessageFor(x => x.RateUnit)
+            </td>
+            <td>
+                @Html.DropDownListFor(x => x.DepartmentID, (List<SelectListItem>)ViewBag.Departments)
+                @Html.ValidationMessageFor(x => x.DepartmentID)
+            </td>
+        </tr>
+        <tr>
+            <td>@Html.LabelFor(x => x.RateClass)</td>
+            <td>@Html.LabelFor(x => x.Active)</td>
+        </tr>
+        <tr>
+            <td>
+                @Html.DropDownListFor(x => x.RateClass, (List<SelectListItem>)ViewBag.Classes)
+                @Html.ValidationMessageFor(x => x.RateClass)
+            </td>
+            <td>
+                <button class="tel-checkbox @(Model.Active ? "checked": "")">
+                    <i class="fe-ok"></i>
+                    @Html.HiddenFor(x => x.Active)
+                </button>
+            </td>
+        </tr>
+        <tr>
+            <td>@Html.LabelFor(x => x.HasMaterials)</td>
+            <td>@Html.LabelFor(x => x.MaterialsRequired)</td>
+        </tr>
+        <tr>
+            <td>
+                <button class="tel-checkbox @(Model.HasMaterials ? "checked": "")">
+                    <i class="fe-ok"></i>
+                    @Html.HiddenFor(x => x.HasMaterials)
+                </button>
+            </td>
+            <td>
+                <button class="tel-checkbox @(Model.MaterialsRequired ? "checked": "")">
+                    <i class="fe-ok"></i>
+                    @Html.HiddenFor(x => x.MaterialsRequired)
+                </button>
+            </td>
+        </tr>
+    </table>
+}

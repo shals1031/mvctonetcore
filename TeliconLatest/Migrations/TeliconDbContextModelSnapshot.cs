@@ -65,9 +65,9 @@ namespace TeliconLatest.Migrations
                     b.HasKey("RateID")
                         .HasName("PRIMARY");
 
-                    b.HasIndex(new[] { "RateClass" }, "FK_ADM01100_ADM03500");
+                    b.HasIndex("DepartmentId");
 
-                    b.HasIndex(new[] { "DepartmentId" }, "FK_ADM01100_ADM04200");
+                    b.HasIndex("RateClass");
 
                     b.ToTable("adm01100");
                 });
@@ -90,9 +90,9 @@ namespace TeliconLatest.Migrations
                     b.HasKey("ActMatID")
                         .HasName("PRIMARY");
 
-                    b.HasIndex(new[] { "ActivID" }, "FK_ADM01110_ADM01100");
+                    b.HasIndex("ActivID");
 
-                    b.HasIndex(new[] { "MaterID" }, "FK_ADM01110_ADM13100");
+                    b.HasIndex("MaterID");
 
                     b.ToTable("adm01110");
                 });
@@ -148,7 +148,7 @@ namespace TeliconLatest.Migrations
                     b.HasKey("RateHistoryID")
                         .HasName("PRIMARY");
 
-                    b.HasIndex(new[] { "RateID" }, "FK_ADM01150_ADM01100");
+                    b.HasIndex("RateID");
 
                     b.ToTable("adm01150");
                 });
@@ -174,7 +174,7 @@ namespace TeliconLatest.Migrations
                     b.HasKey("RateHistoryID")
                         .HasName("PRIMARY");
 
-                    b.HasIndex(new[] { "RateID" }, "FK_ADM01250_ADM01100");
+                    b.HasIndex("RateID");
 
                     b.ToTable("adm01250");
                 });
@@ -232,7 +232,7 @@ namespace TeliconLatest.Migrations
                     b.HasKey("areaID")
                         .HasName("PRIMARY");
 
-                    b.HasIndex(new[] { "zoneID" }, "FK_ADM01400_ADM26100");
+                    b.HasIndex("zoneID");
 
                     b.ToTable("adm01400");
                 });
@@ -278,7 +278,7 @@ namespace TeliconLatest.Migrations
                     b.HasKey("RecID")
                         .HasName("PRIMARY");
 
-                    b.HasIndex(new[] { "BankId" }, "FK_ADM02200_ADM02100");
+                    b.HasIndex("BankId");
 
                     b.ToTable("adm02200");
                 });
@@ -479,9 +479,9 @@ namespace TeliconLatest.Migrations
                     b.HasKey("ConID")
                         .HasName("PRIMARY");
 
-                    b.HasIndex(new[] { "Branch" }, "FK_ADM03300_ADM02200");
+                    b.HasIndex("Branch");
 
-                    b.HasIndex(new[] { "DepartmentID" }, "FK_ADM03300_ADM04200");
+                    b.HasIndex("DepartmentID");
 
                     b.ToTable("adm03300");
                 });
@@ -510,9 +510,9 @@ namespace TeliconLatest.Migrations
                     b.HasKey("RecID")
                         .HasName("PRIMARY");
 
-                    b.HasIndex(new[] { "ContractorID" }, "FK_ADM03400_ADM03300");
+                    b.HasIndex("ContractorID");
 
-                    b.HasIndex(new[] { "WorkOrderId" }, "FK_ADM03400_TRN23100");
+                    b.HasIndex("WorkOrderId");
 
                     b.ToTable("adm03400");
                 });
@@ -589,9 +589,9 @@ namespace TeliconLatest.Migrations
                     b.HasKey("DepActID")
                         .HasName("PRIMARY");
 
-                    b.HasIndex(new[] { "ActivityID" }, "FK_ADM04210_ADM01100");
+                    b.HasIndex("ActivityID");
 
-                    b.HasIndex(new[] { "DepartmentID" }, "FK_ADM04210_ADM04200");
+                    b.HasIndex("DepartmentID");
 
                     b.ToTable("adm04210");
                 });
@@ -829,7 +829,8 @@ namespace TeliconLatest.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("varchar(256)");
 
-                    b.HasKey("ApplicationId");
+                    b.HasKey("ApplicationId")
+                        .HasName("PRIMARY");
 
                     b.ToTable("applications");
                 });
@@ -1012,7 +1013,7 @@ namespace TeliconLatest.Migrations
                     b.HasKey("UserId")
                         .HasName("PRIMARY");
 
-                    b.HasIndex(new[] { "ApplicationId" }, "FK_Memberships_Applications");
+                    b.HasIndex("ApplicationId");
 
                     b.ToTable("memberships");
                 });
@@ -1067,7 +1068,7 @@ namespace TeliconLatest.Migrations
 
                     b.HasKey("RoleId");
 
-                    b.HasIndex(new[] { "ApplicationId" }, "FK_Roles_Applications");
+                    b.HasIndex("ApplicationId");
 
                     b.ToTable("roles");
                 });
@@ -1105,9 +1106,9 @@ namespace TeliconLatest.Migrations
                     b.HasKey("DeductionConductorID")
                         .HasName("PRIMARY");
 
-                    b.HasIndex(new[] { "ConductorID" }, "FK_TRN04100_ADM03300");
+                    b.HasIndex("ConductorID");
 
-                    b.HasIndex(new[] { "DeductionID" }, "FK_TRN04100_ADM04100");
+                    b.HasIndex("DeductionID");
 
                     b.ToTable("trn04100");
                 });
@@ -1216,7 +1217,7 @@ namespace TeliconLatest.Migrations
                         .HasName("PRIMARY")
                         .HasAnnotation("MySql:IndexPrefixLength", new[] { 0, 0 });
 
-                    b.HasIndex(new[] { "InvoiceNum" }, "FK_TRN09110_TRN09100");
+                    b.HasIndex("InvoiceNum");
 
                     b.ToTable("trn09110");
                 });
@@ -1224,6 +1225,7 @@ namespace TeliconLatest.Migrations
             modelBuilder.Entity("TeliconLatest.DataEntities.TRN13110", b =>
                 {
                     b.Property<int>("MergedSubOrderId")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
                     b.Property<int>("MergedOrderId")
@@ -1235,9 +1237,9 @@ namespace TeliconLatest.Migrations
                     b.HasKey("MergedSubOrderId")
                         .HasName("PRIMARY");
 
-                    b.HasIndex(new[] { "MergedOrderId" }, "FK_TRN13120_TRN13110");
+                    b.HasIndex("MergedOrderId");
 
-                    b.HasIndex(new[] { "WorkOrderId" }, "FK_TRN23100_TRN13110");
+                    b.HasIndex("WorkOrderId");
 
                     b.ToTable("trn13110");
                 });
@@ -1263,7 +1265,7 @@ namespace TeliconLatest.Migrations
                     b.HasKey("MergedOrderId")
                         .HasName("PRIMARY");
 
-                    b.HasIndex(new[] { "WorkOrderId" }, "FK_TRN13120_TRN23100");
+                    b.HasIndex("WorkOrderId");
 
                     b.ToTable("trn13120");
                 });
@@ -1311,7 +1313,7 @@ namespace TeliconLatest.Migrations
                     b.HasKey("QuotationId")
                         .HasName("PRIMARY");
 
-                    b.HasIndex(new[] { "CreateBy" }, "FK_TRN17100_Users");
+                    b.HasIndex("CreateBy");
 
                     b.ToTable("trn17100");
                 });
@@ -1337,7 +1339,7 @@ namespace TeliconLatest.Migrations
                     b.HasKey("RecId")
                         .HasName("PRIMARY");
 
-                    b.HasIndex(new[] { "QuotationId" }, "FK_TRN17110_TRN17100");
+                    b.HasIndex("QuotationId");
 
                     b.ToTable("trn17110");
                 });
@@ -1371,9 +1373,9 @@ namespace TeliconLatest.Migrations
                     b.HasKey("SInvoiceId")
                         .HasName("PRIMARY");
 
-                    b.HasIndex(new[] { "ZoneId" }, "FK_ADM26100_TRN19100");
+                    b.HasIndex("CreateBy");
 
-                    b.HasIndex(new[] { "CreateBy" }, "FK_TRN19100_Users");
+                    b.HasIndex("ZoneId");
 
                     b.ToTable("trn19100");
                 });
@@ -1399,9 +1401,9 @@ namespace TeliconLatest.Migrations
                     b.HasKey("RecId")
                         .HasName("PRIMARY");
 
-                    b.HasIndex(new[] { "ActivityId" }, "FK_TRN19110_ADM01100");
+                    b.HasIndex("ActivityId");
 
-                    b.HasIndex(new[] { "SInvoiceId" }, "FK_TRN19110_TRN19100");
+                    b.HasIndex("SInvoiceId");
 
                     b.ToTable("trn19110");
                 });
@@ -1493,13 +1495,13 @@ namespace TeliconLatest.Migrations
                     b.HasKey("Workid")
                         .HasName("PRIMARY");
 
-                    b.HasIndex(new[] { "AreaID" }, "FK_TRN23100_ADM01400");
+                    b.HasIndex("AreaID");
 
-                    b.HasIndex(new[] { "Wo_client" }, "FK_TRN23100_ADM03200");
+                    b.HasIndex("ClassId");
 
-                    b.HasIndex(new[] { "ClassId" }, "FK_TRN23100_ADM03500");
+                    b.HasIndex("CreateBy");
 
-                    b.HasIndex(new[] { "CreateBy" }, "FK_TRN23100_Users");
+                    b.HasIndex("Wo_client");
 
                     b.ToTable("trn23100");
                 });
@@ -1545,9 +1547,9 @@ namespace TeliconLatest.Migrations
                     b.HasKey("RecID")
                         .HasName("PRIMARY");
 
-                    b.HasIndex(new[] { "ActivityID" }, "FK_TRN23110_ADM01100");
+                    b.HasIndex("ActivityID");
 
-                    b.HasIndex(new[] { "WorkOID" }, "FK_TRN23110_TRN23100");
+                    b.HasIndex("WorkOID");
 
                     b.ToTable("trn23110");
                 });
@@ -1570,7 +1572,7 @@ namespace TeliconLatest.Migrations
                     b.HasKey("WoMatRecID")
                         .HasName("PRIMARY");
 
-                    b.HasIndex(new[] { "WoActID" }, "FK_TRN23110_TRN23120");
+                    b.HasIndex("WoActID");
 
                     b.ToTable("trn23120");
                 });
@@ -1622,9 +1624,7 @@ namespace TeliconLatest.Migrations
 
                     b.HasKey("UserId");
 
-                    b.HasIndex(new[] { "ApplicationId" }, "FK_Users_Applications");
-
-                    b.HasIndex(new[] { "UserName" }, "IDX_UserName");
+                    b.HasIndex("ApplicationId");
 
                     b.ToTable("users");
                 });
@@ -1632,17 +1632,15 @@ namespace TeliconLatest.Migrations
             modelBuilder.Entity("TeliconLatest.DataEntities.UsersInRoles", b =>
                 {
                     b.Property<string>("UserId")
-                        .HasMaxLength(36)
                         .HasColumnType("varchar(36)");
 
                     b.Property<string>("RoleId")
-                        .HasMaxLength(36)
                         .HasColumnType("varchar(36)");
 
                     b.HasKey("UserId", "RoleId")
                         .HasName("PRIMARY");
 
-                    b.HasIndex(new[] { "RoleId" }, "FK_UsersInRoles_Roles");
+                    b.HasIndex("RoleId");
 
                     b.ToTable("usersinroles");
                 });

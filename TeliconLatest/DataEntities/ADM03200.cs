@@ -56,4 +56,50 @@ namespace TeliconLatest.DataEntities
 
         public virtual ICollection<TRN23100> TRN23100 { get; set; }
     }
+
+    public class ADM03200Extended : ADM03200
+    {
+        public ADM03200Extended() { }
+        public ADM03200Extended(ADM03200 obj)
+        {
+            CustID = obj.CustID;
+            CustName = obj.CustName;
+            Street = obj.Street;
+            City = obj.City;
+            Parish = obj.Parish;
+            Phone1 = obj.Phone1;
+            Phone2 = obj.Phone2;
+            Fax = obj.Fax;
+            Email = obj.Email;
+            CustClass = obj.CustClass;
+            ClientCode = obj.ClientCode;
+            Currency = obj.Currency;
+            StartDt = obj.StartDt;
+            EndDt = obj.EndDt;
+        }
+
+        public ADM03200 GetBase()
+        {
+            return new ADM03200
+            {
+                CustID = CustID,
+                CustName = CustName,
+                Street = Street,
+                City = City,
+                Parish = Parish,
+                Phone1 = Phone1,
+                Phone2 = Phone2,
+                Fax = Fax,
+                Email = Email,
+                CustClass = CustClass,
+                ClientCode = ClientCode,
+                Currency = Currency,
+                StartDt = StartDt,
+                EndDt = EndDt,
+            };
+        }
+
+        [Display(Name = "Copy Activity From")]
+        public int? CopyActClientId { get; set; }
+    }
 }

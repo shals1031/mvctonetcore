@@ -1,0 +1,34 @@
+﻿@model TeliconLatest.Models.TechnicianStat
+@{
+    Layout = null;
+}
+<div id="con-wo" class="animated bounceInRight">
+    <div class="con-wo-head clearfix">Contractor Work Order Listing <button><i class="fe-cancel-1"></i></button></div>
+    <div id="headerstate">
+        <partial name="TechnicianStats" model="Model" />
+    </div>
+    <button class="con-switcher"><i class="fe-clipboard-1"></i></button>
+    <div class="tbl-holder active">
+        <table class="admin-tbl workorder" data-wurl="@Url.Action("generateconstructor","workorder")" data-url="@Url.Action("index", "workorder")" data-name="Work Order">
+            <thead>
+                <tr><th>Title</th><th>Date</th><th>Status</th><th>Is Lead</th><th></th></tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+    <div class="tbl-holder" style="display:none;">
+        <table class="admin-tbl tech-tbl" data-id="@ViewBag.ContractorID">
+            <thead>
+                <tr><th>Period No.</th><th>From</th><th>To</th><th>Due Date</th><th>Payment Date</th><th>Total</th><th></th></tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+<script>
+    $(document).ready(function () {
+        $('.date-box').datepicker().on('changeDate', function (ev) {
+            $(this).datepicker('hide');
+        });
+    });
+</script>

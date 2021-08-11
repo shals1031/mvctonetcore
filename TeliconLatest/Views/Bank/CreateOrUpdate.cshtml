@@ -1,0 +1,29 @@
+﻿@model TeliconLatest.DataEntities.ADM02100Extended
+@{
+    ViewBag.Title = "Bank";
+    Layout = "~/Views/Shared/_FormLayout.cshtml";
+}
+
+@using (Html.BeginForm("createorupdate", "Bank", FormMethod.Post))
+{
+    @*@Html.AntiForgeryToken()*@
+    @Html.ValidationSummary(true)
+
+    <table>
+        <tr><td colspan="2">@Html.LabelFor(x => x.BankId)</td></tr>
+        <tr>
+            <td colspan="2">
+                @Html.HiddenFor(x=> x.OldBankId, new { @class = "tel-form-id" })
+                @Html.TextBoxFor(x => x.BankId, new { @class = "long" })
+                @Html.ValidationMessageFor(x => x.BankId)
+            </td>
+        </tr>
+        <tr><td colspan="2">@Html.LabelFor(x => x.BankName)</td></tr>
+        <tr>
+            <td colspan="2">
+                @Html.TextBoxFor(x => x.BankName, new { @class = "long" })
+                @Html.ValidationMessageFor(x => x.BankName)
+            </td>
+        </tr>        
+    </table>
+}

@@ -1,0 +1,36 @@
+﻿@model TeliconLatest.DataEntities.ADM02200
+@{
+    ViewBag.Title = "Branch";
+    Layout = "~/Views/Shared/_FormLayout.cshtml";
+}
+
+@using (Html.BeginForm("createorupdate", "Branch", FormMethod.Post))
+{
+    @*@Html.AntiForgeryToken()*@
+    @Html.ValidationSummary(true)
+
+    <table>
+        <tr><td colspan="2">@Html.LabelFor(x => x.BankId)</td></tr>
+        <tr>
+            <td colspan="2">
+                @Html.DropDownListFor(x => x.BankId, (List<SelectListItem>)ViewBag.Banks, new { @class = "long" })
+                @Html.ValidationMessageFor(x => x.BankId)
+            </td>
+        </tr>
+        <tr><td colspan="2">@Html.LabelFor(x => x.BranchId)</td></tr>
+        <tr>
+            <td colspan="2">
+                @Html.HiddenFor(x => x.RecID, new { @class = "tel-form-id" })
+                @Html.TextBoxFor(x => x.BranchId, new { @class = "long" })
+                @Html.ValidationMessageFor(x => x.BranchId)
+            </td>
+        </tr>
+        <tr><td colspan="2">@Html.LabelFor(x => x.BranchName)</td></tr>
+        <tr>
+            <td colspan="2">
+                @Html.TextBoxFor(x => x.BranchName, new { @class = "long" })
+                @Html.ValidationMessageFor(x => x.BranchName)
+            </td>
+        </tr>
+    </table>
+}

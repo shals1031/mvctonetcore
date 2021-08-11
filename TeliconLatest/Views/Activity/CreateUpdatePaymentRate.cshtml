@@ -1,0 +1,39 @@
+﻿@model TeliconLatest.DataEntities.ADM01250
+@{
+    ViewBag.Title = "Create/Update Payment Rate";
+    Layout = "~/Views/Shared/_FormLayout.cshtml";
+}
+
+@using (Html.BeginForm("CreateUpdatePaymentRate", "activity", FormMethod.Post))
+{
+    @*@Html.AntiForgeryToken()*@
+    @Html.ValidationSummary(true)
+    <table>
+        <tr>
+            <td><lable>Activity : @ViewBag.ActLable</lable></td>
+        </tr>
+        <tr>
+            <td>
+                @Html.LabelFor(x => x.Amount)
+                @Html.TextBoxFor(x => x.Amount, new { @class = "number" })
+                @Html.ValidationMessageFor(x => x.Amount)
+                @Html.HiddenFor(x => x.RateID)
+                @Html.HiddenFor(x => x.RateHistoryID)
+            </td>
+        </tr>
+        <tr>
+            <td>
+                @Html.LabelFor(x => x.StartDate)
+                <input type="text" asp-for="StartDate" value="@Model.StartDate.ToString("MM/dd/yyyy")" asp-format="{0:MM/dd/yyyy}" class="date-box" readonly="readonly" />
+                <span asp-validation-for="StartDate"></span>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                @Html.LabelFor(x => x.EndDate)
+                <input type="text" asp-for="EndDate" value="@Model.EndDate.ToString("MM/dd/yyyy")" asp-format="{0:MM/dd/yyyy}" class="date-box" readonly="readonly" />
+                <span asp-validation-for="EndDate"></span>
+            </td>
+        </tr>
+    </table>
+}

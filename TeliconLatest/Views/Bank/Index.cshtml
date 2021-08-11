@@ -1,0 +1,33 @@
+﻿@{
+    ViewBag.Title = "Banks";
+}
+<table class="admin-tbl" data-url="@Url.Action("index", "Bank")" data-name="Bank">
+    <thead>
+        <tr><th>Code</th><th>Name</th><th></th></tr>
+    </thead>
+    <tbody></tbody>
+</table>
+@section Breadcrumbs{
+    <li>Administration</li>
+    <li>Banks</li>
+}
+@section Scripts{
+    <script type="text/javascript">
+        $(document).ready(function () {
+            dataTableOptions.ajax.url = "@Url.Action("banks", "list")";
+            dataTableOptions.columnDefs = [
+                    { "targets": 0, "name": "BankId", "data": "BankId", "class": "dt-item-title" },
+                    { "targets": 1, "name": "BankName", "data": "BankName", "class": "dt-item-title" },
+                    {
+                        "targets": 2, "class": "actions",
+                        "orderable": false, "searchable": false, "data": null,
+                        "defaultContent": "<a href='#edit' class='dt-edit'><i class='fe-pencil-2'></i></a>" +
+                            "<a href='#delete' class='dt-delete'><i class='fe-cancel'></i></a>"
+                    }
+            ];
+            dataTableOptions.order = [[0, 'asc']];
+            dTable = $("table").DataTable(dataTableOptions);
+            dTable.search('').draw();
+        });
+    </script>
+}

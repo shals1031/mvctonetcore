@@ -27,13 +27,21 @@ namespace TeliconLatest
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<TeliconDbContext>(options => options.UseMySQL(Configuration.GetConnectionString("DefaultConnection")));
+            services.AddDbContext<TeliconDbContext>(options => options.UseMySql(Configuration.GetConnectionString("DefaultConnection"), ServerVersion.AutoDetect(Configuration.GetConnectionString("DefaultConnection"))));
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddSession(options =>
             {
                 options.IdleTimeout = TimeSpan.FromMinutes(60);
             });
             services.AddControllersWithViews().AddRazorRuntimeCompilation();
+
+            var culture = CultureInfo.CreateSpecificCulture("en-US");
+            var dateformat = new DateTimeFormatInfo
+            {
+                ShortDatePattern = "MM/dd/yyyy",
+                LongDatePattern = "MM/dd/yyyy hh:mm:ss tt"
+            };
+            culture.DateTimeFormat = dateformat;
 
             services.Configure<RequestLocalizationOptions>(
                 options =>
@@ -43,7 +51,7 @@ namespace TeliconLatest
                             new CultureInfo("en-US"),
                         };
 
-                    options.DefaultRequestCulture = new RequestCulture(culture: "en-US", uiCulture: "en-US");
+                    options.DefaultRequestCulture = new RequestCulture(culture: "en-US", uiCulture: "en");
                     options.SupportedCultures = supportedCultures;
                     options.SupportedUICultures = supportedCultures;
                 });
@@ -75,6 +83,18 @@ namespace TeliconLatest
             app.UseAuthentication();
 
             app.UseAuthorization();
+
+            var supportedCultures = new List<CultureInfo>
+                        {
+                            new CultureInfo("en-US"),
+                        };
+
+            app.UseRequestLocalization(new RequestLocalizationOptions
+            {
+                DefaultRequestCulture = new RequestCulture("en-US"),
+                SupportedCultures = supportedCultures,
+                SupportedUICultures = supportedCultures
+            });
 
             app.UseEndpoints(endpoints =>
             {

@@ -1,0 +1,33 @@
+﻿@{
+    ViewBag.Title = "Classifications";
+}
+<table class="admin-tbl workorder" data-url="@Url.Action("index", "classification")" data-name="Classification">
+    <thead>
+        <tr><th>Name</th><th>Start Date</th><th>End Date</th><th></th></tr>
+    </thead>
+    <tbody></tbody>
+</table>
+@section Breadcrumbs{
+    <li>Administration</li>
+    <li>Classifications</li>
+}
+@section Scripts{
+    <script type="text/javascript">
+        $(document).ready(function () {
+            dataTableOptions.ajax.url = "@Url.Action("classifications","list")";
+            dataTableOptions.columnDefs = [
+                    { "targets": 0, "name": "ClassName", "data": "Name" },
+                    { "targets": 1, "name": "StartDate", "data": "StartDate", "searchable": false },
+                    { "targets": 2, "name": "EndDate", "data": "EndDate", "searchable": false },
+                    {
+                        "targets": 3, "class": "actions", "orderable": false, "searchable": false, "data": null,
+                        "defaultContent": "<a href='#edit' class='dt-edit'><i class='fe-pencil-2'></i></a>" +
+                            "<a href='#delete' class='dt-delete'><i class='fe-cancel'></i></a>"
+                    },
+            ];
+            dataTableOptions.order = [[0, 'asc']];
+            dTable = $("table").DataTable(dataTableOptions);
+            dTable.search('').draw();
+        });
+    </script>
+}

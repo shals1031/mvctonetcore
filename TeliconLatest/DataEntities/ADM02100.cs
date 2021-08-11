@@ -21,4 +21,26 @@ namespace TeliconLatest.DataEntities
 
         public virtual ICollection<ADM02200> ADM02200 { get; set; }
     }
+
+    public class ADM02100Extended : ADM02100
+    {
+        public ADM02100Extended() { }
+        public ADM02100Extended(ADM02100 obj)
+        {
+            OldBankId = obj.BankId;
+            BankId = obj.BankId;
+            BankName = obj.BankName;
+        }
+
+        public ADM02100 GetBase()
+        {
+            return new ADM02100
+            {
+                BankId = BankId,
+                BankName = BankName,
+            };
+        }
+
+        public string OldBankId { get; set; }
+    }
 }

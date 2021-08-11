@@ -105,6 +105,27 @@ namespace TeliconLatest.Models
                 throw;
             }
         }
+
+        public static string GetProfileInfoValue(ProfileInfo profileInfo)
+        {
+            try
+            {
+                string xml = "";
+
+                using (StringWriter sww = new StringWriter())
+                {
+                    using XmlWriter writer = XmlWriter.Create(sww);
+                    XmlSerializer xsSubmit = new XmlSerializer(typeof(ProfileInfo));
+                    xsSubmit.Serialize(writer, profileInfo);
+                    xml = sww.ToString(); // Your XML
+                }
+                return xml;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
     }
 
     public class Network

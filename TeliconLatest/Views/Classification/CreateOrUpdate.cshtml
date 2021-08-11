@@ -1,0 +1,47 @@
+﻿@model TeliconLatest.DataEntities.ADM03500
+
+@{
+    ViewBag.Title = "Classification";
+    Layout = "~/Views/Shared/_FormLayout.cshtml";
+}
+
+@using (Html.BeginForm("createorupdate", "classification", FormMethod.Post)) {
+    @*@Html.AntiForgeryToken()*@
+    @Html.ValidationSummary(true)
+
+    <table>
+        <tr><td colspan="2">@Html.LabelFor(x=> x.ClassName)</td></tr>
+        <tr>
+            <td colspan="2">
+                @Html.HiddenFor(x => x.ClassId, new { @class = "tel-form-id" })
+                @Html.TextBoxFor(x => x.ClassName, new { @class = "long" })
+                @Html.ValidationMessageFor(x=> x.ClassName)
+            </td>
+        </tr>
+        <tr>
+            <td>
+                @Html.LabelFor(x => x.StartDate)                
+            </td>
+            <td>
+                @Html.LabelFor(x => x.EndDate)
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input type="text" asp-for="StartDate" value="@Model.StartDate.ToString("MM/dd/yyyy")" asp-format="{0:MM/dd/yyyy}" class="date-box" readonly="readonly" />
+                <span asp-validation-for="StartDate"></span>
+            </td>
+            <td>
+                <input type="text" asp-for="EndDate" value="@Model.EndDate.ToString("MM/dd/yyyy")" asp-format="{0:MM/dd/yyyy}" class="date-box" readonly="readonly" />
+                <span asp-validation-for="EndDate"></span>
+            </td>
+        </tr>
+    </table>
+}
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('.date-box').datepicker().on('changeDate', function (ev) {
+            $(this).datepicker('hide');
+        });
+    });
+</script>

@@ -1,0 +1,273 @@
+﻿@model TeliconLatest.DataEntities.ADM03300
+
+@{
+    ViewBag.Title = "Contractor";
+    Layout = "~/Views/Shared/_FormLayout.cshtml";
+}
+
+@using (Html.BeginForm("createorupdate", "contractor", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(true)
+    <div class="tel-form-top">
+        <div class="pic-box">
+            @{
+                var url = "~/images/technicians/" + Model.EmployeeID + ".jpg";
+            }
+            <img src="@Url.Content((Model.ConID == 0 || !System.IO.File.Exists("") ? "~/images/icons/default-user.png" : url))" alt="contractor" />
+            <button class="tel-img-uploader"><i class="fe-camera"></i></button>
+            <input type="file" name="TelImg" />
+        </div>
+        <div class="tel-user-dt">
+            <div class="holder-top clearfix">
+                <div>
+                    @Html.LabelFor(x => x.EmployeeID)
+                    @Html.TextBoxFor(x => x.EmployeeID, new { @style = "width:82px;" })
+                    @Html.ValidationMessageFor(x => x.EmployeeID)
+                </div>
+                <div>
+                    @Html.LabelFor(x => x.DOB)
+                    <div class="tel-date">
+                        <input type="text" asp-for="DOB" value="@(Model.DOB.HasValue ? Model.DOB.Value.ToString("MM/dd/yyyy") : "")" asp-format="{0:MM/dd/yyyy}" class="date-box" readonly="readonly" />
+                        <button><i class="fe-calendar-1"></i></button>
+                        <span asp-validation-for="DOB"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="holder-btm clearfix">
+                <div>
+                    @Html.LabelFor(x => x.ConClass)
+                    @Html.DropDownListFor(x => x.ConClass, (List<SelectListItem>)ViewBag.UserTypes, new { @style = "width:150px;" })
+                    @Html.ValidationMessageFor(x => x.ConClass)
+                </div>
+                <div>
+                    @Html.LabelFor(x => x.DepartmentID)
+                    @Html.DropDownListFor(x => x.DepartmentID, (List<SelectListItem>)ViewBag.Departments, new { @style = "width:200px;" })
+                    @Html.ValidationMessageFor(x => x.DepartmentID)
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="tel-tabs clearfix">
+        <ul>
+            <li><button class="active">Identity</button></li>
+            <li><button>Contact</button></li>
+            <li><button>Banking</button></li>
+            <li><button>Emergencies</button></li>
+        </ul>
+    </div>
+    <table class="active">
+        <tr>
+            <td>@Html.LabelFor(x => x.FirstName)</td>
+            <td>@Html.LabelFor(x => x.LastName)</td>
+        </tr>
+        <tr>
+            <td>
+                @Html.HiddenFor(x => x.ConID, new { @class = "tel-form-id" })
+                @Html.Hidden("initialID", Model.ConID == -1 ? "" : Model.EmployeeID)
+                @Html.TextBoxFor(x => x.FirstName)
+                @Html.ValidationMessageFor(x => x.FirstName)
+            </td>
+            <td>
+                @Html.TextBoxFor(x => x.LastName)
+                @Html.ValidationMessageFor(x => x.LastName)
+            </td>
+        </tr>
+        <tr>
+            <td>@Html.LabelFor(x => x.TRN)</td>
+            <td>@Html.LabelFor(x => x.NIS)</td>
+        </tr>
+        <tr>
+            <td>
+                @Html.TextBoxFor(x => x.TRN)
+                @Html.ValidationMessageFor(x => x.TRN)
+            </td>
+            <td>
+                @Html.TextBoxFor(x => x.NIS)
+                @Html.ValidationMessageFor(x => x.NIS)
+            </td>
+        </tr>
+        <tr>
+            <td>@Html.LabelFor(x => x.DLicence)</td>
+            <td>@Html.LabelFor(x => x.PlateNo)</td>
+        </tr>
+        <tr>
+            <td>
+                @Html.TextBoxFor(x => x.DLicence)
+                @Html.ValidationMessageFor(x => x.DLicence)
+            </td>
+            <td>
+                @Html.TextBoxFor(x => x.PlateNo)
+                @Html.ValidationMessageFor(x => x.PlateNo)
+            </td>
+        </tr>
+        <tr>
+            <td>@Html.LabelFor(x => x.payScale)</td>
+            <td>@Html.LabelFor(x => x.EngagementDt)</td>
+        </tr>
+        <tr>
+            <td>
+                @Html.DropDownListFor(x => x.payScale, (List<SelectListItem>)ViewBag.PayScales, new { @style = "width:100px;" })
+                @Html.ValidationMessageFor(x => x.payScale)
+            </td>
+            <td>
+                <div>
+                    <div class="tel-date">
+                        <input type="text" asp-for="EngagementDt" value="@(Model.EngagementDt.HasValue ? Model.EngagementDt.Value.ToString("MM/dd/yyyy") : "")" asp-format="{0:MM/dd/yyyy}" class="date-box" readonly="readonly" style="margin-left:10px;" />
+                    </div>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td>@Html.LabelFor(x => x.isActive)</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>
+                <button class="tel-checkbox @((Model.isActive != null && Model.isActive.Value) ? "checked": "")">
+                    <i class="fe-ok"></i>
+                    @Html.HiddenFor(x => x.isActive)
+                </button>
+            </td>
+            <td></td>
+        </tr>
+    </table>
+    <table style="display:none">
+        <tr>
+            <td>@Html.LabelFor(x => x.Phone1)</td>
+            <td>@Html.LabelFor(x => x.Phone2)</td>
+        </tr>
+        <tr>
+            <td>
+                @Html.TextBoxFor(x => x.Phone1)
+                @Html.ValidationMessageFor(x => x.Phone1)
+            </td>
+            <td>
+                @Html.TextBoxFor(x => x.Phone2)
+                @Html.ValidationMessageFor(x => x.Phone2)
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">@Html.LabelFor(x => x.Email)</td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                @Html.TextBoxFor(x => x.Email, new { @class = "long" })
+                @Html.ValidationMessageFor(x => x.Email)
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">@Html.LabelFor(x => x.Street)</td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                @Html.TextBoxFor(x => x.Street, new { @class = "long" })
+                @Html.ValidationMessageFor(x => x.Street)
+            </td>
+        </tr>
+        <tr>
+            <td>@Html.LabelFor(x => x.City)</td>
+            <td>@Html.LabelFor(x => x.Parish)</td>
+        </tr>
+        <tr>
+            <td>
+                @Html.TextBoxFor(x => x.City)
+                @Html.ValidationMessageFor(x => x.City)
+            </td>
+            <td>
+                @Html.DropDownListFor(x => x.Parish, (List<SelectListItem>)ViewBag.Parishes)
+                @Html.ValidationMessageFor(x => x.Parish)
+            </td>
+        </tr>
+    </table>
+    <table style="display:none">
+        <tr>
+            <td colspan="2">@Html.LabelFor(x => x.Bankacc)</td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                @Html.TextBoxFor(x => x.Bankacc, new { @class = "long" })
+                @Html.ValidationMessageFor(x => x.Bankacc)
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2"><label>Bank</label></td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                @Html.DropDownList("banksddl", (List<SelectListItem>)ViewBag.Banks, new { @class = "long", @id = "drpBanks" })
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">@Html.LabelFor(x => x.Branch)</td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                @Html.DropDownListFor(x => x.Branch, (List<SelectListItem>)ViewBag.Branches, new { @class = "long" })
+            </td>
+        </tr>
+    </table>
+    <table style="display:none">
+        <tr>
+            <td colspan="2">@Html.LabelFor(x => x.EmergencyCon)</td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                @Html.TextBoxFor(x => x.EmergencyCon, new { @class = "long" })
+                @Html.ValidationMessageFor(x => x.EmergencyCon)
+            </td>
+        </tr>
+        <tr>
+            <td>@Html.LabelFor(x => x.EmerRelation)</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>
+                @Html.DropDownListFor(x => x.EmerRelation, (List<SelectListItem>)ViewBag.Relatives)
+                @Html.ValidationMessageFor(x => x.EmerRelation)
+            </td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>@Html.LabelFor(x => x.EmerPhone1)</td>
+            <td>@Html.LabelFor(x => x.EmerPhone2)</td>
+        </tr>
+        <tr>
+            <td>
+                @Html.TextBoxFor(x => x.EmerPhone1)
+                @Html.ValidationMessageFor(x => x.EmerPhone1)
+            </td>
+            <td>
+                @Html.TextBoxFor(x => x.EmerPhone2)
+                @Html.ValidationMessageFor(x => x.EmerPhone2)
+            </td>
+        </tr>
+    </table>
+}
+
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        $("#drpBanks").on("change", function (e) {
+            try {
+                var id = e.target.value;
+                $.post("@Url.Action("GetBranches", "Contractor")", { bankId: id }, function (d) {
+                    $('#Branch').find('option').remove().end();
+                    if (d.Branches.length > 0) {
+                        for (x = 0; x < d.Branches.length; x++) {
+                            var brnch = d.Branches[x];
+                            $('#Branch').append('<option value="' + brnch.Value + '">' + brnch.Text + '</option>');
+                        }
+                    }
+                    $("#Branch").val('');
+                    $("#Branch").select2({ width: "resolve", placeholder: "Select a Branch" });
+                });
+            }
+            catch (e) {
+                $('#Branch').find('option').remove().end().append('<option value=""> </option>').val('');
+                $("#Branch").val('');
+            }
+        });
+
+    });
+</script>

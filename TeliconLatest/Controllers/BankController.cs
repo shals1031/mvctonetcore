@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
 using TeliconLatest.DataEntities;
@@ -7,53 +7,54 @@ using TeliconLatest.Models;
 
 namespace TeliconLatest.Controllers
 {
-    public class AreaController : Controller
+    public class BankController : Controller
     {
         private readonly TeliconDbContext db;
-        public AreaController(TeliconDbContext db)
+        public BankController(TeliconDbContext db)
         {
             this.db = db;
         }
+        // GET: Bank
+        //[TeliconAuthorize(TaskId = 37)]
         public IActionResult Index()
         {
             return View();
         }
+        //[TeliconAuthorize(TaskId = 37)]
         public IActionResult Create()
         {
-            ADM01400 model = new ADM01400
-            {
-                areaID = 0
-            };
-            ViewBag.Zones = db.ADM26100.Select(x => new SelectListItem
-            {
-                Text = x.Name,
-                Value = x.ZoneID.ToString()
-            }).ToList();
+            var model = new ADM02100Extended();
             return View("CreateOrUpdate", model);
         }
-        public IActionResult Edit(int id)
+        //[TeliconAuthorize(TaskId = 37)]
+        public ActionResult Edit(string id)
         {
-            ViewBag.Zones = db.ADM26100.Select(x => new SelectListItem
-            {
-                Text = x.Name,
-                Value = x.ZoneID.ToString()
-            }).ToList();
-            return View("CreateOrUpdate", db.ADM01400.Find(id));
+            return View("CreateOrUpdate", new ADM02100Extended(db.ADM02100.Find(id)));
         }
+
         [HttpPost]
-        //[TeliconAuthorize(TaskId = 13, Mode = ActionMode.Write)]
-        public JsonResult CreateOrUpdate(ADM01400 model)
+        //[ValidateAntiForgeryToken]
+        //[TeliconAuthorize(TaskId = 37, Mode = ActionMode.Write)]
+        public JsonResult CreateOrUpdate(ADM02100Extended modelEx)
         {
             try
             {
-                if (model.areaID == 0)
-                    db.ADM01400.Add(model);
+                if (!string.IsNullOrEmpty(modelEx.OldBankId) && modelEx.OldBankId != modelEx.BankId)
+                    return Json(new JsonReturnParams
+                    {
+                        Additional = "Create/Update failed. You cannot change existing Bank Code.",
+                        Code = "999",
+                        Msg = ""
+                    });
+                var model = modelEx.GetBase();
+                if (!db.ADM02100.Any(x => x.BankId == model.BankId))
+                    db.ADM02100.Add(model);
                 else
-                    db.Entry(model).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+                    db.Entry(model).State = EntityState.Modified;
                 db.SaveChanges();
                 return Json(new JsonReturnParams
                 {
-                    Additional = model.areaID,
+                    Additional = model.BankId,
                     Code = "100",
                     Msg = ""
                 });
@@ -63,19 +64,19 @@ namespace TeliconLatest.Controllers
                 return Json(new JsonReturnParams
                 {
                     Additional = e.StackTrace,
-                    Code = model.areaID == 0 ? "200" : "300",
+                    Code = modelEx.OldBankId == null ? "200" : "300",
                     Msg = e.Message
                 });
             }
         }
 
         [HttpPost]
-        //[TeliconAuthorize(TaskId = 13, Mode = ActionMode.Write)]
-        public JsonResult Delete(int id)
+        //[TeliconAuthorize(TaskId = 37, Mode = ActionMode.Write)]
+        public JsonResult Delete(string id)
         {
             try
             {
-                db.ADM01400.Remove(db.ADM01400.Find(id));
+                db.ADM02100.Remove(db.ADM02100.Find(id));
                 return Json(new JsonReturnParams
                 {
                     Additional = db.SaveChanges(),

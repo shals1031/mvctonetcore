@@ -6,9 +6,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="Views\Report\Partials\InvoiceSummaryPartial.cshtml" />
+    <Content Remove="Views\Role\TaskCandiditates.cshtml" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Include="Views\Branch\Index.cshtml" />
     <None Include="Views\Classification\Index.cshtml" />
     <None Include="Views\Home\Index.cshtml" />
+    <None Include="Views\Material\Index.cshtml" />
     <None Include="Views\Shared\Error.cshtml" />
     <None Include="Views\Shared\_CustomerLayout.cshtml" />
     <None Include="Views\Shared\_Layout.cshtml" />
@@ -45,6 +51,7 @@
 
   <ItemGroup>
     <PackageReference Include="EPPlus" Version="5.7.3" />
+    <PackageReference Include="iTextSharp" Version="5.5.13.2" />
     <PackageReference Include="LinqKit.Core" Version="1.1.24" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="5.0.7" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="5.0.7">

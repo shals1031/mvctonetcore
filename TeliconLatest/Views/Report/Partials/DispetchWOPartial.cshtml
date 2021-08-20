@@ -1,0 +1,53 @@
+﻿@model IEnumerable<TeliconLatest.Models.DispatchWOModel>
+@{
+    Layout = null;
+    int i = 0;
+}
+@if (Model.Any())
+{
+    <div class="print-holder">
+        <div class="bottom">
+
+            <h2 class="title">Dispatched WO Report</h2>
+            <h2 class="title" style="margin:20px 0;">Period Starting @string.Format("{0:dddd MMMM dd, yyyy}", ViewBag.DateFrom) to @string.Format("{0:dddd MMMM dd, yyyy}", ViewBag.DateTo)</h2>
+            <table class="prt-data report-table">
+                <thead>
+                    <tr>
+                        <th>S.No.</th>
+                        <th>Wo Reference</th>
+                        <th>Title</th>
+                        <th>Dispatch Date</th>
+                        <th>Lead</th>
+                        <th>Splice Docs</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in Model)
+                    {
+                        i++;
+                        <tr>
+                            <td>@i</td>
+                            <td>@row.Wo_ref</td>
+                            <td style="text-align:left">@row.Wo_title</td>
+                            <td>@row.Dispatchdt</td>
+                            <td>@row.LastName</td>
+                            <td>@row.SpliceDocs</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <button class="print-clicker"><i class="fe-print-1"></i></button>
+    </div>
+}
+else
+{
+    <div class="filler animated tada">
+        <i class="mdi mdi-emoticon-sad"></i>
+        <h1>No results found</h1>
+        <h2>Please change your filter and try again.</h2>
+    </div>
+}
+
+
+

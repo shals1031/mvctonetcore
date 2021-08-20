@@ -1,0 +1,63 @@
+﻿@model IEnumerable<TeliconLatest.Models.YTDPeriodDetails>
+
+@{
+    Layout = null;
+}
+
+<div class="print-holder">    
+    <div class="bottom">
+        <h2 class="title">Contractor Ernings Period Details</h2>
+        <table class="prt-data sml-font">
+            <thead>
+                <tr>
+                    <th colspan="2" style="text-align:center;">Period</th>
+                    <th style="text-align:center;">Referance</th>
+                    <th style="text-align:center;">Description</th>
+                    <th style="text-align:center;">Amout</th>
+                    <th style="text-align:center;">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    var paidDates = Model.Select(x => x.PaidDate).Distinct().ToList();
+                    foreach (var paidDate in paidDates)
+                    {
+                        int i = 0;
+                        var rows = Model.Where(x => x.PaidDate == paidDate);
+                        foreach (var row in rows)
+                        {
+                            <tr>
+                                <td><div style="padding-left :10px;padding-right:10px; text-align:left; width:90px;"> @(i == 0 ? row.PeriosName : "")</div></td>
+                                <td><div style="text-align:left;width:165px"> @(i == 0 ? row.PeriodStart.ToShortDateString() + " - " + row.PeriodEnd.ToShortDateString() : "")</div></td>
+                                <td>@row.Wo_ref</td>
+                                <td style="text-align:left;">@row.Wo_title</td>
+                                <td style="text-align:right;">@string.Format("{0:C}", row.Total)</td>
+                                <td style="text-align:right;">@string.Format("{0:C}", row.PenalizeAmount)</td>
+                            </tr>
+                            i++;
+                        }
+                        <tr class="totals" style="border-bottom: 1px solid #596470;">
+                            <td colspan="4">Period Total</td>
+                            <td class="number">@string.Format("{0:C}", rows.Sum(x => x.Total))</td>
+                            <td class="number">@string.Format("{0:C}", rows.Sum(x => x.PenalizeAmount))</td>
+                        </tr>
+                    }
+                }
+                <tr class="totals">
+                    <td colspan="4">Total</td>
+                    <td class="number">@string.Format("{0:C}", Model.Sum(x => x.Total))</td>
+                    <td class="number">@string.Format("{0:C}", Model.Sum(x => x.PenalizeAmount))</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    @using (Html.BeginForm("YTDPaymentsPeriodDetailsToExcel", "report", FormMethod.Post))
+    {
+        <input type="hidden" name="ConId" value="@ViewBag.ConId" />
+        <input type="hidden" name="fromDate" value="@ViewBag.DateFrom" />
+        <input type="hidden" name="toDate" value="@ViewBag.DateTo" />
+        <button class="export-clicker" type="submit"><i class="fe-export-1"></i></button>
+        <button class="print-clicker"><i class="fe-print-1"></i></button>
+    }
+    
+</div>

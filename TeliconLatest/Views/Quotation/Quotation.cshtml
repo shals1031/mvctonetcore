@@ -1,0 +1,44 @@
+﻿@model TeliconLatest.Models.Quotation
+
+@{
+    Layout = null;
+    int count = 1;
+}
+
+<div class="print-holder" data-id="@Model.Client.ReferenceNo">    
+    <partial name="QuotationClientDataPartial" model="Model.Client" />
+    <div class="bottom">        
+        <h2 class="title">@Model.Title</h2>
+        <table class="prt-data">
+            <thead>
+                <tr>
+                    <th>Item No.</th>
+                    <th>Description</th>
+                    <th>Qty</th>                    
+                    <th>Rate</th>
+                    <th>Amount</th>                  
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var act in Model.Activities)
+                {
+                    <tr>
+                        <td>@count</td>
+                        <td><div style="text-align:left">@act.ActivityDesc</div></td>
+                        <td>@act.ActivityQty</td>
+                        <td class="number">@string.Format("{0:C}", act.ActivityCost)</td>
+                        <td class="number">@string.Format("{0:C}", act.ActivityCost * Convert.ToDouble(act.ActivityQty))</td>
+                    </tr>
+                    count++;
+                }
+                <tr class="totals"><td colspan="4">Total: </td><td class="number">@string.Format("{0:C}", Model.Activities.Sum(x => x.ActivityCost * Convert.ToDouble(x.ActivityQty)))</td></tr>
+            </tbody>
+        </table>
+    </div>
+    @using (Html.BeginForm("QuotationToExcel", "Quotation", FormMethod.Post))
+    {
+        <input type="hidden" name="id" value="@ViewBag.Id" />
+        <button class="export-clicker" type="submit"><i class="fe-export-1"></i></button>
+        <button class="print-clicker"><i class="fe-print-1"></i></button>
+    }    
+</div>

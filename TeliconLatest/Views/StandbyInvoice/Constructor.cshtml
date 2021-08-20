@@ -1,0 +1,89 @@
+﻿@model TeliconLatest.Models.SIConstructorPartial
+@{
+    Layout = null;
+    var actsDdl = (List<TeliconLatest.Models.ConstructorActivityDisplay>)ViewBag.ActsDdl;
+}
+
+<div id="sIConstructor" data-id="@Model.SInvoiceId">
+    <div class="title clearfix">
+        <i class="fe-news"></i>
+        <span title="@Model.Title">@Model.Title</span>                
+    </div>
+    <div class="mat-const-main clearfix">        
+        <div class="const-holder const-mats">
+            <div class="title">
+                <i class="fe-bell-1"></i>
+                <span>Activities</span>
+                @if (string.IsNullOrEmpty(ViewBag.Type))
+                {
+                    <a href="#"><i class="fe-plus"></i></a>
+                }
+            </div>
+            @if (Model.SIConstructorActivities.Any())
+            {
+                <div style="font-weight:bold; padding:10px 5px 0px 15px; font-size:14px;">
+                    <div style="float:left; width:350px;">Activity</div>
+                    <div style="float:left; width:55px;">Qty</div>
+                    <div>Rate</div>
+                </div>
+                <ul class="clearfix">
+                    @foreach (var act in Model.SIConstructorActivities)
+                    {
+                        <li class="clearfix" data-id="@act.RecID">
+                            <div class="act-holder">
+                                @Html.DropDownList("acts", new SelectList(actsDdl, "ActivityID", "Description", act.ActivityId), new { @class = "act-ddl" })
+                                <input type="text" class="act-rat" value="@string.Format("{0:F2}", act.Rate)" style="width: 70px;" />
+                                <input type="text" class="act-amt" value="@act.ActivityAmount"/>                                
+                            </div>
+                            <div class="wo-actions">
+                                <a href="#" class="del-action"><i class="fe-trash"></i></a>
+                            </div>
+                        </li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <div class="placeholder">
+                    <button><i class="fe-bell-1"></i></button>
+                </div>
+            }
+        </div>
+    </div>
+    <div class="const-btm clearfix">        
+        <div class="wo-btns clearfix">
+            <button class="update">Update</button>
+            <button class="cancel">Cancel</button>
+        </div>
+    </div>
+</div>
+
+@*<script>
+    (function () {
+        
+    })();
+    $(document).ready(function () {
+        $("#tags").select2({
+            tags: true,
+            createTag: function (params) {
+                return {
+                    id: params.term,
+                    text: params.term,
+                    newOption: true
+                }
+            },
+            templateResult: function (data) {
+                debugger;
+                var $result = $("<span></span>");
+
+                $result.text(data.text);
+
+                if (data.newOption) {
+                    $result.append(" <em>(new)</em>");
+                }
+
+                return $result;
+            }
+        });
+    });
+</script>*@

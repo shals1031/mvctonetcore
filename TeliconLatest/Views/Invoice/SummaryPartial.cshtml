@@ -1,0 +1,31 @@
+﻿@model IEnumerable<TeliconLatest.DataEntities.TRN09100>
+@{
+    Layout = null;
+}
+
+@if (Model.Any())
+{
+    <table class="admin-tbl inv-list">
+        <thead>
+            <tr>
+                <th class="th-check-box"><button><i class="fe-ok"></i></button></th>
+                <th>Invoice No.</th>
+                <th>Title</th>
+                <th>Date</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var inv in Model)
+            {
+                <tr id="tr-@inv.InvoiceNum">
+                    <td class="td-check-box"><button class="fk-checkbox"><i class="fe-ok"></i></button></td>
+                    <td class="lst-invid">@TeliconLatest.Reusables.Customs.MakeGenericInvoiceNo(inv.InvoiceNum)</td>
+                    <td class="lst-invtitle">@inv.InvoiceTitle</td>
+                    <td class="lst-invdate">@string.Format("{0:dd/MM/yyyy}", inv.InvoiceDate)</td>
+                    <td class="lst-invtot">@string.Format("{0:C}", inv.InvoiceTotal)</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

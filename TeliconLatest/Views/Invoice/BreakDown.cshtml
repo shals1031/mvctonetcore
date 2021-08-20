@@ -1,0 +1,95 @@
+﻿@model TeliconLatest.Models.InvoiceBreakDown
+@{
+    Layout = null;
+}
+<div class="print-holder breakdown">
+    <div class="top">
+        <h1 class="clearfix"><span class="title">Requested By: </span><span class="value">@Model.RequestedBy</span></h1>
+        <h1 class="clearfix">
+            <span class="title" style="width:150px;">Request Date: </span>
+            <span class="value">Week Ending @string.Format("{0:MMMM dd, yyyy}", Model.DateRequested)</span>
+        </h1>
+        <h1 class="clearfix">
+            <span class="title">Issue Date: </span>
+            <span class="value">@string.Format("{0:MMMM dd, yyyy}", Model.DateDispatched)</span>
+        </h1>
+        <h1 class="clearfix">
+            <span class="title">PO #: </span>
+            <span class="value">@Model.PONo</span>
+        </h1>
+        <h1 class="clearfix">
+            <span class="title">Ticket #: </span>
+            <span class="value">@Model.RefNo</span>
+        </h1>
+        @*<h1 class="clearfix">
+            <span class="title">Completion Date: </span>
+            <span class="value">@string.Format("{0:MMMM dd, yyyy}", DateTime.Now)</span>
+        </h1>*@
+        <h1 class="clearfix"><span class="title">Department: </span></h1>
+        <h1 class="clearfix"><span class="title">Field Survey: </span><span class="value"><input type="checkbox" disabled="disabled" /></span></h1>
+        <h1 class="clearfix"><span class="title">Strand: </span><span class="value"><input type="checkbox" disabled="disabled" /></span></h1>
+        <h1 class="clearfix"><span class="title">Fiber: </span><span class="value"><input type="checkbox" checked disabled="disabled" /></span></h1>
+        <h1 class="clearfix"><span class="title">Drafting: </span><span class="value"><input type="checkbox" disabled="disabled" /></span></h1>
+        <h1 class="clearfix"><span class="title">Transportation: </span><span class="value"><input type="checkbox" disabled="disabled" /></span></h1>
+        <h1 class="clearfix"><span class="title">Location: </span><span class="value"></span></h1>
+    </div>
+    <div class="bottom">
+        @if (ViewBag.forInvoice)
+        {
+            <h1 class="title" id="breakDownTitle">Work Order Details</h1>
+        }
+        else
+        {
+            <h1 class="title" id="breakDownTitle">@Model.Title</h1>
+        }
+        <table class="prt-data">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Description</th>
+                    <th>Qty</th>
+                </tr>
+            </thead>
+            @{int count = 1;}
+            @foreach (var l in Model.Activities.Select(x => x.Location).Distinct())
+            {
+                <tr>
+                    <td class="date">@string.Format("{0:dd/MM/yyyy}", Model.Activities.FirstOrDefault(x => x.Location == l).Date)</td>
+                    <td class="title">@l</td>
+                </tr>
+                foreach (var act in Model.Activities.Where(x => x.Location == l))
+                {
+                    <tr>
+                        <td class="date">-</td>
+                        <td style="text-align:left;">@act.Description</td>
+                        <td >@act.Qty</td>
+                    </tr>
+                    count++;
+                }
+                count++;
+            }
+        </table>
+    </div>
+    
+        @using (Html.BeginForm("BreakDownToExcel", "invoice", FormMethod.Post))
+        {
+            <input type="hidden" name="InvoiceNo" value="@ViewBag.InvoiceNo" />
+            <button class="export-clicker" id="eprtBtn" type="submit"><i class="fe-export-1"></i></button>
+            <button class="print-clicker" id="prntBtn"><i class="fe-print-1"></i></button>
+        }
+</div>
+
+<script>
+
+    $(document).ready(function () {
+        if (hasBreakDown) {
+            $("#prntBtn").hide();
+            $("#eprtBtn").hide();
+        }
+        else {
+            $("#prntBtn").show();
+            $("#eprtBtn").show();
+        }
+    });
+
+</script>

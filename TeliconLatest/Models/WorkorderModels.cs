@@ -5,7 +5,8 @@ using System.ComponentModel.DataAnnotations;
 
 namespace TeliconLatest.Models
 {
-    public class ConstructorPartial{
+    public class ConstructorPartial
+    {
         public int WorkOrderId { get; set; }
         public int InvoiceId { get; set; }
         public string Title { get; set; }
@@ -83,7 +84,7 @@ namespace TeliconLatest.Models
     }
 
     public class QuotationActivity
-    {        
+    {
         public int RecID { get; set; }
         public string ActDescr { get; set; }
         public decimal Qty { get; set; }
@@ -259,7 +260,7 @@ namespace TeliconLatest.Models
         public int? periodEndYear { get; set; }
     }
 
-    public  class PaymentDetailFilter
+    public class PaymentDetailFilter
     {
         public string sortBy { get; set; }
         public string direction { get; set; }
@@ -273,20 +274,20 @@ namespace TeliconLatest.Models
         public string direction { get; set; }
         public DateTime? dateFrom { get; set; }
         public DateTime? dateTo { get; set; }
-        public string CategorySelection { get; set; }        
+        public string CategorySelection { get; set; }
     }
     public class CategorInvoiceStatmentInvoiceSummaryFilter
     {
         public DateTime fromDate { get; set; }
         public DateTime toDate { get; set; }
-        public int classId { get; set; }        
+        public int classId { get; set; }
     }
     public class DispatchedWOStatmentFilter
     {
         public string sortBy { get; set; }
         public string direction { get; set; }
         public DateTime? dateFrom { get; set; }
-        public DateTime? dateTo { get; set; }        
+        public DateTime? dateTo { get; set; }
     }
 
     public class ClientInvoiceFilter
@@ -474,7 +475,7 @@ namespace TeliconLatest.Models
         public bool NonStandard { get; set; }
         [Display(Name = "Not Done")]
         public bool Rejected { get; set; }
-        public System.Guid CreateBy { get; set; }
+        public Guid CreateBy { get; set; }
         [Display(Name = "Vehicle")]
         [Required(ErrorMessage = "Please select a vehicle")]
         public string PlateNo { get; set; }
@@ -485,7 +486,8 @@ namespace TeliconLatest.Models
         public TimeSpan LogIn { get; set; }
         [Display(Name = "In Time")]
         [RegularExpression(@"^([0-1]\d|2[0-3]):([0-5]\d)(:([0-5]\d))?$", ErrorMessage = "Invalid Time")]
-        public string LogInValue {
+        public string LogInValue
+        {
             get
             {
                 return LogIn.ToString(@"hh\:mm\:ss");
@@ -675,7 +677,7 @@ namespace TeliconLatest.Models
     }
 
     public class DailyWorkSheetFilter
-    {        
+    {
         public DateTime? DateFrom { get; set; }
         public DateTime? DateTo { get; set; }
         [Required]
@@ -730,5 +732,121 @@ namespace TeliconLatest.Models
         public int? ClassId { get; set; }
         public int? RegonId { get; set; }
         public string PONum { get; set; }
+    }
+
+    public class MaterialUsageDetail
+    {
+        public string Wo_ref { get; set; }
+        public string Wo_title { get; set; }
+        public string PONum { get; set; }
+        public int ActivityID { get; set; }
+        public string RateDescr { get; set; }
+        public string Location { get; set; }
+        public string AdtnlDetails { get; set; }
+        public int WoMatID { get; set; }
+        public int WoMatQty { get; set; }
+        public DateTime? PaidDate { get; set; }
+    }
+
+    public class CategoryInvoiceReport
+    {
+        public string InvoiceNo { get; set; }
+        public string Title { get; set; }
+        public string invoiceDate { get; set; }
+        public decimal Total { get; set; }
+        public string WO_Ref { get; set; }
+        public string RequestBy { get; set; }
+        public string Category { get; set; }
+        public int CategoryID { get; set; }
+    }
+
+    public class DispatchWOModel
+    {
+        public string Num { get; set; }
+        public string Wo_ref { get; set; }
+        public string Wo_title { get; set; }
+        public string Dispatchdt { get; set; }
+        public string SpliceDocs { get; set; }
+        public string LastName { get; set; }
+    }
+
+    public class MaterialUsage
+    {
+        public int WoMatID { get; set; }
+        public string MaterialName { get; set; }
+        public int WoMatQty { get; set; }
+    }
+
+    public class PaymentDetailReport
+    {
+        public string Num { get; set; }
+        public string WorkID { get; set; }
+        public string Wo_ref { get; set; }
+        public string Wo_title { get; set; }
+        public string Dispatchdt { get; set; }
+        public string Status { get; set; }
+        public string DateSubmitted { get; set; }
+        public string PaidDate { get; set; }
+        public string DateVerified { get; set; }
+        public string ConId { get; set; }
+        public string LastName { get; set; }
+    }
+
+    public class POSummary
+    {
+        public DateTime? PaidDate { get; set; }
+        public int Workid { get; set; }
+        public string Wo_ref { get; set; }
+        public string Wo_title { get; set; }
+        public string PeriodName { get; set; }
+        public DateTime PeriodStart { get; set; }
+        public DateTime PeriodEnd { get; set; }
+        public int InvoiceNum { get; set; }
+        public string InvoiceTitle { get; set; }
+        public decimal? InvoiceTotal { get; set; }
+        public string PONum { get; set; }
+        public string PODescr { get; set; }
+    }
+
+    public partial class POTracking
+    {
+        public int WOId { get; set; }
+        public string WORef { get; set; }
+        public string WOTitle { get; set; }
+        public DateTime Requestdt { get; set; }
+        public DateTime Dispatchdt { get; set; }
+        public string Status { get; set; }
+        public string PONum { get; set; }
+        public string Cetegory { get; set; }
+        public decimal Amout { get; set; }
+    }
+
+    public class ContractorDeductionReport
+    {
+        public string DeductionName { get; set; }
+        public DateTime StartDate { get; set; }
+        public DateTime EndDate { get; set; }
+        public double Amount { get; set; }
+    }
+
+    public class TempR
+    {
+        public int periodStart { get; set; }
+        public int periodStartYear { get; set; }
+        public int id { get; set; }
+    }
+
+    public partial class ContractorsStatement
+    {
+        public int ContractorID { get; set; }
+        public double? Total { get; set; }
+        public double? PenalizeTotal { get; set; }
+    }
+
+    public class ActList
+    {
+        public int activityID { get; set; }
+        public string description { get; set; }
+        public decimal? maxQty { get; set; }
     }
 }

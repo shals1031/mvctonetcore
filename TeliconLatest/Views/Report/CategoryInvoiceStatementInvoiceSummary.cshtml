@@ -1,0 +1,57 @@
+﻿@model TeliconLatest.Models.SummaryPrintOutWithClient
+
+@{
+    Layout = null;
+}
+
+<div class="print-holder">    
+    <div class="bottom">
+        <h2 class="title">Invoice Summary - @ViewBag.ClassName</h2>
+        <table class="prt-data sml-font">
+            <thead>
+                <tr>
+                    <th style="text-align:center;">Invoice #</th>
+                    <th style="text-align:center;">Description</th>
+                    <th style="text-align:center;">Technicians</th>
+                    <th style="text-align:center;">Subtotal</th>
+                    <th style="text-align:center;">Gct</th>
+                    <th style="text-align:center;">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.PrintData.FindAll(x=> x.IsInCategory))
+                {
+                    <tr>
+                        <td><div style="padding-left :10px;padding-right:10px; text-align:left; width:80px;"> @item.InvoiceID</div></td>
+                        <td><div style="text-align:left;width:300px"> @item.Title</div></td>
+                        <td style="text-align:left;width:120px;padding-left :8px;">
+                            @for (var x = 0; x < item.Contractors.Count(); x++)
+                            {
+                                if (x == item.Contractors.Count() - 1)
+                                {
+                                    @item.Contractors.ElementAt(x)
+                                }
+                                else
+                                {
+                                    @(item.Contractors.ElementAt(x) + ", ")
+                                }
+                            }
+                        </td>
+                        <td style="text-align:right;width:100px;padding-right:8px;">@string.Format("{0:C}", item.Total)</td>
+                        <td style="text-align:right;width:100px;padding-right:8px;">@string.Format("{0:C}", item.GCT)</td>
+                        <td class="number">@string.Format("{0:C}", item.Total + item.GCT)</td>
+                    </tr>
+                }
+                <tr class="totals"><td colspan="5">Total</td><td class="number">@string.Format("{0:C}", (Model.PrintData.Sum(x => x.Total) + Model.PrintData.Sum(x => x.GCT)))</td></tr>
+            </tbody>
+        </table>
+    </div>
+@using (Html.BeginForm("CategoryInvoiceStatementInvoiceSummaryToExcel", "report", FormMethod.Post))
+{
+    <input type="hidden" name="classId" value="@ViewBag.ClassId" />
+    <input type="hidden" name="fromDate" value="@ViewBag.DateFrom" />
+    <input type="hidden" name="toDate" value="@ViewBag.DateTo" />
+    <button class="export-clicker" type="submit"><i class="fe-export-1"></i></button>
+    <button class="print-clicker"><i class="fe-print-1"></i></button>
+}
+</div>

@@ -1,0 +1,41 @@
+﻿@using TeliconLatest.Reusables;
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<table class="admin-tbl" data-url="@Url.Action("index", "Period")" data-name="Fixcode">
+    <thead>
+        <tr><th>Fortnight</th><th>Period Start</th><th> Period End</th><th>Cutoff Date</th><th>Paid Date</th><th></th></tr>
+    </thead>
+    <tbody></tbody>
+</table>
+@section Breadcrumbs{
+    <li>Administration</li>
+    <li>Period</li>
+}
+@section Scripts{
+    <script type="text/javascript">
+    $(document).ready(function () {
+        dataTableOptions.ajax.url = "@Url.Action("Periods", "list")";
+        dataTableOptions.columnDefs = [
+                { "targets": 0, "name": "week", "data": "week", "class": "dt-item-title" },
+                { "targets": 1, "name": "periodStart", "data": "periodStart" },
+                { "targets": 2, "name": "periodEnd", "data": "periodEnd" },
+                { "targets": 3, "name": "dueDate", "data": "dueDate" },
+                { "targets": 4, "name": "payDate", "data": "payDate" },
+                {
+                    "targets": 5, "class": "actions",
+                    "orderable": false, "searchable": false, "data": null,
+                    "defaultContent": "<a href='#edit' class='dt-edit'><i class='fe-pencil-2'></i></a>"
+                }
+        ];
+        dataTableOptions.order = [[0, 'asc']];
+        dTable = $("table").DataTable(dataTableOptions);
+        dTable.search('').draw();
+        $(".dataTables_wrapper:first .sub-top .dataTables_filter label")
+            .after('@Html.Raw(Html.DropDownList("status", (List<SelectListItem>)ViewBag.PeriodYear).ToHtmlString().Replace(Environment.NewLine, ""))');
+
+    });
+</script>
+}

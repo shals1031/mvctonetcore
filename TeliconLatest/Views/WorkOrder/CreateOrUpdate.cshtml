@@ -1,0 +1,192 @@
+﻿@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+@model TeliconLatest.DataEntities.TRN23100
+
+@{
+    ViewBag.Title = "Work Order";
+    Layout = "~/Views/Shared/_FormLayout.cshtml";
+}
+
+@using (Html.BeginForm("createorupdate", "workorder", FormMethod.Post, new { @id = "wOForm" }))
+{
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(true)
+    <div class="tel-tabs clearfix">
+        <ul>
+            <li><button class="active">Details</button></li>
+            <li><button id="teams" @(Model.Workid == -1 ? "disabled" : "")>Teams</button></li>
+        </ul>
+    </div>
+    <table class="active">
+        <tr>
+            <td>@Html.LabelFor(x => x.Wo_ref)</td>
+            <td>@Html.LabelFor(x => x.PONum)</td>
+        </tr>
+        <tr>
+            <td>
+                @Html.HiddenFor(x => x.Workid, new { @class = "tel-form-id" })
+                @Html.HiddenFor(x => x.CreateBy)
+                @Html.HiddenFor(x => x.Status, new { Value = (Model.Workid == -1 ? "n" : Model.Status) })
+                @Html.TextBoxFor(x => x.Wo_ref)
+                @Html.ValidationMessageFor(x => x.Wo_ref)
+            </td>
+            <td>
+                @Html.DropDownListFor(x => x.PONum, (List<SelectListItem>)ViewBag.POes, "Select One", new { id = "drpPO" })
+                @Html.ValidationMessageFor(x => x.PONum)
+            </td>
+        </tr>
+        <tr><td colspan="2">@Html.LabelFor(x => x.Wo_title)</td></tr>
+        <tr>
+            <td colspan="2">
+                @Html.TextBoxFor(x => x.Wo_title, new { @class = "long toupper" })
+                @Html.ValidationMessageFor(x => x.Wo_title)
+            </td>
+        </tr>
+        <tr>
+            <td>@Html.LabelFor(x => x.AreaID)</td>
+            <td>@Html.LabelFor(x => x.Requestby)</td>
+        </tr>
+        <tr>
+            <td>
+                @Html.DropDownListFor(x => x.AreaID, (List<SelectListItem>)ViewBag.Areas, new { id = "drpArea" })
+                @Html.ValidationMessageFor(x => x.AreaID)
+            </td>
+            <td>
+                @Html.TextBoxFor(x => x.Requestby, new { id = "txtReqtby" })
+                @Html.ValidationMessageFor(x => x.Requestby)
+            </td>
+        </tr>
+        <tr><td colspan="2">@Html.LabelFor(x => x.DepartmentID)</td></tr>
+        <tr>
+            <td colspan="2">
+                @Html.DropDownListFor(x => x.DepartmentID, (List<SelectListItem>)ViewBag.Departments, new { @class = "long" })
+                @Html.ValidationMessageFor(x => x.DepartmentID)
+            </td>
+        </tr>
+        <tr><td colspan="2">@Html.LabelFor(x => x.ClassId)</td></tr>
+        <tr>
+            <td colspan="2">
+                @Html.DropDownListFor(x => x.ClassId, (List<SelectListItem>)ViewBag.Classes, new { @class = "long" })
+                @Html.ValidationMessageFor(x => x.ClassId)
+            </td>
+        </tr>
+        <tr>
+            <td>@Html.LabelFor(x => x.SpliceDocs)</td>
+            <td>@Html.LabelFor(x => x.Requestdt)</td>
+        </tr>
+        <tr>
+            <td>
+                <button class="tel-checkbox @(Model.SpliceDocs ? "checked": "")">
+                    <i class="fe-ok"></i>
+                    @Html.HiddenFor(x => x.SpliceDocs)
+                </button>
+                @Html.ValidationMessageFor(x => x.SpliceDocs)
+            </td>
+            <td>
+                @Html.TextBoxFor(x => x.Requestdt, new { Value = string.Format("{0:MM/dd/yyyy}", Model.Requestdt), @class = "date-box" })
+                @Html.ValidationMessageFor(x => x.Requestdt)
+            </td>
+        </tr>
+        <tr>
+            <td>@Html.LabelFor(x => x.Dispatchdt)</td>
+            <td>
+                @if (!HttpContextAccessor.HttpContext.User.IsInRole("Technician") && !HttpContextAccessor.HttpContext.User.IsInRole("Supervisor"))
+                {
+                    @Html.LabelFor(x => x.CompletionDt)
+                }
+            </td>
+        </tr>
+        <tr>
+            <td>
+                @Html.TextBoxFor(x => x.Dispatchdt, new { Value = string.Format("{0:MM/dd/yyyy}", Model.Dispatchdt), @class = "date-box", @id = "dsptchDt" })
+                @Html.ValidationMessageFor(x => x.Dispatchdt)
+            </td>
+            <td>
+                @if (!HttpContextAccessor.HttpContext.User.IsInRole("Technician") && !HttpContextAccessor.HttpContext.User.IsInRole("Supervisor"))
+                {
+                    @Html.TextBoxFor(x => x.CompletionDt, new { Value = string.Format("{0:MM/dd/yyyy}", Model.CompletionDt), @class = "date-box", @id = "cmltnDt" })
+                    @Html.ValidationMessageFor(x => x.CompletionDt)
+                }
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">@Html.LabelFor(x => x.Wo_client)</td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                @Html.DropDownListFor(x => x.Wo_client, (List<SelectListItem>)ViewBag.Clients, new { @class = "long", @readonly = (Model.Workid == -1 ? "readonly" : "") })
+                @Html.ValidationMessageFor(x => x.Wo_client)
+            </td>
+        </tr>
+        @if (ViewBag.Type == "c")
+        {
+            @Html.HiddenFor(x => x.Wo_split, new { Value = "100" })
+            @Html.HiddenFor(x => x.Wo_split2, new { Value = "0" })
+        }
+        else
+        {
+            <tr>
+                <td>@Html.LabelFor(x => x.Wo_split)</td>
+                <td>@Html.LabelFor(x => x.Wo_split2)</td>
+            </tr>
+            <tr>
+                <td style="position:relative;">
+                    @Html.TextBoxFor(x => x.Wo_split, new { @class = "number splits", style = "width:230px", Value = Model.Workid == -1 ? "100" : Model.Wo_split.ToString() })
+                    @Html.ValidationMessageFor(x => x.Wo_split)
+                    <button class="proportion set"><i class="fe-infinity-1"></i></button>
+                </td>
+                <td>
+                    @Html.TextBoxFor(x => x.Wo_split2, new { @class = "number splits", style = "width:230px; margin-left:30px", Value = Model.Workid == -1 ? "0" : Model.Wo_split2.ToString() })
+                    @Html.ValidationMessageFor(x => x.Wo_split2)
+                </td>
+            </tr>
+        }
+    </table>
+}
+<table style="display:none;" class="team-setup" data-team="@ViewBag.TeamMax">
+    <thead>
+        <tr>
+            <th colspan="2"><label>Contractor</label></th>
+            <th><label>Share(%)</label></th>
+            <th><label>Leader?</label></th>
+            <th style="text-align:right;"><button class="add-new-mem"><i class="fe-plus-1"></i></button></th>
+        </tr>
+    </thead>
+    @if (((List<TeliconLatest.Models.TeamMember>)ViewBag.Teams).Count > 0)
+    {
+        foreach (var mem in (List<TeliconLatest.Models.TeamMember>)ViewBag.Teams)
+        {
+            <partial name="TeamMemberPartial" model="mem" />
+        }
+    }
+</table>
+<script type="text/javascript">
+    isWO = true;
+    $(document).ready(function () {
+        isWO = true;
+        $('.date-box').datepicker().on('changeDate', function (ev) {
+            $(this).datepicker('hide');
+        });
+        $("#drpArea").on("change", function (e) {
+            try {
+                var id = e.target.value;
+                $.post("@Url.Action("GetRequestedBy", "WorkOrder")", { areaId: id }, function (d) {
+                        $("#txtReqtby").val(d.Additional);
+                });
+            }
+            catch (e) {
+                $("#txtReqtby").val("");
+            }
+        });
+        @*$.post("@Url.Action("GetRequestedBy", "WorkOrder")", { actId: id }, function (d) {
+            $("#txtReqtby").val(Additional);
+        });*@
+        var id = $("#drpArea").val();
+        if (id > 0) {
+            $.post("@Url.Action("GetRequestedBy", "WorkOrder")", { areaId: id }, function (d) {
+                $("#txtReqtby").val(d.Additional);
+            });
+        }
+    });
+    $(document).mouseup(function (e) {
+    });
+</script>

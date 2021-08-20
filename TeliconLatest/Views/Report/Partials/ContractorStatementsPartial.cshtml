@@ -1,0 +1,60 @@
+﻿@model IEnumerable<TeliconLatest.Models.ContractorStatementReport>
+    @{
+        Layout = null;
+    }
+<style>
+    .prt-data tr th{
+        padding:0px;
+    }
+</style>
+    @if (Model.Any())
+    {
+        <div class="print-holder">
+            <div class="bottom">
+
+                <h2 class="title">Contractors Statement Report</h2>
+                <h2 class="title" style="margin:5px 0 0 0; font-size:11pt;">Period Starting @string.Format("{0:dddd MMMM dd, yyyy}", ViewBag.DateFrom) to @string.Format("{0:dddd MMMM dd, yyyy}", ViewBag.DateTo)</h2>
+                <table class="prt-data">
+                    <thead>
+                        <tr>
+                            <th style="text-align:center; width:100px; padding:0px;">Employee No.</th>
+                            <th style="text-align:center; padding:0px;">First Name</th>
+                            <th style="text-align:center; padding:0px;">Last Name</th>
+                            @*<th>Department</th>
+                            <th>Level</th>*@
+                            <th style="text-align:center; padding:0px;">Amount</th>
+                            <th style="text-align:center; padding:0px;">Penalty</th>
+                            <th style="text-align:center; padding:0px;">Total</th>                            
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var row in Model)
+                        {
+                            <tr>
+                                <td style="width:135px;">@row.EmployeeID</td>
+                                <td style="text-align:left; width:130px;">@row.FirstName</td>
+                                <td style="text-align:left; width:130px;">@row.LastName</td>
+                                @*<td>@row.Department</td>
+                                <td>@row.Level</td>*@
+                                <td style="text-align:right; width:150px;">@string.Format("{0:C}", row.Total)</td>
+                                <td style="text-align:right; width:150px;">@string.Format("{0:C}", (row.Total - row.PenalizeTotal))</td>
+                                <td style="text-align:right; width:150px;">@string.Format("{0:C}", row.PenalizeTotal)</td>                                
+                            </tr>
+                        }
+                        <tr>
+                            <td colspan="7" style="text-align:right; font-weight:bold;">Total: @string.Format("{0:C}", Model.Sum(x=> x.PenalizeTotal))</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <button class="print-clicker"><i class="fe-print-1"></i></button>
+        </div>
+    }
+    else
+    {
+        <div class="filler animated tada">
+            <i class="mdi mdi-emoticon-sad"></i>
+            <h1>No results found</h1>
+            <h2>Please change your filter and try again.</h2>
+        </div>
+    }

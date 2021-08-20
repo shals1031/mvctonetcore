@@ -1,0 +1,34 @@
+﻿@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<table class="admin-tbl" data-url="@Url.Action("index", "Vehicle")" data-name="Vehicle">
+    <thead>
+        <tr><th>Plate</th><th>Fleet</th><th></th></tr>
+    </thead>
+    <tbody></tbody>
+</table>
+@section Breadcrumbs{
+    <li>Administration</li>
+    <li>Vehicle</li>
+}
+@section Scripts{
+    <script type="text/javascript">
+        $(document).ready(function () {
+            dataTableOptions.ajax.url = "@Url.Action("vehicles", "list")";
+            dataTableOptions.columnDefs = [
+                    { "targets": 0, "name": "PlateNo", "data": "PlateNo", "class": "dt-item-title" },
+                    { "targets": 1, "name": "FleetNo", "data": "FleetNo", "class": "dt-item-title" },
+                    {
+                        "targets": 2, "class": "actions",
+                        "orderable": false, "searchable": false, "data": null,
+                        "defaultContent": "<a href='#edit' class='dt-edit'><i class='fe-pencil-2'></i></a>" +
+                            "<a href='#delete' class='dt-delete'><i class='fe-cancel'></i></a>"
+                    }
+            ];
+            dataTableOptions.order = [[0, 'asc']];
+            dTable = $("table").DataTable(dataTableOptions);
+            dTable.search('').draw();
+        });
+    </script>
+}

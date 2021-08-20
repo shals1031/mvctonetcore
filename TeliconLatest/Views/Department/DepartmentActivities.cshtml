@@ -1,0 +1,140 @@
+﻿@model IEnumerable<TeliconLatest.Models.DepartmentActivityList>
+@{
+    Layout = null;
+}
+
+<script type="text/javascript">
+    var isCalled = false;
+        $(document).ready(function () {
+            $(document).on("click", "#roletask .bottom button", function (e) {
+                if (isCalled)
+                    return;
+                isCalled = true;
+                var rows = $(".tasks-holder table > tbody  > tr");
+                if (rows.length < 1) {
+                    var htmlMsg = "<p>No <b class='loc-col'>Actvity</b> have been selected for <b class='date-col'>Assign</b>. First select your desired <b class='loc-col'>Activity</b> then try again.</p>";
+                    var htmlTitle = "<i class='fe-comment'></i>Cannot Assign";
+                    displayDialogMsg(htmlMsg, htmlTitle);
+                }
+                else {
+                    rows = $.grep(rows, function (row) {
+                        var self = $(row).find("button");
+                        var isChecked = $(self).is(".active");
+                        return isChecked;
+                    });
+                    //var itemList = [];
+                    //for (var i = 0; i < rows.length; i++) {
+                    //    var item = {
+
+                    //    };
+                    //    itemList.push(item);
+                    //}
+                    var list = $.map(rows, function (elm) {
+                        var idElm = $(elm).find(".dep-act-id");
+                        return {
+                            DepActId: $(idElm).val(),
+                            ActId: $(elm).attr("id").replace("tr-", "")
+                        };
+                    });
+                    if (list.length > 0) {
+                        var buttons = [
+                            { text: "Continue", click: function () { $(this).dialog("close"); SaveDepartmentActivities(list, $(this)); } },
+                            { text: "Cancel", click: function () { $(this).dialog("close"); isCalled = false; } }
+                        ];
+                        var msg = "<p>Selected <b class='date-col'>Activity</b>, will be <b class='default-col'>Assign</b> to the department. Are you sure you want to Continue?</p></div>";
+                        displayConfirmationMsg(msg, 'Confirmation', buttons);
+                    }
+                    else {
+                        var htmlMsg = "<p>No <b class='loc-col'>Activity</b> have been selected for <b class='date-col'>Assign</b>. First select your desired <b class='loc-col'>Activities</b> then try again.</p>";
+                        var htmlTitle = "<i class='fe-comment'></i>Cannot Assign";
+                        displayDialogMsg(htmlMsg, htmlTitle);
+                    }
+                }
+                e.preventDefault();
+            });
+        });        
+        function SaveDepartmentActivities(list, dBox) {
+            isCalled = false;
+            loading(true);
+            $.ajax({
+                url: "@Url.Action("SaveDepActivities", "Department")",
+                data: $.toDictionary({ actList: list, depId: $("#depIdHidden").val() }),
+                type: "post",
+                success: function (r) {
+                    removeLoader(true, 200, function () {
+                        var htmlMsg = "";
+                        var htmlTitle = "";
+                        if (r.Code == "100") {
+                            $("#depIdHidden").val(r.Additional);
+                            //htmlMsg = "<p>Material(s) were <b>Assigned</b> Successfully!.</p>";
+                            //htmlTitle = "<i class='fe-comment'></i> Success";
+                            //displayDialogMsg(htmlMsg, htmlTitle);
+                            try {
+                                dBox.dialog("close");
+                            }
+                            catch (e) {
+
+                            }
+                            $("#tasks").removeClass("fadeInRight").addClass("fadeOutUp").one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function () {
+                                $(this).remove();
+                                $(".btm-overlay").fadeOut(200, function () { $(this).remove(); });
+                            });
+                        }
+                        else {
+                            htmlMsg = r.Msg;
+                            htmlTitle = "<i class='fe-comment'></i>Cannot Assign";
+                            displayDialogMsg(htmlMsg, htmlTitle);
+                        }
+
+                    });
+                }
+            });
+        }
+</script>
+
+<div id="tasks" class="animated bounceInRight">
+    <input type="hidden" id="depIdHidden" value="@ViewBag.depId" />
+    <button class="close"><i class="fe-cancel"></i></button>
+    <div id="roletask" class="roletask-holder">
+        <div class="top title clearfix">
+            <span style="float:left; margin:15px 15px;">Department Activities</span>
+        </div>
+        <div class="center">
+            <div class="tasks-holder">
+                @if (Model.Any())
+                {
+                    <table class="tasks">
+                        <thead>
+                            <tr id="">
+                                <th><button class="check-box"><i class="fe-ok"></i></button></th>
+                                <th>Client Code</th>
+                                <th>Activity</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr id="tr-@item.ActId">
+                                    <td><button class="check-box @(item.IsSelected ? "active" : "")"><i class="fe-ok"></i></button></td>           
+                                    <td>
+                                        @item.Client
+                                    </td>                         
+                                    <td>
+                                        @item.ActName
+                                        <input type="hidden" class="dep-act-id" value="@item.DepActId" />
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
+        </div>
+        <div class="bottom clearfix">            
+            <button class="roleTask-save-btn"><i class="glyphicon-floppy-save"></i>Save<i class="glyphicon-floppy-save"></i></button>
+        </div>
+    </div>
+</div>
+@section Scripts{
+    
+}

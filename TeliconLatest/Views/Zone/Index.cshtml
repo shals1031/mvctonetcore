@@ -1,0 +1,33 @@
+﻿@{
+    ViewBag.Title = "Zones";
+}
+<table class="admin-tbl" data-url="@Url.Action("index", "Zone")" data-name="Zone">
+    <thead>
+        <tr><th>Name</th><th>Supervisor</th><th></th></tr>
+    </thead>
+    <tbody></tbody>
+</table>
+@section Breadcrumbs{
+    <li>Administration</li>
+    <li>Zones</li>
+}
+@section Scripts{
+    <script type="text/javascript">
+        $(document).ready(function () {
+            dataTableOptions.ajax.url = "@Url.Action("zones", "list")";
+            dataTableOptions.columnDefs = [
+                    { "targets": 0, "name": "Name", "data": "Name", "class": "dt-item-title" },
+                    { "targets": 1, "name": "SupervisorName", "data": "Supervisor", "class": "dt-item-title" },
+                    {
+                        "targets": 2, "class": "actions",
+                        "orderable": false, "searchable": false, "data": null,
+                        "defaultContent": "<a href='#edit' class='dt-edit'><i class='fe-pencil-2'></i></a>" +
+                            "<a href='#delete' class='dt-delete'><i class='fe-cancel'></i></a>"
+                    }
+            ];
+            dataTableOptions.order = [[0, 'asc']];
+            dTable = $("table").DataTable(dataTableOptions);
+            dTable.search('').draw();
+        });
+    </script>
+}

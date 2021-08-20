@@ -1,0 +1,20 @@
+﻿@model TeliconLatest.Models.TeamMember
+@{
+    Layout = null;
+}
+<tr class="team-mem" data-id="@Model.ID">
+    <td>
+        <div class="tini-img-holder">
+            <img src="@Model.ImgUrl" />
+        </div>
+    </td>
+    <td><select name="Name" id="Name" class="con-ddl" data-init-text = "@Model.Name"></select></td>
+    <td>@Html.TextBoxFor(x => x.Portion, new { @class = "number portion" }) </td>
+    <td style="text-align:right;">
+        <button class="tel-radio@(Model.IsLead ? " checked" : "")">
+            <i class="fe-ok"></i>
+            @Html.HiddenFor(x=> x.IsLead, new { @class = "lead" })
+        </button>
+    </td>
+    <td style="text-align:center;"><button class="remove-mem"><i class="fe-cancel-1"></i></button></td>
+</tr>

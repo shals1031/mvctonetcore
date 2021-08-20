@@ -1,0 +1,299 @@
+﻿@{
+    ViewBag.Title = "Invoice Summary";
+}
+<div class="box-listing">
+    <div class="box-listing-top">
+        <div class="box-selectors clients">
+            @Html.DropDownList("comps", (List<SelectListItem>)ViewBag.Companies)
+        </div>
+        <div class="btn-group" data-toggle="buttons">
+            <label class="btn btn-primary day active" title="Day">
+                <input type="radio" name="options" id="option1" checked>
+                <i class="fa fa-calendar-o"></i>
+                Day
+            </label>
+            <label class="btn btn-primary range" title="Range">
+                <input type="radio" name="options" id="option2">
+                <i class="fa fa-calendar"></i>
+                Range
+            </label>
+        </div>
+        <div class="box-selectors year">
+            @Html.DropDownList("years", (List<SelectListItem>)ViewBag.Years)
+        </div>
+    </div>
+    <div class="box-listing-bottom">
+        <div class="input-daterange input-group" id="datepicker">
+            <input type="text" class="input-sm form-control from" name="start" placeholder="From" readonly />
+            <input type="text" class="input-sm form-control to" name="end" placeholder="To" readonly />
+            <button class="generate"><i class="fe-cw-1"></i>Generate</button>
+        </div>
+        <div class="box-listing-days">
+            <ul class="box-listing-left">
+                <li><a href="#" class="active">January</a></li>
+                <li><a href="#">February</a></li>
+                <li><a href="#">March</a></li>
+                <li><a href="#">April</a></li>
+                <li><a href="#">May</a></li>
+                <li><a href="#">June</a></li>
+                <li><a href="#">July</a></li>
+                <li><a href="#">August</a></li>
+                <li><a href="#">September</a></li>
+                <li><a href="#">October</a></li>
+                <li><a href="#">November</a></li>
+                <li><a href="#">December</a></li>
+            </ul>
+            <ul class="box-listing-right">
+                @for (int day = 1; day <= 31; day++)
+                {
+                    <li><a href="#">@day</a></li>
+                }
+            </ul>
+        </div>
+    </div>
+</div>
+<div class="invoice-holder">
+    <div class="placeholder">
+        <i class="fe-th"></i>
+        <h1>Get started by selecting a day!</h1>
+    </div>
+</div>
+<div class="listing-selected">
+    <button><i class="fe-up-open-big"></i></button>
+    <div class="listing-selected-main clearfix">
+        <div class="tot-holder">
+            <span><span>0</span><i class="fe-clipboard-1"></i></span>
+            Selected Invoices (<b>$0.00</b>)
+        </div>
+        <button class="print-btn">Preview</button>
+    </div>
+    <div class="sub-list-holder">
+        <table></table>
+    </div>
+</div>
+@section Breadcrumbs{
+    <li>Invoicing</li>
+    <li>Summary</li>
+}
+@section scripts{
+    <script type="text/javascript">
+        function numberOfDaysInMonth(year, month) {
+            var d = new Date(year, month, 0);
+            return d.getDate();
+        }
+        function batchList() {
+            loading(true);
+            var rows = $(".listing-selected .sub-list-holder table tr");
+            var ids = $.map(rows, function (elm) { return $(elm).attr("id").replace("_temp", "").replace("tr-", ""); });
+            removeLoader(true, 300, function () {
+                $.post('@Url.Action("batchInvoices")', { ids: ids }, function (data) {
+                    if (data.Additional > -1) {
+                        $(".tel-confirm-dialog").dialog("close");
+                        var page = dTable.page();
+                        dTable.page(page).draw(false);
+                        //dTable.draw();
+                    }
+                    else {
+                        $(".tel-confirm-dialog").dialog("close");
+                        var htmlMsg = "<p>Something went wrong while trying to <b class='default-col'>Batch</b>. Please try again or contact Your System Administrator.</p>";
+                        var htmlTitle = "<i class='fe-comment'></i>An Error Occured";
+                        displayDialogMsg(htmlMsg, htmlTitle);
+                    }
+                });
+            });
+        };
+        var dTable;
+        batch = true;
+        var dTableUrl = "";
+        $(document).ready(function () {
+            $('.box-listing .input-daterange').datepicker({ format: "D MM dd, yyyy", autoclose: true });
+            $(".tot-holder button").tooltip({ placement: "top" });
+            $('.box-listing-top .box-selectors select').select2({ minimumResultsForSearch: -1, width: 250 });
+            $('.box-listing-right, .box-listing-left, .listing-selected .sub-list-holder').perfectScrollbar();
+            $(".listing-selected > button").click(function (e) {
+                var self = $(this);
+                var height = self.hasClass("toggled") ? 45 : 446;
+                $(".listing-selected").animate({ height: height }, 400, "easeOutBack");
+                self.toggleClass("toggled").find("i").toggleClass("fe-up-open-big fe-down-open-big");
+                e.preventDefault();
+            });
+            $(".box-listing-left li a").click(function (e) {
+                var self = $(this);
+                $(".box-listing-right li a").removeClass("active");
+                $(".box-listing-left li a").not(self).removeClass("active");
+                self.addClass("active");
+                var month = $(".box-listing-left li").index(self.parent()) + 1;
+                var year = $(".box-selectors.year select").val();
+                var days = numberOfDaysInMonth(year, month);
+                $(".box-listing-right li").show().slice(days, 31).hide();
+                $('.box-listing-right').perfectScrollbar('update');
+                e.preventDefault();
+            });
+            $(".box-listing-right li a").click(function (e) {
+                var self = $(this);
+                $(".box-listing-bottom .input-daterange input[type='text']").val("").datepicker("destroy").datepicker({ format: "D MM dd, yyyy" });
+                $(".box-listing-right li a").not(self).removeClass("active");
+                self.addClass("active");
+                var month = $(".box-listing-left li").index($(".box-listing-left li a.active").parent()) + 1;
+                var year = $(".box-selectors.year select").val();
+                var day = self.text();
+                var date = month + "/" + day + "/" + year;
+                var clientID = $(".box-selectors.clients select").val();
+                generateTable("@Url.Action("GetSummaryPartialByDay", "Invoice")", { clientID: clientID, date: date });
+                e.preventDefault();
+            });
+            $(document).on("click", ".print-btn", function (e) {
+                var rows = $(".listing-selected .sub-list-holder table tr");
+                if (rows.length < 1) {
+                    var htmlMsg = "<p>No <b class='loc-col'>Invoice(s)</b> have been selected for <b class='date-col'>Printing</b>. First select your desired <b class='loc-col'>Invoice(s)</b> then try again.</p>";
+                    var htmlTitle = "<i class='fe-comment'></i>Cannot Print";
+                    displayDialogMsg(htmlMsg, htmlTitle);
+                }
+                else {
+                    var ids = $.map(rows, function (elm) { return $(elm).attr("id").replace("_temp", "").replace("tr-", ""); });
+                    loading(true);
+                    $.ajax({
+                        url: "@Url.Action("SummaryPrintOut")",
+                        data: $.toDictionary({ invIDs: ids, clientId: $(".box-selectors.clients select").val() }),
+                        type: "post",
+                        success: function (html) {
+                            removeLoader(true, 300, function () {
+                                $(".overlay .overlay-body").append(html)
+                                $(".overlay").show(200);
+                            });
+                        }
+                    });
+                }
+                e.preventDefault();
+            });
+            $(".box-listing-top .btn-group .btn").click(function () {
+                var self = $(this);
+                if (!self.hasClass("day")) {
+                    $(".box-listing-days, .box-selectors.year").hide(100, function () {
+                        $(".box-listing-bottom .input-daterange").show(100)
+                    });
+                }
+                else {
+                    $(".box-listing-bottom .input-daterange").hide(100, function () {
+                        $(".box-listing-days, .box-selectors.year").show(100)
+                    });
+                }
+            });
+            $(".box-listing-bottom .input-daterange .generate").click(function () {
+                $(".box-listing-right li a, .box-listing-left li a").removeClass("active");
+                var from = $(".box-listing-bottom .input-daterange .from").val();
+                var to = $(".box-listing-bottom .input-daterange .to").val();
+                var clientID = $(".box-selectors.clients select").val();
+                if (from.trim() != "" && to.trim() != "") {
+                    generateTable("@Url.Action("GetSummaryPartialByRange", "Invoice")", { clientID: clientID, from: from, to: to });
+                }
+            });
+            $(document).on("click", ".invoice-holder .inv-list tr th button", function (e) {
+                var self = $(this);
+                var total = 0;
+                self.toggleClass("checked");
+                var rowLength = dTable.data().length;
+                if(self.is(".checked"))
+                    $(".inv-list .fk-checkbox").addClass("checked");
+                else
+                    $(".inv-list .fk-checkbox").removeClass("checked");
+                for (var x = 0; x < rowLength; x++) {
+                    var btn = $(dTable.cell(x, 0).data());
+                    var tr = dTable.row(x).nodes().to$();
+                    if (self.is(".checked")) {
+                        clone = tr.clone();
+                        clone.attr("id", tr.attr("id") + "_temp");
+                        clone.find("button").html("<i class='fe-cancel-1'></i>")
+                        clone.appendTo(".listing-selected table");
+                        total += dTable.cell(x, 4).data().removeFormatting();
+                    }
+                    else {
+                        var row = $("#" + tr.attr("id") + "_temp");
+                        row.remove();
+                    }
+                }
+                $(".tot-holder span span").text($(".listing-selected table tr").length);
+                $(".tot-holder b").text(total.formatMoney(2, "$"));
+                $('.listing-selected .sub-list-holder').perfectScrollbar('update');
+                e.preventDefault();
+            });
+            $(document).on("click", ".invoice-holder .inv-list tr td button, .listing-selected .sub-list-holder table button", function (e) {
+                var self = $(this);
+                var trID = self.parents("tr").attr("id");
+                var total = $(".tot-holder b").text().removeFormatting();
+                if (self.parents("tr").attr("id").indexOf("_temp") >= 0) {
+                    var row = self.parents("tr");
+                    total -= row.find("td").last().text().removeFormatting();
+                    row.remove();
+                    $("#" + trID.replace("_temp","")).find("button").removeClass("checked");
+                }
+                else {
+                    self.toggleClass("checked");
+                    if (self.hasClass("checked")) {
+                        var clone = self.parents("tr").clone();
+                        clone.find("button").html("<i class='fe-cancel-1'></i>")
+                        clone.attr("id", trID + "_temp");
+                        clone.appendTo(".listing-selected table");
+                        total += clone.find("td").last().text().removeFormatting();
+                    }
+                    else {
+                        var row = $("#" + trID + "_temp");
+                        total -= row.find("td").last().text().removeFormatting();
+                        row.remove();
+                    }
+                }
+                var rowLength = dTable.data().length;
+                var invCheckBtn = $(".invoice-holder .inv-list tr th button");
+                if (rowLength == $(".invoice-holder .inv-list tr td button.checked").length)
+                    invCheckBtn.addClass("checked");
+                else
+                    invCheckBtn.removeClass("checked");
+
+                $(".tot-holder span span").text($(".listing-selected table tr").length);
+                $(".tot-holder b").text(total.formatMoney(2, "$"));
+                $('.listing-selected .sub-list-holder').perfectScrollbar('update');
+                e.preventDefault();
+            });
+        });
+        function generateTable(url, params) {
+            $(".invoice-holder").html('<table class="admin-tbl inv-list">' +
+                '<thead><tr><th class="th-check-box"><button><i class="fe-ok"></i></button></th>' +
+                '<th>Invoice No.</th><th>Title</th><th>Date</th><th>Total</th></tr></thead><tbody></table>')
+            dTable = $(".invoice-holder table").DataTable({
+                dom: '<"top"lp>t<"bottom clearfix"p>',
+                paging: true,
+                processing: true,
+                serverSide: true,
+                order: [[1, 'asc']],
+                columnDefs: [
+                    { "targets": 0, "orderable": false, "searchable": false, "data": null, "defaultContent": '<button class="fk-checkbox"><i class="fe-ok"></i></button>' },
+                    { "targets": 1, "name": "InvoiceNum", "data": "InvoiceNum" },
+                    { "targets": 2, "name": "Title", "data": "InvoiceTitle" },
+                    { "targets": 3, "name": "InvoiceDate", "data": "InvoiceDate" },
+                    { "targets": 4, "name": "InvoiceTotal", "data": "InvoiceTotal" }, ],
+                preDrawCallback: function () {
+                    loading(false);
+                    $(".invoice-holder .inv-list tr th button, .fk-checkbox").removeClass("checked");
+                    $(".listing-selected table tr").remove();
+                    $(".tot-holder span span").text(0);
+                    $(".tot-holder b").text("$0.00");
+                },
+                drawCallback: function () {
+                    removeLoader(false, 200);
+                },
+                ajax: {
+                    url: url, type: "post",
+                    data: function (d) {
+                        for (var key in params) {
+                            if (params.hasOwnProperty(key)) {
+                                d[key] = params[key];
+                            }
+                        }
+                        return $.toDictionary(d);
+                    }
+                },
+            });
+            $(".dataTables_wrapper .top select").select2({ minimumResultsForSearch: -1, width: "resolve" });
+        }
+    </script>
+}

@@ -1,0 +1,38 @@
+﻿@model TeliconLatest.DataEntities.ADM13100
+
+@{
+    ViewBag.Title = "Material";
+    Layout = "~/Views/Shared/_FormLayout.cshtml";
+}
+
+@using (Html.BeginForm("createorupdate", "material", FormMethod.Post)) {
+    @*@Html.AntiForgeryToken()*@
+    @Html.ValidationSummary(true)
+
+    <table>
+        <tr><td colspan="2">@Html.LabelFor(x=> x.MaterialCode)</td></tr>
+        <tr>
+            <td colspan="2">
+                @Html.HiddenFor(x => x.MaterialID, new { @class = "tel-form-id" })
+                @Html.TextBoxFor(x => x.MaterialCode, new { @class = "long" })
+                @Html.ValidationMessageFor(x=> x.MaterialCode)
+            </td>
+        </tr>
+        <tr><td colspan="2">@Html.LabelFor(x => x.MaterialName)</td></tr>
+        <tr>
+            <td colspan="2">
+                @Html.TextBoxFor(x => x.MaterialName, new { @class = "long" })
+                @Html.ValidationMessageFor(x => x.MaterialName)
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">@Html.LabelFor(x => x.MaterialUnit)</td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                @Html.DropDownListFor(x => x.MaterialUnit, (List<SelectListItem>)ViewBag.Units)
+                @Html.ValidationMessageFor(x => x.MaterialUnit)
+            </td>
+        </tr>
+    </table>
+}

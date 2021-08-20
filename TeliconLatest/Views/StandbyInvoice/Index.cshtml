@@ -1,0 +1,98 @@
+﻿@using TeliconLatest.Reusables;
+@{
+    ViewBag.Title = "Standby Invoice";
+}
+
+<table class="admin-tbl has-constructor" data-url="@Url.Action("index", "StandbyInvoice")" data-qurl="@Url.Action("generateconstructor","StandbyInvoice")" data-name="StandbyInvoice">
+    <thead>
+        <tr><th>Reference No.</th><th>Title</th><th>Date</th><th>Zone</th><th></th></tr>
+    </thead>
+    <tbody></tbody>
+</table>
+@section Breadcrumbs{
+    <li>Invoicing</li>
+    <li>Standby Invoice</li>
+}
+@section Scripts{
+    <script type="text/javascript">
+        $(document).ready(function () {
+            requiresNew = false;
+            dataTableOptions.ajax.url = "@Url.Action("StandbyInvoices", "list")";
+            dataTableOptions.columnDefs = [
+                    { "targets": 0, "name": "SInvoiceId", "data": "ReferenceNo" },
+                    { "targets": 1, "name": "SInv_title", "data": "Title" },
+                    { "targets": 2, "name": "Requestdt", "data": "Date", },
+                    { "targets": 3, "name": "Zone", "data": "Zone" },
+                    {
+                        "targets": 4, "class": "actions", "orderable": false, "searchable": false, "data": null,
+                        "defaultContent": "<a href='#details' class='dt-details-sinv'><i class='fe-news'></i></a>" +
+                            "<a href='#edit' class='dt-edit'><i class='fe-pencil-2'></i></a>" +
+                            "<a href='#print' title='Print' class='dt-print'><i class='fe-print-1'></i></a>" +
+                            "<a href='#delete' class='dt-delete'><i class='fe-cancel'></i></a>"
+                    }
+            ];
+            dataTableOptions.order = [[0, 'desc']];
+            dataTableOptions.initComplete = function (settings, json) {
+                $(".dataTables_wrapper:first .sub-top").append("<button class='add-new'>New</button>");
+                $(".dataTables_wrapper .top select").select2({ minimumResultsForSearch: -1, width: "resolve" });
+            }
+
+            dTable = $("table").DataTable(dataTableOptions);
+
+            @*$(".dataTables_wrapper .sub-top .dataTables_filter label")
+                .after('@Html.Raw(Html.DropDownList("status", (List<SelectListItem>)ViewBag.Statuses).ToHtmlString().Replace(Environment.NewLine, ""))');*@
+            $(".dataTables_wrapper .sub-top .dataTables_filter label")
+                .after('@Html.Raw(Html.DropDownList("year", (List<SelectListItem>)ViewBag.Years).ToHtmlString().Replace(Environment.NewLine, ""))');
+            $(document).on("change", "#year", function () {
+                dTable.draw();
+            });
+            dTable.search('').draw();
+            //invoices
+
+            $(document).on("click", ".dt-details-inv", function (e) {
+                var self = $(this);
+                var id = self.parents("tr").attr("id");
+                loading(false);
+                url = "@Url.Action("generateconstructor", "StandbyInvoice")";
+                $("body").append("<div class='full-overlay'></div>");
+                $(".full-overlay").fadeIn(200);
+                $.ajax({
+                    url: url,
+                    data: { invId: id },
+                    success: function (html) {
+                        removeLoader(false, 1000, function () {
+                            $("body").append(html);
+                            $("#constructor [title]").tooltip({ placement: "top" });
+                            $("#constructor").addClass("animated fadeInRight").show();
+                            $('.const-main .const-holder ul').perfectScrollbar();
+                        });
+                    }
+                });
+                e.preventDefault();
+            });
+
+            $(document).on("click", ".dt-print", function () {
+                debugger;
+                var self = $(this);
+                var id = self.parents("tr").attr("id");
+                var ajaxOptions = {
+                    type: "post",
+                    url: "@Url.Action("index", "StandbyInvoice")",
+                    success: null,
+                    data: null,
+                };
+                var type = self.data("action");
+                ajaxOptions.url = "@Url.Action("StandbyInvoice", "StandbyInvoice")";
+                ajaxOptions.data = { id: id };
+                ajaxOptions.success = function (html) {
+                    removeLoader(true, 100, function () {
+                        $(".overlay .overlay-body").append(html)
+                        $(".overlay").show(200);
+                    });
+                }
+                loading(true);
+                $.ajax(ajaxOptions);
+            });
+        });
+    </script>
+}

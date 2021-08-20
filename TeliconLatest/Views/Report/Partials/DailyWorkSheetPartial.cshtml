@@ -1,0 +1,117 @@
+﻿@model List<TeliconLatest.Models.DailyWorkSheetData>
+@{
+    Layout = null;
+}
+<style>
+    .print-holder {
+        width: 1050px;
+    }
+
+        .print-holder table tr th {
+            text-align: center;
+            vertical-align: middle;
+            font-size: 14px;
+            padding: 0px 5px;
+            line-height: 23px;
+        }
+
+        .print-holder table tr td {
+            line-height: 23px;
+            vertical-align: middle;
+            text-align: center;
+        }
+
+        .print-holder .bottom .prt-data tr td, .print-holder .bottom .prt-data tr th {
+            padding: 1px;
+        }
+
+    .total-row td {
+        font-weight: bold;
+        border-top: 2px solid #3c81cc;
+    }
+</style>
+@if (Model.Count > 0)
+{
+    int i = 1;
+    List<int> conIds = Model.Select(x => x.ContractorId).Distinct().ToList();
+    <div class="print-holder">
+        <div class="bottom">
+            @foreach (int conId in conIds)
+            {
+                List<TeliconLatest.Models.DailyWorkSheetData> rowsForCon = Model.FindAll(x => x.ContractorId == conId).ToList();
+                DateTime currentDate = DateTime.Now;
+                int dayCount = 0;
+                <div>
+                    <img src="~/Images/logo.png" style=" width: 150px; height: auto; float: left;" />
+                    <h2 class="title">Contractor Daily Work Sheet</h2>
+                    <h2 class="title">@rowsForCon[0].Contractor</h2>
+                </div>
+                <table class="prt-data">
+                    <thead>
+                        <tr>
+                            <th style=" width: 100px;">Date</th>
+                            <th style=" width: 370px;">Description</th>
+                            <th style=" width: 70px;">Unit</th>
+                            <th style=" width: 70px;">Rate</th>
+                            <th style=" width: 50px;">Qty</th>
+                            <th style=" width: 120px;">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var row in rowsForCon)
+                        {
+                            dayCount++;
+                            <tr>
+                                @if (row.Date != currentDate)
+                                {
+                                    currentDate = row.Date;                                    
+                                    <td style=" text-align: left;">@row.Date.ToString("ddd dd MMM, yyyy")</td>
+                                }
+                                else
+                                {
+                                    <td style=" text-align: left;"></td>
+                                }
+                                <td style=" text-align: left;">Ref : @row.Ref, Cust : @row.Customer, Act : @row.Activity</td>
+                                <td>@row.Unit</td>
+                                <td style=" text-align:right;">@(String.Format("{0:n}", row.Rate))</td>
+                                <td>@row.Qty</td>
+                                <td style=" text-align:right;">@(String.Format("{0:n}", row.Total))</td>
+                            </tr>
+                            if (dayCount == rowsForCon.FindAll(x => x.Date == currentDate).Count)
+                            {
+                                <tr class="total-row">
+                                    <td style=" text-align: left;"></td>
+                                    <td style=" text-align: center;">Total</td>
+                                    <td></td>
+                                    <td style=" text-align:right;"></td>
+                                    <td></td>
+                                    <td style=" text-align:right;">@(String.Format("{0:n}", rowsForCon.FindAll(x => x.Date == currentDate).Sum(x=> x.Total)))</td>
+                                </tr>
+                                dayCount = 0;
+                            }
+                            i++;
+                        }
+                    </tbody>
+                </table>
+                <div>
+                    <br />
+                    <br />
+                    <label>Signature : </label>
+                    <br />
+                    <br />
+                    <label>Note: Rates are subject to change at anytime by Management and Bid rates are subject to negoitiations</label>
+                </div>
+            }
+        </div>
+        <button class="print-clicker"><i class="fe-print-1"></i></button>
+    </div>
+}
+else
+{
+    <div class="filler animated tada">
+        <i class="mdi mdi-emoticon-sad"></i>
+        <h1>No results found</h1>
+        <h2>Please change your filter and try again.</h2>
+    </div>
+}
+

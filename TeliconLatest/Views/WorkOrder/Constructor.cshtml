@@ -1,0 +1,151 @@
+﻿@model TeliconLatest.Models.ConstructorPartial
+@{
+    Layout = null;
+    bool invoiced = (bool)ViewBag.Invoiced;
+}
+
+<div id="constructor" data-id="@Model.WorkOrderId" @(invoiced ? "data-inv=" + ViewBag.InvoiceID : "") class="@(invoiced ? "invoice-wo " + ViewBag.Type : string.IsNullOrEmpty(ViewBag.Type) ? "" : ViewBag.Type + "-wo")">
+    <div class="title clearfix">
+        <i class="fe-news"></i>
+        <span title="@Model.Title">@Model.Title</span>
+        @if (!Model.UserRole.Contains("Supervisor") && !Model.UserRole.Contains("Technician"))
+        {
+            <div class="title-editor clearfix">
+                <input type="text" placeholder="Enter Invoice Title" />
+                <button title="Create custom title for invoice."><i class="fe-pen"></i></button>
+            </div>
+            <span style="position:absolute; right:200px;">Sub-total: @string.Format("{0:C}", ViewBag.SubTotal)</span>
+        }        
+        @if (!Model.UserRole.Contains("Supervisor") && !Model.UserRole.Contains("Technician"))
+        {
+            if (!invoiced)
+            {
+                <div class="btn-group" data-toggle="buttons">
+                    <label class="btn btn-primary @(Model.Status != "s" && Model.Status != "v" ? "active " : "")unsubmit" title="Unsubmit">
+                        <input type="radio" name="options" id="option1" @(Model.Status != "s" && Model.Status != "v" ? "checked" : "")> <i class="fe-block"></i>
+                    </label>
+                    <label class="btn btn-primary @(Model.Status == "s" ? "active " : "")submit" title="Submit">
+                        <input type="radio" name="options" id="option2" @(Model.Status == "s" ? "checked " : "")> <i class="fe-flag-filled"></i>
+                    </label>
+                    <label class="btn btn-primary @(Model.Status == "v" ? "active " : "")verify" title="Verify">
+                        <input type="radio" name="options" id="option3" @(Model.Status == "v" ? "checked " : "")> <i class="fe-ok"></i>
+                    </label>
+                </div>
+            }
+        }
+    </div>
+    <div class="const-main clearfix">
+        <div class="const-holder const-dates">
+            <div class="title">
+                <i class="fe-calendar"></i>Date
+                <span>Date</span>
+                @if (!invoiced && string.IsNullOrEmpty(ViewBag.Type))
+                {
+                    <a href="#"><i class="fe-plus"></i></a>
+                }
+            </div>
+            @if (Model.Dates.Count < 1 && !invoiced && string.IsNullOrEmpty(ViewBag.Type))
+            {
+                <div class="placeholder">
+                    <button class="activated"><i class="fe-calendar"></i></button>
+                </div>
+            }
+            else
+            {
+                <ul>
+                    @foreach (var date in Model.Dates)
+                    {
+                        <li data-date="@date">
+                            <span>@string.Format("{0:MMMM dd, yyyy}", date)</span>
+                            @if (string.IsNullOrEmpty(ViewBag.Type))
+                            {
+                                <div class="wo-actions">
+                                    <a href="#" class="del-action" title="Delete"><i class="fe-trash"></i></a>
+                                    @if (!invoiced)
+                                    {
+                                        <a href="#" class="edit-action" title="Edit"><i class="fe-pencil-2"></i></a>
+                                    }
+                                </div>
+                            }
+                        </li>
+                    }
+                </ul>
+            }
+        </div>
+        <div class="const-holder const-locs">
+            <div class="title">
+                <i class="fe-location-2"></i>Locations
+                <span>Locations</span>
+                @if (!invoiced && string.IsNullOrEmpty(ViewBag.Type))
+                {
+                    <a href="#"><i class="fe-plus"></i></a>
+                }
+            </div>
+            @if (!invoiced && string.IsNullOrEmpty(ViewBag.Type))
+            {
+                <div class="placeholder">
+                    <button><i class="fe-location-2"></i></button>
+                </div>
+            }
+        </div>
+        <div class="const-holder const-acts">
+            <div class="title">
+                <i class="fe-bell-1"></i>Activities
+                <span>Activities</span>
+                @if (string.IsNullOrEmpty(ViewBag.Type))
+                {
+                    <a href="#"><i class="fe-plus"></i></a>
+                }
+            </div>
+            @if (string.IsNullOrEmpty(ViewBag.Type))
+            {
+                <div class="placeholder">
+                    <button><i class="fe-bell-1"></i></button>
+                </div>
+            }
+        </div>
+    </div>
+    <div class="const-btm clearfix">
+        @if (!Model.UserRole.Contains("Supervisor") && !Model.UserRole.Contains("Technician"))
+        {
+            <div class="wo-inv clearfix">
+                <span>Invoice No.:</span>
+                <div>
+                    @if (Model.InvoiceNos.Count < 1 || invoiced == true)
+                    {
+                        <span @(!invoiced ? "title='Invoice ID is always assumed'" : "")>
+                            @Model.InvoiceId
+                            @if (!invoiced)
+                            {
+                                <i class="fe-help-circled"></i>
+                            }
+                        </span>
+                    }
+                    else
+                    {
+                        Model.InvoiceNos.Insert(0, new SelectListItem{Text = "",Value = ""});
+                        @Html.DropDownList("ddl-invoice-no", Model.InvoiceNos)
+                    }
+                </div>
+            </div>
+        }
+        <div class="wo-btns clearfix">
+            @if (string.IsNullOrEmpty(ViewBag.Type))
+            {
+                <button class="update">Update</button>
+                if (Model.UserRole.Contains("Supervisor") || Model.UserRole.Contains("Technician"))
+                {
+                    <button class="submit">Submit</button>
+                }
+            }
+            @if (!Model.UserRole.Contains("Supervisor") && !Model.UserRole.Contains("Technician"))
+            {
+                if (!invoiced)
+                {
+                    <button class="process">Process</button>
+                }
+            }
+            <button class="cancel">Cancel</button>
+        </div>
+    </div>
+</div>

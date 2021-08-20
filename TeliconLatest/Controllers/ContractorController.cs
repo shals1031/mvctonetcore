@@ -27,7 +27,7 @@ namespace TeliconLatest.Controllers
         //
         // GET: /Contractor/
         //[TeliconAuthorize(TaskId = 4)]
-        public ActionResult Index()
+        public IActionResult Index()
         {
             var minYear = db.TRN23100.Min(x => x.Requestdt).Year;
             var maxYear = db.TRN23100.Max(x => x.Requestdt).Year;
@@ -52,14 +52,14 @@ namespace TeliconLatest.Controllers
             return View();
         }
         //[TeliconAuthorize(TaskId = 4)]
-        public ActionResult Create()
+        public IActionResult Create()
         {
             SetupContractorDddl(null);
             var model = new ADM03300();
             return View("CreateOrUpdate", model);
         }
         //[TeliconAuthorize(TaskId = 4)]
-        public ActionResult Edit(int id)
+        public IActionResult Edit(int id)
         {
             var model = db.ADM03300.Find(id);
             SetupContractorDddl(model);
@@ -329,20 +329,20 @@ namespace TeliconLatest.Controllers
             }
             return Json(true);
         }
-        public ActionResult GetContractorWorkOrders(int id)
+        public IActionResult GetContractorWorkOrders(int id)
         {
             var stats = Customs.GetTechStats(id, "");
             ViewBag.ContractorID = id;
             return View("ContractorWorkOrders", stats);
         }
-        public ActionResult RefreshConStats(int id)
+        public IActionResult RefreshConStats(int id)
         {
             var stats = Customs.GetTechStats(id, "");
             ViewBag.ContractorID = id;
             return View("TechnicianStats", stats);
         }
 
-        public ActionResult RefreshTechnicianState(int id)
+        public IActionResult RefreshTechnicianState(int id)
         {
             var stats = Customs.GetTechStats(id, "");
             ViewBag.ContractorID = id;

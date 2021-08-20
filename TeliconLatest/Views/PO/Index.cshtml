@@ -1,0 +1,36 @@
+﻿@{
+    ViewBag.Title = "POs";
+}
+<table class="admin-tbl" data-url="@Url.Action("index", "PO")" data-name="PO">
+    <thead>
+        <tr><th>PO No.</th><th>Description</th><th>Total</th><th>Balance</th><th>Closed</th><th></th></tr>
+    </thead>
+    <tbody></tbody>
+</table>
+@section Breadcrumbs{
+    <li>Administration</li>
+    <li>POs</li>
+}
+@section Scripts{
+    <script type="text/javascript">
+        $(document).ready(function () {
+            dataTableOptions.ajax.url = "@Url.Action("pos", "list")";
+            dataTableOptions.columnDefs = [
+                    { "targets": 0, "name": "PONUM", "data": "PONUM", "class": "dt-item-title" },
+                    { "targets": 1, "name": "Description", "data": "Description", "class": "dt-item-title" },
+                    { "targets": 2, "name": "TOTAL", "data": "Total", "class": "dt-item-title", "searchable": false },
+                    { "targets": 3, "name": "BALANCE", "data": "Balance", "class": "dt-item-title", "searchable": false },
+                    { "targets": 4, "name": "IsClosed", "data": "IsClosed", "class": "dt-check" },
+                    {
+                        "targets": 5, "class": "actions",
+                        "orderable": false, "searchable": false, "data": null,
+                        "defaultContent": "<a href='#edit' class='dt-edit'><i class='fe-pencil-2'></i></a>" +
+                            "<a href='#delete' class='dt-delete'><i class='fe-cancel'></i></a>"
+                    }
+            ];
+            dataTableOptions.order = [[0, 'asc']];
+            dTable = $("table").DataTable(dataTableOptions);
+            dTable.search('').draw();
+        });
+    </script>
+}

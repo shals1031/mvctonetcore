@@ -1,0 +1,93 @@
+﻿@model IEnumerable<TeliconLatest.Models.YTDPaymentReport>
+@{
+    Layout = null;
+}
+@if (Model.Any())
+{
+    <div class="print-holder" style="width:1320px;">
+        <div class="bottom">
+
+            <h2 class="title">Annual Contractor Earnings</h2>
+            <h2 class="title">Year - @string.Format("{0:yyyy}", ViewBag.DateTo)</h2>
+            @*<h2 class="title" style="margin:20px 0;">Period Starting @string.Format("{0:dddd MMMM dd, yyyy}", ViewBag.DateFrom) to @string.Format("{0:dddd MMMM dd, yyyy}", ViewBag.DateTo)</h2>*@
+            <table class="prt-data" style="margin-left:0px">
+                <thead>
+                    <tr>
+                        <th width="140px">Contractor</th>
+                        <th style="text-align:center;" width="90px">Jan</th>
+                        <th style="text-align:center;" width="90px">Feb</th>
+                        <th style="text-align:center;" width="90px">Mar</th>
+                        <th style="text-align:center;" width="90px">Apr</th>
+                        <th style="text-align:center;" width="90px">May</th>
+                        <th style="text-align:center;" width="90px">Jun</th>
+                        <th style="text-align:center;" width="90px">Jul</th>
+                        <th style="text-align:center;" width="90px">Aug</th>
+                        <th style="text-align:center;" width="90px">Sep</th>
+                        <th style="text-align:center;" width="90px">Oct</th>
+                        <th style="text-align:center;" width="90px">Nov</th>
+                        <th style="text-align:center;" width="90px">Dec</th>
+                        <th style="text-align:right;" width="100px">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    @{
+                        var conIds = Model.Select(x => x.EmployeeID).Distinct();
+                        foreach (var conId in conIds)
+                        {
+                            var rows = Model.Where(x => x.EmployeeID == conId).ToList();
+                            <tr>
+                                <td style="text-align:left;"><a href="#" onclick="ShowPeriodDetails('@ViewBag.DateFrom', '@ViewBag.DateTo', '@rows[0].ConId')">@(rows[0].FirstName + " " + rows[0].LastName)</a></td>
+                                @for (int i = 1; i <= 12; i++)
+                                {
+                                    var mnthlySum = rows.Where(x => x.PaidDate.Value.Month == i).Sum(x => x.Total);
+                                    <td style="text-align:right;">@(mnthlySum != 0 ? string.Format("{0:C}", mnthlySum) : "-")</td>
+                                }
+                                <td style="text-align:right;">@string.Format("{0:C}", rows.Sum(x => x.Total))</td>
+                            </tr>
+                        }
+                    }
+                    <tr>
+                        <td style="font-weight:bold;">Monthly Total</td>
+                        @for (int i = 1; i <= 12; i++)
+                        {
+                            var mnthlySum = Model.Where(x => x.PaidDate.Value.Month == i).Sum(x => x.Total);
+                            <td style="text-align:right;font-weight:bold;">@(mnthlySum != 0 ? string.Format("{0:C}", mnthlySum) : "-")</td>
+                        }
+                        <td style="text-align:right;font-weight:bold;">@string.Format("{0:C}", Model.Sum(x => x.Total))</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <button class="print-clicker"><i class="fe-print-1"></i></button>
+    </div>
+}
+else
+{
+    <div class="filler animated tada">
+        <i class="mdi mdi-emoticon-sad"></i>
+        <h1>No results found</h1>
+        <h2>Please change your filter and try again.</h2>
+    </div>
+}
+
+
+<script type="text/javascript">
+    function ShowPeriodDetails(fromDate, toDate, conId) {
+        loading(true);
+        $.ajax({
+            url: '/report/YTDPaymentsPeriodDetails',
+            type: "post",
+            data: { fromDate: fromDate, toDate: toDate, ConId: conId },
+            success: function (html) {
+                console.log(html)
+                removeLoader(true, 300, function () {
+                    var overlay = $("#drillDown");
+                    overlay.find(".overlay-body").html(html);
+                    if (!overlay.is(":visible"))
+                        overlay.show(200);
+                });
+            }
+        });
+    }
+</script>

@@ -1,0 +1,36 @@
+﻿@model IEnumerable<TeliconLatest.Models.WorkOrderPartial>
+@{
+    Layout = null;
+}
+
+@if (Model.Any())
+{
+    <table class="workorder">
+        <thead>
+            <tr id="">
+                <th><button class="check-box"><i class="fe-ok"></i></button></th>
+                <th>Title</th>
+                <th style="text-align:center;">Status</th>
+                <th style="text-align:right;">Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr id="tr-@item.WOId">
+                    <td><button class="check-box @(item.IsMerged ? "active" : "")"><i class="fe-ok"></i></button></td>
+                    <td>@item.Title</td>
+                    <td class="dt-flag"><i class="fe-flag-filled @item.Status.ToLower()"></i></td>
+                    <td data-total="@item.Total" style="text-align:right"><b>@string.Format("{0:C}", item.Total)</b></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <div class="filler">
+        <i class="fe-flow-merge"></i>
+        <h1>Select a Reference Code and Start Merging!</h1>
+    </div>
+}

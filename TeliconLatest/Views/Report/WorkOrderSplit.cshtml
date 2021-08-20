@@ -1,0 +1,92 @@
+﻿@{
+    ViewBag.Title = "Work Order Split";
+}
+@section Breadcrumbs{
+    <li>Reports</li>
+    <li>@ViewBag.Title</li>
+}
+
+<div class="report-filter">
+    <h1 class="title">Report Filter</h1>
+    @using (Html.BeginForm("WorkOrderSplitToExcel", "report", FormMethod.Post)) { 
+    <table>
+        <tr>
+            <td>
+                <label>Company</label>
+                @Html.DropDownList("companyId", (List<SelectListItem>)ViewBag.Companies)
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <label>Date</label>
+                <div class="input-daterange input-group" id="datepicker">
+                    <input type="text" class="input-sm form-control" name="dateFrom" />
+                    <span class="input-group-addon">to</span>
+                    <input type="text" class="input-sm form-control" name="dateTo" />
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <label>Management Split</label>
+                <div class="input-group" id="datepicker">
+                    <input type="text" class="input-sm form-control" name="managementSplitFrom" />
+                    <span class="input-group-addon">to</span>
+                    <input type="text" class="input-sm form-control" name="managementSplitTo" />
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <label>Contractor Split</label>
+                <div class="input-group" id="datepicker">
+                    <input type="text" class="input-sm form-control" name="contractorSplitFrom" />
+                    <span class="input-group-addon">to</span>
+                    <input type="text" class="input-sm form-control" name="contractorSplitTo" />
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td class="btns form-inline">
+                <button class="generate" style="margin-right:25px;">Generate</button>
+                <button type="submit" class="export" style="width:auto;">Generate Excel</button>
+            </td>
+        </tr>
+    </table>
+    }
+</div>
+<div class="report-box">
+    <div class="filler">
+        <i class="mdi mdi-auto-fix"></i>
+        <h1>Report shows here!</h1>
+        <h2>Enter a filter and click Generate to begin.</h2>
+    </div>
+</div>
+@section Scripts{
+    <script type="text/javascript">
+       
+        $(document).ready(function () {
+            $("select").select2({ minimumResultsForSearch: -1, width: "resolve" });
+            $('.report-filter .input-daterange').datepicker({ format: "mm/dd/yyyy" });
+            
+            $(".generate").click(function (e) {
+                var form = $(".report-filter form");
+                loading(true);
+                $.ajax({
+                    url: "/report/GenerateWorkOrderSplit",
+                    type:"post",
+                    data:form.serialize(),
+                    success: function (html) {
+                        removeLoader(true, 300, function () {
+                            var overlay = $(".overlay");
+                            overlay.find(".overlay-body").html(html);
+                            if (!overlay.is(":visible"))
+                                overlay.show(200);
+                        });
+                    }
+                });
+                e.preventDefault();
+            });
+        });
+    </script>
+}

@@ -1,0 +1,92 @@
+﻿@model TeliconLatest.DataEntities.TRN04100
+@{
+    TeliconLatest.Models.TechnicianStat _TechnicianStat = new TeliconLatest.Models.TechnicianStat();
+    if (ViewBag.TechStats != null)
+    {
+        _TechnicianStat = (TeliconLatest.Models.TechnicianStat)ViewBag.TechStats;
+    }
+    ViewBag.Title = "Contractor Deduction";
+    Layout = "~/Views/Shared/_FormLayout.cshtml";
+}
+@using (Html.BeginForm("createorupdate", "contractordeduction", FormMethod.Post))
+{
+    @*@Html.AntiForgeryToken()*@
+    @Html.ValidationSummary(true)
+    <table>
+        <tr>
+            <td colspan="2">
+                <div id="info" class="clearfix" style="border-right:none;margin-left:10px;">
+                    <div class="info-img-holder">
+                        <img src="@Url.Content("~/images/technicians/" + _TechnicianStat.ID + ".jpg")" />
+                    </div>
+                    <div class="info-text">
+                        <h1 style="color:black;">@_TechnicianStat.Name</h1>
+                        <h2>@_TechnicianStat.Type - <span>@_TechnicianStat.ID</span></h2>
+                    </div>
+                </div>
+            </td>
+        </tr>
+        <tr><td colspan="2">@Html.LabelFor(x => x.DeductionID)</td></tr>
+        <tr>
+            <td colspan="2">
+                @Html.HiddenFor(x => x.DeductionConductorID, new { @class = "tel-form-id" })
+                @if (Model.DeductionConductorID > 0)
+                {
+                    @Html.DropDownList("DeductionID", (List<SelectListItem>)ViewBag.deductions, new { @class = "long", @disabled = "disabled" })
+                    @Html.HiddenFor(x => x.DeductionID)
+                }
+                else
+                {
+                    @Html.DropDownList("DeductionID", (List<SelectListItem>)ViewBag.deductions, new { @class = "long" })
+                    @Html.ValidationMessageFor(x => x.DeductionID)
+                }
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2"><label>Recurring</label></td>
+        </tr>
+        <tr>
+            <td>
+                <button class="tel-checkbox @(Model.Recurring ? "checked": "")">
+                    <i class="fe-ok"></i>
+                    @Html.HiddenFor(x => x.Recurring)
+                </button>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">@Html.LabelFor(x => x.Amount)</td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                @Html.TextBoxFor(x => x.Amount, new { @class = "long" })
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">@Html.LabelFor(x => x.StartDate)</td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                @Html.TextBoxFor(x => x.StartDate, new { @class = "date-box", @readonly = "readonly", Value = string.Format("{0:MM/dd/yyyy}", Model.StartDate) })
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">@Html.LabelFor(x => x.EndDate)</td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                @Html.TextBoxFor(x => x.EndDate, new { @class = "date-box", @readonly = "readonly", Value = string.Format("{0:MM/dd/yyyy}", Model.EndDate) })
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2"><label>Hold</label></td>
+        </tr>
+        <tr>
+            <td>
+                <button class="tel-checkbox @(Model.HoldIt ? "checked" : "")">
+                    <i class="fe-ok"></i>
+                    @Html.HiddenFor(x => x.HoldIt)
+                </button>
+            </td>
+        </tr>
+    </table>
+}

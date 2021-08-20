@@ -1,0 +1,44 @@
+﻿@model TeliconLatest.DataEntities.ADM22100
+@{
+    ViewBag.Title = "Vehicle";
+    Layout = "~/Views/Shared/_FormLayout.cshtml";
+}
+
+@using (Html.BeginForm("createorupdate", "vehicle", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(true)
+
+    <table>
+        <tr><td colspan="2">@Html.LabelFor(x => x.PlateNo)</td></tr>
+        <tr>
+            <td colspan="2">
+                @Html.HiddenFor(x => x.VehicleID, new { @class = "tel-form-id" })
+                @Html.TextBoxFor(x => x.PlateNo, new { @class = "long", @maxlength = "7" })
+                @Html.ValidationMessageFor(x => x.PlateNo)
+            </td>
+        </tr>
+        <tr><td colspan="2">@Html.LabelFor(x => x.FleetNo)</td></tr>
+        <tr>
+            <td colspan="2">
+                @Html.TextBoxFor(x => x.FleetNo, new { @class = "long", @maxlength = "7" })
+                @Html.ValidationMessageFor(x => x.FleetNo)
+            </td>
+        </tr>
+        <tr><td colspan="2">@Html.LabelFor(x => x.OwnedBy)</td></tr>
+        <tr>
+            <td colspan="2">
+                @Html.DropDownListFor(x => x.OwnedBy, (List<SelectListItem>)ViewBag.OwnerTypes, new { @class = "long" })
+                @Html.ValidationMessageFor(x => x.OwnedBy)
+            </td>
+        </tr>
+        <tr><td colspan="2">@Html.LabelFor(x => x.ConID)</td></tr>
+        <tr>
+            <td colspan="2">
+                @Html.DropDownListFor(x => x.ConID, (List<SelectListItem>)ViewBag.Contractors, new { @class = "long" })
+                @Html.ValidationMessageFor(x => x.ConID)
+            </td>
+        </tr>
+    </table>
+}
+

@@ -1,0 +1,296 @@
+﻿@using TeliconLatest.Reusables;
+@{
+    ViewBag.Title = "Invoices";
+}
+<div class="extras">
+    <button class="inv-singular old-invoice"><i class="fe-shuffle"></i></button>
+    <button class="inv-adder">N@*<i class="fe-flow-merge"></i>*@</button>
+</div>
+<div class="slider active">
+    <table class="admin-tbl workorder">
+        <thead>
+            <tr><th>Invoice No.</th><th>Title</th><th>Date</th><th>Sub-Total</th><th>G.C.T</th><th>Total</th><th></th></tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+<div class="slider" id="newInvoice">
+    <table class="admin-tbl newinvoices" data-name="new invoices">
+        <thead>
+            <tr><th>Invoice No.</th><th>Title</th><th>Date</th><th>Sub-Total</th><th>G.C.T</th><th>Total</th><th></th></tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+@using (Html.BeginForm("cablingworkdiary", "invoice", FormMethod.Post, new { @id = "cablingworkdiaryForm" }))
+{
+    <input type="hidden" name="id" value="" id="hiddenId" />
+}
+@section Breadcrumbs{
+    <li>Invoicing</li>
+    <li>Work Order Invoice</li>
+}
+@section Scripts{
+    <script type="text/javascript">
+            var hasBreakDown = false;
+            $(document).ready(function () {
+                requiresNew = false;
+                var dtempOptions = $.extend(true, {}, dataTableOptions);
+                dtempOptions.ajax.url = "@Url.Action("invoices","list")";
+                dtempOptions.columnDefs = [
+                        { "targets": 0, "name": "InvoiceNum", "data": "InvoiceNo" },
+                        { "targets": 1, "name": "InvoiceTitle", "data": "Title" },
+                        //{ "targets": 2, "name": "Contractor", "data": "Contractor" },
+                        { "targets": 2, "name": "InvoiceDate", "data": "Date", "searchable": false },
+                        { "targets": 3, "name": "SubTotal", "data": "SubTotal", "searchable": false },
+                        { "targets": 4, "name": "GCT", "data": "GCT", "searchable": false },
+                        { "targets": 5, "name": "Total", "data": "Total", "searchable": false },
+                        {
+                            "targets": 6, "class": "actions", "orderable": false, "searchable": false, "data": null,
+                            "defaultContent": "<a href='#print' title='Print' class='dt-print'><i class='fe-print-1'></i></a>" +
+                                "<a href='#change' title='Change' class='dt-change'><i class='fe-flash'></i></a>"
+                        },
+                ];
+                dtempOptions.order = [[0, 'desc']];
+                dtempOptions.createdRow = function (row, data) {
+                    if ($('td:eq(2)', row).find("i").is(".batched")) {
+                        $(row).find('.dt-change').addClass("unbatch").attr("title", "Un-Batch").html("<i class='fe-resize-full-1'></i>")
+                    }
+                    else {
+                        $('td:eq(7)', row).prepend("<a href='#edit' title='Details' class='dt-details-inv'><i class='fe-news'></i></a>");
+                        $(row).find('.dt-change').popover({
+                            content: "<ul class='action-menu'><li data-action='reverse'><span>Reverse</span></li><li data-action='cancel'><span>Cancel</span></li>",
+                            html: true, trigger: "click", placement: "bottom"
+                        });
+                    }
+                },
+                dtempOptions.drawCallback = function (settings) {
+                    $("[title]").tooltip({ placement: "top" });
+                    $('.dt-print').popover({
+                        content: "<ul class='action-menu print'><li data-action='ci'><span>Client Invoice</span></li><li data-action='wob'><span>Breakdown</span></li></ul>",
+                        html: true, trigger: "click", placement: "bottom"
+                    });
+                }
+                dTable = $("table.workorder").DataTable(dtempOptions);
+                $(".dataTables_wrapper:first .sub-top .dataTables_filter label")
+                    .after('@Html.Raw(Html.DropDownList("status", (List<SelectListItem>)ViewBag.Statuses).ToHtmlString().Replace(Environment.NewLine, ""))');
+                $(".dataTables_wrapper:first .sub-top .dataTables_filter label")
+                    .after('@Html.Raw(Html.DropDownList("year", (List<SelectListItem>)ViewBag.Years).ToHtmlString().Replace(Environment.NewLine, ""))');
+                $(document).on("change", "#year", function () {
+                    dTable.draw();
+                });
+                dTable.search('').draw();
+                //invoices
+                $(document).on("click", "#add-breakdown", function () {
+                    var self = $(this);
+                    var id = $(this).parents(".print-holder").toggleClass("breakdown").data("id");
+                    self.toggleClass("on");
+                    if (self.is(".on")) {
+                        $.get("@Url.Action("Breakdown")", { id: id, forInvoice: true }, function (partial) {
+                            $("#hasBreakeDownHdn").val(true);
+                            hasBreakDown = true;
+                            $("#breakdown-holder").addClass("isvisible").html($(partial).html())
+                        });
+                    }
+                    else {
+                        $("#hasBreakeDownHdn").val(false);
+                        hasBreakDown = false;
+                        $("#breakdown-holder").removeClass("isvisible").html("")
+                    }
+                });
+                $(document).on("click", ".dt-change.unbatch", function (e) {
+                    var self = $(this);
+                    var id = self.parents("tr").attr("id");
+                    var buttons = [
+                                {
+                                    text: "Continue", click: function () {
+                                        loading(true);
+                                        $.post("@Url.Action("changeinvoicestatus", "invoice")", { id: id, type: "b" }, function (html) {
+                                            removeLoader(true, 300, function () {
+                                                var page = dTable.page();
+                                                dTable.page(page).draw(false);
+                                                var page2 = dTable2.page();
+                                                dTable2.page(page2).draw(false);
+                                                //dTable.draw();
+                                                $(".tel-confirm-dialog").dialog("close");
+                                            });
+                                        });
+                                    }
+                                },
+                                { text: "Cancel", click: function () { $(this).dialog("close"); } }
+                    ];
+                    var msg = '<p>Are you sure you want to <b class="default-col">Un-Batch</b> this Invoice?</p></div>';
+                    displayConfirmationMsg(msg, 'Un-Batch Invoice', buttons);
+                    e.preventDefault();
+                });
+                $(document).on("click", ".action-menu li", function () {
+                    var self = $(this);
+                    var id = self.parents("tr").attr("id");
+                    var ajaxOptions = {
+                        type: "post",
+                        url: "@Url.Action("index", "invoice")",
+                        success: null,
+                        data: null,
+                    };
+                    var type = self.data("action");
+                    switch (type) {
+                        case "ci":
+                        case "wob":
+                        case "two":
+                        case "nci":
+                            hasBreakDown = false;
+                            if (type != "nci")
+                                ajaxOptions.url += type == "wob" ? "/breakdown" : type == "two" ? "/both" : "/clientinvoice";
+                            else
+                                ajaxOptions.url += "/newclientinvoice";
+                            ajaxOptions.data = { id: id };
+                            ajaxOptions.success = function (html) {
+                                removeLoader(true, 100, function () {
+                                    $(".overlay .overlay-body").append(html)
+                                    $(".overlay").show(200);
+                                });
+                            }
+                            loading(true);
+                            $.ajax(ajaxOptions);
+                            break;
+                        case "cwd":
+                            ajaxOptions.url += "/NewSummary";
+                            ajaxOptions.data = { id: id };
+                            ajaxOptions.success = function (html) {
+                                removeLoader(true, 100, function () {
+                                    $(".overlay .overlay-body").append(html)
+                                    $(".overlay").show(200);
+                                });
+                            }
+                            loading(true);
+                            $.ajax(ajaxOptions);
+                            break;
+                        case "sps":
+                            ajaxOptions.url += "/NewSummaryPriceSheet";
+                            ajaxOptions.data = { id: id };
+                            ajaxOptions.success = function (html) {
+                                removeLoader(true, 100, function () {
+                                    $(".overlay .overlay-body").append(html)
+                                    $(".overlay").show(200);
+                                });
+                            }
+                            loading(true);
+                            $.ajax(ajaxOptions);
+                            break;
+                        case "invs":
+                            ajaxOptions.url += "/NewInvoiceSheet";
+                            ajaxOptions.data = { id: id };
+                            ajaxOptions.success = function (html) {
+                                removeLoader(true, 100, function () {
+                                    $(".overlay .overlay-body").append(html)
+                                    $(".overlay").show(200);
+                                });
+                            }
+                            loading(true);
+                            $.ajax(ajaxOptions);
+                            break;
+
+                        case "reverse":
+                        case "cancel":
+                            var buttons = [
+                                {
+                                    text: "Continue", click: function () {
+                                        ajaxOptions.url += "/changeinvoicestatus";
+                                        ajaxOptions.data = { id: id, type: type.substring(0, 1) };
+                                        ajaxOptions.success = function (html) {
+                                            removeLoader(true, 300, function () {
+                                                var page = dTable.page();
+                                                dTable.page(page).draw(false);
+                                                //dTable.draw();
+                                                var page2 = dTable2.page();
+                                                dTable2.page(page2).draw(false);
+                                                $(".tel-confirm-dialog").dialog("close");
+                                            });
+                                        }
+                                        loading(true);
+                                        $.ajax(ajaxOptions);
+                                    }
+                                },
+                                { text: "Cancel", click: function () { $(this).dialog("close"); } }
+                            ];
+                            type = type.substring(0, 1).toUpperCase() + type.substr(1);
+                            var msg = '<p>Are you sure you want to <b class="default-col">' + type + '</b> this invoice?</p></div>';
+                            displayConfirmationMsg(msg, type + ' Invoice', buttons);
+                            break;
+                    }
+                });
+                $(document).on("click", ".dt-details-inv", function (e) {
+                    var self = $(this);
+                    var id = self.parents("tr").attr("id");
+                    loading(false);
+                    url = "@Url.Action("generateconstructor", "workorder")";
+                    $("body").append("<div class='full-overlay'></div>");
+                    $(".full-overlay").fadeIn(200);
+                    $.ajax({
+                        url: url,
+                        data: { invId: id },
+                        success: function (html) {
+                            removeLoader(false, 1000, function () {
+                                $("body").append(html);
+                                $("#constructor [title]").tooltip({ placement: "top" });
+                                $("#constructor").addClass("animated fadeInRight").show();
+                                $('.const-main .const-holder ul').perfectScrollbar();
+                            });
+                        }
+                    });
+                    e.preventDefault();
+                });
+
+                /*New Invoice*/
+                var dtempOptions1 = $.extend(true, {}, dataTableOptions);
+                dtempOptions1.ajax.url = "@Url.Action("newinvoices", "list")";
+                dtempOptions1.columnDefs = [
+                        { "targets": 0, "name": "InvoiceNum", "data": "InvoiceNo" },
+                        { "targets": 1, "name": "InvoiceTitle", "data": "Title" },
+                        //{ "targets": 2, "name": "Contractor", "data": "Contractor" },
+                        { "targets": 2, "name": "InvoiceDate", "data": "Date", "searchable": false },
+                        { "targets": 3, "name": "SubTotal", "data": "SubTotal", "searchable": false },
+                        { "targets": 4, "name": "GCT", "data": "GCT", "searchable": false },
+                        { "targets": 5, "name": "Total", "data": "Total", "searchable": false },
+                        {
+                            "targets": 6, "class": "actions", "orderable": false, "searchable": false, "data": null,
+                            "defaultContent": "<a href='#print' title='Print' class='dt-print-new'><i class='fe-print-1'></i></a>" +
+                                "<a href='#change' title='Change' class='dt-change'><i class='fe-flash'></i></a>"
+                        },
+                ];
+                dtempOptions1.order = [[0, 'desc']];
+                dtempOptions1.createdRow = function (row, data) {
+                    if ($('td:eq(2)', row).find("i").is(".batched")) {
+                        $(row).find('.dt-change').addClass("unbatch").attr("title", "Un-Batch").html("<i class='fe-resize-full-1'></i>")
+                    }
+                    else {
+                        $('td:eq(7)', row).prepend("<a href='#edit' title='Details' class='dt-details-inv'><i class='fe-news'></i></a>");
+                        $(row).find('.dt-change').popover({
+                            content: "<ul class='action-menu'><li data-action='reverse'><span>Reverse</span></li><li data-action='cancel'><span>Cancel</span></li>",
+                            html: true, trigger: "click", placement: "bottom"
+                        });
+                    }
+                },
+                dtempOptions1.drawCallback = function (settings) {
+                    $("[title]").tooltip({ placement: "top" });
+                    $('.dt-print-new').popover({
+                        content: "<ul class='action-menu print'><li data-action='cwd'><span>Cabling Work Diary</span></li><li data-action='sps'><span>Summary Price Sheet</span></li><li data-action='invs'><span>Invoice Sheet</span></li><li data-action='nci'><span>Client Invoice</span></li></ul>",
+                        html: true, trigger: "click", placement: "bottom"
+                    });
+                }
+                dtempOptions1.initComplete = function (settings, json) {
+                    $(".dataTables_wrapper .top select").select2({ minimumResultsForSearch: -1, width: "resolve" });
+                    $("#newInvoice .dataTables_wrapper .sub-top .dataTables_filter label")
+                    .after('@Html.Raw(Html.DropDownList("new-status", (List<SelectListItem>)ViewBag.Statuses).ToHtmlString().Replace(Environment.NewLine, ""))');
+                    $("#newInvoice .dataTables_wrapper .sub-top .dataTables_filter label")
+                        .after('@Html.Raw(Html.DropDownList("new-year", (List<SelectListItem>)ViewBag.Years).ToHtmlString().Replace(Environment.NewLine, ""))');
+                };
+                dTable2 = $("table.newinvoices").DataTable(dtempOptions1);
+
+                $(document).on("change", "#new-year", function () {
+                    dTable2.draw();
+                });
+                dTable2.search('').draw();
+            });
+    </script>
+}

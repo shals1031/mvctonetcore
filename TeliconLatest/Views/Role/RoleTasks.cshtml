@@ -1,0 +1,136 @@
+﻿@model IEnumerable<TeliconLatest.Models.RoleTaskList>
+@{
+    Layout = null;
+}
+
+<script type="text/javascript">
+    var isCalled = false;
+        $(document).ready(function () {
+            $(document).on("click", "#roletask .bottom button", function (e) {
+                if (isCalled)
+                    return;
+                isCalled = true;
+                var rows = $(".tasks-holder table > tbody  > tr");
+                if (rows.length < 1) {
+                    var htmlMsg = "<p>No <b class='loc-col'>Task(s)</b> have been selected for <b class='date-col'>Assign</b>. First select your desired <b class='loc-col'>Task(s)</b> then try again.</p>";
+                    var htmlTitle = "<i class='fe-comment'></i>Cannot Assign";
+                    displayDialogMsg(htmlMsg, htmlTitle);
+                }
+                else {
+                    rows = $.grep(rows, function (row) {
+                        var self = $(row).find("#isSelectBtn");
+                        var isChecked = $(self).is(".active");
+                        return isChecked;
+                    });
+                    var model = $.map(rows, function (elm) {
+                        var cnRdBtn = $(elm).find("#canReadBtn");
+                        var cnWrtBtn = $(elm).find("#canWriteBtn");
+                        return {
+                            TaskId: $(elm).attr("id").replace("tr-", ""),
+                            CanRead: cnRdBtn != undefined ? $(cnRdBtn).is(".active") : false,
+                            CanWrite: cnWrtBtn != undefined ? $(cnWrtBtn).is(".active") : false
+                        };
+                    });
+                    if (model.length > 0) {
+                        var buttons = [
+                            { text: "Continue", click: function () { $(this).dialog("close"); SaveRoleTasks(model, $(this)); } },
+                            { text: "Cancel", click: function () { $(this).dialog("close"); isCalled = false; } }
+                        ];
+                        var msg = "<p>Selected <b class='date-col'>Task(s)</b>, will be <b class='default-col'>Assign</b> to the role. Are you sure you want to Continue?</p></div>";
+                        displayConfirmationMsg(msg, 'Confirmation', buttons);
+                    }
+                    else {
+                        var htmlMsg = "<p>No <b class='loc-col'>Task(s)</b> have been selected for <b class='date-col'>Assign</b>. First select your desired <b class='loc-col'>Task(s)</b> then try again.</p>";
+                        var htmlTitle = "<i class='fe-comment'></i>Cannot Assign";
+                        displayDialogMsg(htmlMsg, htmlTitle);
+                        isCalled = false;
+                    }
+                }
+                e.preventDefault();
+            });
+        });        
+        function SaveRoleTasks(model, dBox) {
+            isCalled = false;
+            loading(true);
+            $.ajax({
+                url: "@Url.Action("saveroletasks", "role")",
+                data: $.toDictionary({ model: model, roleId: $("#roleIdHidden").val() }),
+                type: "post",
+                success: function (r) {
+                    removeLoader(true, 200, function () {                        
+                        var htmlMsg = "";
+                        var htmlTitle = "";
+                        if (r.Code == "100") {
+                            $("#roleIdHidden").val(r.Additional);
+                            //htmlMsg = "<p>Tasks were <b>Assigned</b> Successfully!.</p>";
+                            //htmlTitle = "<i class='fe-comment'></i> Success";
+                            //displayDialogMsg(htmlMsg, htmlTitle);
+                            try {
+                                dBox.dialog("close");
+                            }
+                            catch (e) {
+
+                            }
+                            $("#tasks").removeClass("fadeInRight").addClass("fadeOutUp").one('webkitAnimationEnd mozAnimationEnd MSAnimationEnd oanimationend animationend', function () {
+                                $(this).remove();
+                                $(".btm-overlay").fadeOut(200, function () { $(this).remove(); });
+                            });
+                        }
+                        else {
+                            htmlMsg = r.Msg;
+                            htmlTitle = "<i class='fe-comment'></i>Cannot Assign";
+                            displayDialogMsg(htmlMsg, htmlTitle);
+                        }
+
+                    });
+                }
+            });
+        }
+</script>
+
+<div id="tasks" class="animated bounceInRight">
+    <input type="hidden" id="roleIdHidden" value="@ViewBag.roleId" />
+    <button class="close"><i class="fe-cancel"></i></button>
+    <div id="roletask" class="roletask-holder">
+        <div class="top title clearfix">
+            <span style="float:left; margin:15px 15px;">Role Tasks</span>
+        </div>
+        <div class="center">
+            <div class="tasks-holder">
+                @if (Model.Any())
+                {
+                    <table class="tasks">
+                        <thead>
+                            <tr id="">
+                                <th><button class="check-box-s"><i class="fe-ok"></i></button></th>
+                                <th>Task</th>
+                                <th><button class="check-box-r" style="width:100px;"><i class="fe-ok" style="float:left;"></i><span style="color:black;">Can Read</span></button></th>
+                                <th><button class="check-box-w" style="width:100px;"><i class="fe-ok" style="float:left;"></i><span style="color:black;">Can Write</span></button></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr id="tr-@item.TaskId">
+                                    <td><button id="isSelectBtn" class="check-box-s @(item.IsSelected ? "active" : "")"><i class="fe-ok"></i></button></td>
+                                    <td>@item.TaskName</td>
+                                    <td><button id="canReadBtn" class="check-box-r @(item.CanRead ? "active" : "")"><i class="fe-ok"></i></button></td>
+                                    <td><button id="canWriteBtn" class="check-box-w @(item.CanWrite ? "active" : "")"><i class="fe-ok"></i></button></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
+        </div>
+        <div class="bottom clearfix">            
+            <button class="roleTask-save-btn"><i class="glyphicon-floppy-save"></i>Save<i class="glyphicon-floppy-save"></i></button>
+        </div>
+    </div>
+</div>
+
+
+
+@section Scripts{
+    
+}

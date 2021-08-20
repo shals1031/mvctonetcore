@@ -1,0 +1,62 @@
+﻿@model IEnumerable<TeliconLatest.Models.PaymentDetailReport>
+@{
+    Layout = null;
+    int i = 0;
+}
+@if (Model.Any())
+{
+    <div class="print-holder">
+        <div class="bottom">
+
+            <h2 class="title">Payment Detail Report</h2>
+            <h2 class="title" style="margin:20px 0;">Period Starting @string.Format("{0:dddd MMMM dd, yyyy}", ViewBag.DateFrom) to @string.Format("{0:dddd MMMM dd, yyyy}", ViewBag.DateTo)</h2>
+            <table class="prt-data report-table">
+                <thead>
+                    <tr>
+                        <th>S.No</th>
+                        @*<th>Work ID</th>*@
+                        <th>Wo_ref</th>
+                        <th>Wo_title</th>
+                        <th>Dispatchdt</th>
+                        <th>Status</th>
+                        <th>DateSubmitted</th>
+                        <th>PaidDate</th>
+                        @*<th>DateVerified</th>
+                    <th>ConId</th>*@
+                        <th>Lead</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in Model)
+                    {
+                        i++;
+                        <tr>
+                            <td>@i</td>
+                            @*<td>@row.WorkID</td>*@
+                            <td>@row.Wo_ref</td>
+                            <td style ="text-align:left">@row.Wo_title</td>
+                            <td>@row.Dispatchdt</td>
+                            <td>@row.Status</td>
+                            <td>@row.DateSubmitted</td>
+                            <td>@row.PaidDate</td>
+                            @*<td>@row.DateVerified</td>
+                        <td>@row.ConId</td>*@
+                            <td>@row.LastName</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <button class="print-clicker"><i class="fe-print-1"></i></button>
+    </div>
+}
+else
+{
+    <div class="filler animated tada">
+        <i class="mdi mdi-emoticon-sad"></i>
+        <h1>No results found</h1>
+        <h2>Please change your filter and try again.</h2>
+    </div>
+}
+
+

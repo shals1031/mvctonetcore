@@ -1,0 +1,102 @@
+﻿@model IEnumerable<TeliconLatest.Models.TechnicianStatementDetail>
+@{
+    Layout = null;
+    var deductions = (List<TeliconLatest.Models.ContractorDeductionReport>)ViewBag.DeductionData;
+}
+<div class="print-holder">
+    <div class="bottom">
+        <h2 class="title">Contractor Statement</h2>
+        <h2 class="title" style="margin:20px 0;">Period Starting @string.Format("{0:dddd MMMM dd, yyyy}", ViewBag.DateFrom) to @string.Format("{0:dddd MMMM dd, yyyy}", ViewBag.DateTo)</h2>
+        <h2 class="sub-title">Contractor : @ViewBag.ConName</h2>
+        <table class="report">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Qty</th>
+                    <th>Description</th>
+                    <th>Rate</th>
+                    <th>Amount</th>
+                    <th>Penalty</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            @foreach (var t in Model.Select(x => x.Wo_title).Distinct())
+            {
+                <tr><td colspan="7" class="main-title">@t</td></tr>
+                foreach (var l in Model.Where(x => x.Wo_title == t).Select(x => x.Location).Distinct())
+                {
+                    <tr class="title">
+                        <td class="date">@string.Format("{0:dd/MM/yyyy}", Model.FirstOrDefault(x => x.Location == l && x.Wo_title == t).ActDate)</td>
+                        <td></td>
+                        <td colspan="5">@l</td>
+                    </tr>
+                    foreach (var act in Model.Where(x => x.Location == l && x.Wo_title == t))
+                    {
+                        <tr>
+                            <td class="date">""</td>
+                            <td>@act.OActQty</td>
+                            <td>@act.RateDescr</td>
+                            <td class="number">@string.Format("{0:C}", act.Cost)</td>
+                            <td class="number">@string.Format("{0:C}", act.Cost * Convert.ToDouble(act.OActQty))</td>
+                            <td>@string.Format("{0:C}", (act.Cost * Convert.ToDouble(act.OActQty)) - act.PenalizeAmount)</td>
+                            <td class="number">@string.Format("{0:C}", act.PenalizeAmount)</td>
+                        </tr>
+                    }
+                }
+            }
+            @{
+                var total = Model.Sum(x => x.Cost * Convert.ToDouble(x.OActQty));
+                var penalizeTotal = Model.Sum(x => x.PenalizeAmount);
+            }
+            <tr class="totals">
+                <td colspan="4">Total: </td>
+                <td class="number">@string.Format("{0:C}", total)</td>
+                <td class="number">@string.Format("{0:C}", total - penalizeTotal)</td>
+                <td class="number">@string.Format("{0:C}", penalizeTotal)</td>
+            </tr>
+            @*<tr class="totals">
+                <td colspan="6">Net Amount: </td>
+                <td class="number">@string.Format("{0:C}", (penalizeTotal - deductions.Sum(x=> x.Amount)))</td>
+            </tr>*@
+        </table>
+        @*@if (deductions.Count() > 0)
+        {
+            int d = 1;
+        <h2 class="sub-title">Deductions</h2>
+        <table class="report">
+            <thead>
+                <tr>
+                    <th>Item No.</th>
+                    <th>Deduction Name</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Amount</th>
+                </tr>
+            </thead>
+            @foreach (var deduction in deductions)
+            {
+                <tr>
+                    <td>@d</td>
+                    <td>@deduction.DeductionName</td>
+                    <td>@string.Format("{0:dd/MM/yyyy}", deduction.StartDate)</td>
+                    <td>@string.Format("{0:dd/MM/yyyy}", deduction.EndDate)</td>
+                    <td class="number">@string.Format("{0:C}", deduction.Amount)</td>
+                </tr>
+                d++;
+            }
+            <tr class="totals">
+                <td colspan="4">Total: </td>
+                <td class="number">@string.Format("{0:C}", deductions.Sum(x=> x.Amount))</td>
+            </tr>
+        </table>
+        }*@
+</div>
+    @using (Html.BeginForm("StatementDetailToExcel", "Technician", FormMethod.Post))
+    {
+        <input type="hidden" name="pdate" value="@ViewBag.pdate" />
+        <input type="hidden" name="id" value="@ViewBag.id" />
+        <button class="export-clicker" type="submit"><i class="fe-export-1"></i></button>
+        <button class="print-clicker"><i class="fe-print-1"></i></button>
+    }
+    
+</div>

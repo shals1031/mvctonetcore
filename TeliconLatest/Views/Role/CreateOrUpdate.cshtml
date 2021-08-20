@@ -1,0 +1,22 @@
+﻿@model TeliconLatest.DataEntities.Roles
+@{
+    ViewBag.Title = "Role";
+    Layout = "~/Views/Shared/_FormLayout.cshtml";
+}
+
+@using (Html.BeginForm("createorupdate", "role", FormMethod.Post)) {
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(true)
+
+    <table>
+        <tr><td colspan="2">@Html.Label("Role Name")</td></tr>
+        <tr>
+            <td colspan="2">
+                @Html.HiddenFor(x => x.RoleId, new { @class = "tel-form-id" })
+                @Html.HiddenFor(x => x.ApplicationId, new { @class = "tel-form-id" })
+                @Html.TextBoxFor(x => x.RoleName, new { @class = "long" })
+                @Html.ValidationMessageFor(x=> x.RoleName)
+            </td>
+        </tr>        
+    </table>
+}

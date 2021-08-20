@@ -32,7 +32,6 @@ namespace TeliconLatest.Reusables
         public static TechnicianStat GetTechStats(int? conID, string email)
         {
             using TeliconDbContext db = new TeliconDbContext(GetDbContextOptions());
-            //string email = HttpContext.Current.User.Identity.Name;
             var userWO = db.TRN23100.Where(x => !conID.HasValue ? x.ADM03400.Any(y => y.ADM03300.Email == email) : x.ADM03400.Any(y => y.ContractorID == conID)).Select(x => new
             {
                 x.Status
@@ -42,7 +41,7 @@ namespace TeliconLatest.Reusables
                 ID = x.EmployeeID,
                 Name = x.LastName + " " + x.FirstName.Substring(0, 1) + ".",
                 Type = DataDictionaries.UserTypes[x.ConClass],
-                Total = userWO.Count(),
+                Total = userWO.Count,
                 Invoiced = userWO.Count(y => y.Status == "i"),
                 Processing = userWO.Count(y => y.Status == "p"),
                 Submitted = userWO.Count(y => y.Status == "s"),

@@ -1,0 +1,14 @@
+﻿@model IEnumerable<TeliconLatest.Models.WorkOrderReferencePartial>
+@{
+    Layout = null;
+}
+@if (Model.Any())
+{
+    foreach (var item in Model)
+    {
+        <li class="clearfix" data-code="@item.ReferenceCode"><label>@item.ReferenceCode <span>@item.Count</span></label></li>
+    }
+}
+else{
+    <li class="empty"><label>No Records Found</label></li>
+}

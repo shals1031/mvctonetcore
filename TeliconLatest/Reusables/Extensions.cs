@@ -1,5 +1,6 @@
 ﻿using LinqKit;
 using Microsoft.AspNetCore.Html;
+using Microsoft.AspNetCore.Http;
 using OfficeOpenXml;
 using System;
 using System.Collections.Generic;
@@ -8,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
+using System.Text.Json;
 using TeliconLatest.DataEntities;
 using TeliconLatest.Models;
 
@@ -265,6 +267,19 @@ namespace TeliconLatest.Reusables
             using StringWriter writer = new StringWriter();
             htmlContent.WriteTo(writer, System.Text.Encodings.Web.HtmlEncoder.Default);
             return writer.ToString();
+        }
+    }
+
+    public static class SessionExtensions
+    {
+        public static void Set<T>(this ISession session, string key, T value)
+        {
+            session.SetString(key, JsonSerializer.Serialize(value));
+        }
+        public static T Get<T>(this ISession session, string key)
+        {
+            var value = session.GetString(key);
+            return value == null ? default : JsonSerializer.Deserialize<T>(value);
         }
     }
 }

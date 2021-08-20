@@ -1,0 +1,150 @@
+﻿@model TeliconLatest.Models.MatConstructorPartial
+@{
+    Layout = null;
+    bool invoiced = (bool)ViewBag.Invoiced;
+    var actsDdl = (List<TeliconLatest.Models.ConstructorActivityDisplay>)ViewBag.ActsDdl;
+}
+
+<div id="matConstructor" data-id="@Model.ActivityId" @(invoiced ? "data-inv=" + ViewBag.InvoiceID : "") class="@(invoiced ? "invoice-wo " + ViewBag.Type : string.IsNullOrEmpty(ViewBag.Type) ? "" : ViewBag.Type + "-wo")">
+    <div class="title clearfix">
+        <i class="fe-clipboard-1"></i>
+        <span title="@Model.Title">@Model.Title</span>
+        <input type="hidden" id="actIdHidden" value="@Model.ActivityId" />
+        <input type="hidden" id="locHidden" value="@Model.Location" />
+        <input type="hidden" id="dateHidden" value="@Model.Date" />
+        <input type="hidden" id="matsReqHidden" value="@ViewBag.MatReq" />
+    </div>
+    <div class="mat-const-main clearfix">
+        <div class="const-holder const-mats">
+            <div class="title">
+                <i class="fe-bell-1"></i>
+                <span>Activities</span>
+                @if (string.IsNullOrEmpty(ViewBag.Type))
+                {
+                    <a href="#"><i class="fe-plus"></i></a>
+                }
+            </div>
+            @if (Model.ConstructorActivities.Any())
+            {
+                <ul class="clearfix">
+                    @foreach (var act in Model.ConstructorActivities)
+                    {
+                        <li class="clearfix" data-id="@act.RID">
+                            @if (ViewBag.Type == "")
+                            {
+                                <div class="act-holder">
+                                    @Html.DropDownList("acts", new SelectList(actsDdl, "ActivityID", "Description", act.ActivityID), new { @class = "act-ddl" })
+                                    <input type="text" class="act-amt" value="@act.ActivityAmount"/>
+                                </div>
+                                <div class="wo-actions">
+                                    @if (act.HasMaterials)
+                                    {
+                                        @*<div class="add-materials-contn">
+                                            <div class="add-materials">
+                                                <label>
+                                                    <span>Materials</span>
+                                                    <button>
+                                                        <span></span>
+                                                    </button>
+                                                    <input type="hidden" value="@act.AddMaterial" />
+                                                    @*<input type="text" class="mat-amt" value="@act.ActivityAmount" />
+                                                </label>
+                                            </div>
+
+                                        </div>*@
+                                    }
+                                    @if (!ViewBag.MatReq)
+                                    {
+                                        <a href="#" class="del-action"><i class="fe-trash"></i></a>
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <span class="temp-loc">@actsDdl.FirstOrDefault(x => x.ActivityID == act.ActivityID).Description</span>
+                                <span class="temp-act">@act.ActivityAmount</span>
+                            }
+                        </li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <div class="placeholder">
+                    <button><i class="fe-bell-1"></i></button>
+                </div>
+            }
+        </div>
+    </div>
+    <div class="const-btm clearfix">
+        @*@if (!Model.UserRole.Contains("Supervisor") && !Model.UserRole.Contains("Technician"))
+        {
+            <div class="wo-inv clearfix">
+                <span>Invoice No.:</span>
+                <div>
+                    @if (Model.InvoiceNos.Count < 1 || invoiced == true)
+                    {
+                        <span @(!invoiced ? "title='Invoice ID is always assumed'" : "")>
+                            @Model.InvoiceId
+                            @if (!invoiced)
+                            {
+                                <i class="fe-help-circled"></i>
+                            }
+                        </span>
+                    }
+                    else
+                    {
+                        @*Model.InvoiceNos.Insert(0, new SelectListItem{Text = "",Value = ""});
+                        @Html.DropDownList("ddl-invoice-no", Model.InvoiceNos)*@
+                    @*}
+            </div>
+        </div>
+    }*@
+        <div class="wo-btns clearfix">
+            @if (string.IsNullOrEmpty(ViewBag.Type))
+            {
+                <button class="update">Update</button>
+                @*if (Model.UserRole.Contains("Supervisor") || Model.UserRole.Contains("Technician"))
+                {
+                    <button class="submit">Submit</button>
+                }*@
+            }
+            @*@if (!Model.UserRole.Contains("Supervisor") && !Model.UserRole.Contains("Technician"))
+            {
+                if (!invoiced)
+                {
+                    <button class="process">Process</button>
+                }
+            }*@
+            <button class="cancel">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        //$("input.act-amt").on("blur", function (e) {
+        //    var self = $(this);
+        //    var prnt = $(this.parentElement);
+        //    var id = prnt.find("select").val();
+        //    var actId = $("#actIdHidden").val();
+        //    $.post("/workorder/GetMaterialMaxQty", { actId: actId, matId: id }, function (r) {
+        //        var msgAddl = "";
+        //        if (r.MaxQty != 0) {
+        //            if (Number(self.val()) > r.MaxQty)
+        //                msgAddl = "You have exceed the <b class='default-col'>Maximum Quantity ( " + r.MaxQty + " )</b> level for the material.";
+        //        }
+        //        if (Number(self.val()) < 1)
+        //            msgAddl = "You are going to insert <b class='default-col'>Nagavite</b> value as material quantity.";
+        //        if (msgAddl != "") {
+        //            var buttons = [
+        //                    { text: "Continue", click: function () { $(this).dialog("close"); } },
+        //                    { text: "Cancel", click: function () { $(this).dialog("close"); self.val(r.MaxQty); } }
+        //            ];
+        //            var msg = "<div><p>" + msgAddl + " Are you sure you want to Continue?</p></div>";
+        //            displayConfirmationMsg(msg, 'Quantity Warning', buttons);
+        //        }
+        //    });
+        //});
+    });
+</script>

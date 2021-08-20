@@ -1,0 +1,102 @@
+﻿@model TeliconLatest.Models.ClientInvoice
+
+@{
+    Layout = null;
+    ViewBag.IsInvoice = true;
+}
+
+<div class="print-holder" data-id="@Model.Client.InvoiceNo">
+    <div class="print-top-options">
+        <label class="toggle-holder">
+            <span>Attach Breakdown</span>
+            <button id="add-breakdown" class='simple-toggler'><span></span></button>
+        </label>
+    </div>
+    <partial name="ClientDataPartial" model="Model.Client" />
+    <div class="bottom">
+        <h2 class="title">@Model.Title</h2>
+        <table class="prt-data">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Qty</th>
+                    <th>Description</th>
+                    <th>Rate</th>
+                    <th>Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var loc in Model.Activities.Select(x => new { x.ActivityLocation, x.Comments }).Distinct())
+                {
+                    int count = 1;
+                    <tr>
+                        <td class="title" colspan="5">
+                            @loc.ActivityLocation
+                            @if (!string.IsNullOrEmpty(loc.Comments))
+                            {
+                                <h1><b>Comments:</b> @loc.Comments</h1>
+                            }
+                        </td>
+                    </tr>
+                    foreach (var act in Model.Activities.Where(x => x.ActivityLocation == loc.ActivityLocation))
+                    {
+                        <tr>
+                            <td class="date">@string.Format("{0:dd/MM/yyyy}", act.ActivityDate)</td>
+                            <td>@act.ActivityQty</td>
+                            <td><div style="text-align:left">@act.ActivityDesc</div></td>
+                            <td class="number">@string.Format("{0:C}", act.ActivityCost)</td>
+                            <td class="number">@string.Format("{0:C}", act.ActivityCost * Convert.ToDouble(act.ActivityQty))</td>
+                        </tr>
+                        count++;
+                    }
+                    count++;
+                }
+                @{
+                    var total = Model.Activities.Sum(x => x.ActivityCost * Convert.ToDouble(x.ActivityQty));
+                    var gct = total * Convert.ToDouble(Model.GCT);
+                    var grandTotal = total + gct;
+                }
+                <tr class="totals"><td colspan="4">Total: </td><td class="number">@string.Format("{0:C}", total)</td></tr>
+                <tr class="totals"><td colspan="4">GCT(@((Model.GCT * 100).ToString("#.##"))%): </td><td class="number">@string.Format("{0:C}", gct) </td></tr>
+                <tr class="totals"><td colspan="4">Grand Total: </td><td class="number">@string.Format("{0:C}", grandTotal)</td></tr>
+            </tbody>
+        </table>
+        @if (Model.Materials.Count > 0)
+        {
+            <br />
+            <br />
+            <h2 class="sub-title" style="margin: 10px 0px;">Material Usage:</h2>
+            <table class="prt-data">
+                <thead>
+                    <tr>
+                        <th>Nos.</th>
+                        <th>Description</th>
+                        <th>Qty</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        int matCout = 1;
+                        foreach (var mat in Model.Materials)
+                        {
+                            <tr>
+                                <td style="text-align:center;" width="70px">@matCout</td>
+                                <td><div style="text-align:left">@mat.MatDesc</div></td>
+                                <td style="text-align:center;" width="80px">@mat.MatQty</td>
+                            </tr>
+                            matCout++;
+                        }
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+    <div id="breakdown-holder"></div>
+    @using (Html.BeginForm("ClientInvoiceToExcel", "invoice", FormMethod.Post))
+    {
+        <input type="hidden" name="InvoiceNo" value="@ViewBag.InvoiceNo" />
+        <input type="hidden" name="HasBreakDown" id="hasBreakeDownHdn" value="false" />
+        <button class="export-clicker" type="submit"><i class="fe-export-1"></i></button>
+        <button class="print-clicker"><i class="fe-print-1"></i></button>
+    }
+</div>

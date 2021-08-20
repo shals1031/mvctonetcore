@@ -1,0 +1,121 @@
+﻿@using System.Globalization;
+
+@{
+    ViewBag.Title = "PO Summary";
+    
+}
+@section Breadcrumbs{
+    <li>Reports</li>
+    <li>@ViewBag.Title</li>
+}
+
+<div class="report-filter">
+    <h1 class="title">Report Filter</h1>
+    @using (Html.BeginForm("POSummaryToExcel", "report", FormMethod.Post))
+    {
+        <table class="periods-filter">
+            <tr>
+                <td colspan="2"><label>Period Starting</label></td>
+            </tr>
+            <tr>
+                <td>
+                    @Html.DropDownList("periodStart", (List<SelectListItem>)ViewBag.PeriodList, new { style = "width:180px;" })
+                </td>
+                <td>
+                    @Html.DropDownList("periodStartYear", (List<SelectListItem>)ViewBag.Years, new { style = "width:100px;" })
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2"><label>Period Ending</label></td>
+            </tr>
+            <tr>
+                <td>
+                    @Html.DropDownList("periodEnd", (List<SelectListItem>)ViewBag.PeriodList, new { style = "width:180px;" })
+                </td>
+                <td>
+                    @Html.DropDownList("periodEndYear", (List<SelectListItem>)ViewBag.Years, new { style = "width:100px;" })
+                </td>
+            </tr>
+        </table>
+        <table>
+        <tr>
+            <td class="btns"><button class="generate">Generate</button></td>
+            <td class="btns"><button type="submit" class="export" style="width:auto;">Generate Excel</button></td>
+        </tr>
+        </table>
+    }
+</div>
+<div class="report-box">
+    <div class="filler">
+        <i class="mdi mdi-auto-fix"></i>
+        <h1>Report shows here!</h1>
+        <h2>Enter a filter and click Generate to begin.</h2>
+    </div>
+</div>
+@section scripts{
+    <script type="text/javascript">
+        $(window).load(function () {
+            $("select").select2({ minimumResultsForSearch: -1, width: "resolve" });
+            $(".filter-toggler button").click(function (e) {
+                var self = $(this);
+                self.toggleClass("on off");
+                toggleViews(self.is(".on") ? "on" : "off");
+                e.preventDefault();
+            });
+            $(".filter-toggler span").click(function (e) {
+                var self = $(this);
+                var clazz = self.attr("class");
+                self.parent().find("button").removeClass("on off").addClass(clazz);
+                toggleViews(clazz);
+                e.preventDefault();
+            });
+            $('.report-filter .input-daterange').datepicker({ format: "mm/dd/yyyy" });
+            $(".generate").click(function (e) {
+                var ok = true;
+                if ($(".filter-toggler button").is(".off")) {
+                    var dateFrom = $(".date-filter [name='dateFrom']").val();
+                    var dateTo = $(".date-filter [name='dateFrom']").val();
+                    if (dateFrom.isEmpty() || dateTo.isEmpty()) {
+                        var htmlMsg = "<p>Please ensure that a <b class='default-col'>From Date</b> and a <b class='default-col'>To Date</b> are entered when using the <b class='default-col'>Date Range</b></p>";
+                        var htmlTitle = "<i class='fe-comment'></i>Date Range Error";
+                        displayDialogMsg(htmlMsg, htmlTitle);
+                        ok = false;
+                    }
+                }
+                if (ok) {
+                    var form = $(".report-filter form");
+                    loading(true);
+                    $.ajax({
+                        url: "/report/GeneratePOSummary",
+                        type: "post",
+                        data: form.serialize(),
+                        success: function (html) {
+                            console.log(html)
+                            removeLoader(true, 300, function () {
+                                var overlay = $(".overlay");
+                                overlay.find(".overlay-body").html(html);
+                                if (!overlay.is(":visible"))
+                                    overlay.show(200);
+                            });
+                        }
+                    });
+                }
+                e.preventDefault();
+            });
+        });
+        function toggleViews(state) {
+            var form = $('form');
+            form.find("input[type=text], textarea").val("");
+            if (state == "on") {
+                $(".date-filter").hide(200, function () {
+                    $(".periods-filter").show(200);
+                });
+            }
+            else {
+                $(".periods-filter").hide(200, function () {
+                    $(".date-filter").show(200);
+                });
+            }
+        }
+    </script>
+}

@@ -1,0 +1,116 @@
+﻿@{
+    ViewBag.Title = "Invoice By Category";
+
+}
+@section Breadcrumbs{
+    <li>Reports</li>
+    <li>@ViewBag.Title</li>
+}
+
+<div class="report-filter">
+    <h1 class="title">Report Filter</h1>
+    @using (Html.BeginForm("CategoryInvoiceStatementsToExcel", "report", FormMethod.Post))
+    {
+        @*<table>
+        <tr><td colspan="2"><label>Sort By</label></td></tr>
+        <tr>
+            <td>
+                <select name="sortBy" id="sortBy" style="width:150px;">
+                    <option value="TotalAmount">TOTAL</option>
+                    <option value="Category">CATEGORY</option>
+                </select>
+            </td>
+            <td>
+                <select name="direction" id="direction" style="width:125px;">
+                    <option value="asc">Ascending</option>
+                    <option value="desc">Descending</option>
+                </select>
+            </td>
+        </tr>
+    </table>*@
+        <table class="date-filter">
+            @*<tr>
+                <td>
+                    <label>Category</label>
+                </td>
+                <td>
+                    @Html.DropDownList("CategorySelection", (List<SelectListItem>)ViewBag.CategorySelection, new { style = "width:150px;" })
+                </td>
+            </tr>*@
+            <tr>
+                <td colspan="2">
+                    <label>Date</label>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <div class="input-daterange input-group" id="datepicker">
+                        <input type="text" class="input-sm form-control" name="dateFrom" />
+                        <span class="input-group-addon">to</span>
+                        <input type="text" class="input-sm form-control" name="dateTo" />
+                    </div>
+                </td>
+            </tr>
+
+            
+            
+        </table>
+
+        <table>
+            <tr>
+                <td class="btns"><button class="generate">Generate</button></td>
+                <td class="btns"><button type="submit" class="export" style="width:auto;">Generate Excel</button></td>
+            </tr>
+        </table>
+    }
+</div>
+<div class="report-box">
+    <div class="filler">
+        <i class="mdi mdi-auto-fix"></i>
+        <h1>Report shows here!</h1>
+        <h2>Enter a filter and click Generate to begin.</h2>
+    </div>
+</div>
+
+@section scripts{
+    <script type="text/javascript">
+        
+        $(window).load(function () {
+            $("select").select2({ minimumResultsForSearch: -1, width: "resolve" });
+
+            $('.report-filter .input-daterange').datepicker({ format: "mm/dd/yyyy" });
+                        
+            $(".generate").click(function (e) {
+                var ok = true;
+                var dateFrom = $(".date-filter [name='dateFrom']").val();
+                var dateTo = $(".date-filter [name='dateTo']").val();
+                if (dateFrom.isEmpty() || dateTo.isEmpty()) {
+                    var htmlMsg = "<p>Please ensure that a <b class='default-col'>From Date</b> and a <b class='default-col'>To Date</b> are entered when using the <b class='default-col'>Date Range</b></p>";
+                    var htmlTitle = "<i class='fe-comment'></i>Date Range Error";
+                    displayDialogMsg(htmlMsg, htmlTitle);
+                    ok = false;
+                }
+
+                if (ok) {
+                    var form = $(".report-filter form");
+                    loading(true);
+                    $.ajax({
+                        url: "/report/GenerateCategoryInvoiceStatements",
+                        type: "post",
+                        data: form.serialize(),
+                        success: function (html) {
+                            console.log(html)
+                            removeLoader(true, 300, function () {
+                                var overlay = $(".overlay");
+                                overlay.find(".overlay-body").html(html);
+                                if (!overlay.is(":visible"))
+                                    overlay.show(200);
+                            });
+                        }
+                    });
+                }
+                e.preventDefault();
+            });
+        });
+    </script>
+}

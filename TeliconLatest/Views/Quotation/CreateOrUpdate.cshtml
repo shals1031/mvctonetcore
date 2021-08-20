@@ -1,0 +1,76 @@
+﻿@model TeliconLatest.DataEntities.TRN17100
+
+@{
+    ViewBag.Title = "Quotation";
+    Layout = "~/Views/Shared/_FormLayout.cshtml";
+}
+
+@using (Html.BeginForm("createorupdate", "quotation", FormMethod.Post))
+{
+    @*@Html.AntiForgeryToken()*@
+    @Html.ValidationSummary(true)
+    
+    <table>
+        <tr>
+            <td>@Html.LabelFor(x => x.Quot_ref)</td>
+            <td>@Html.LabelFor(x => x.Requestdt)</td>
+        </tr>
+        <tr>
+            <td>
+                @Html.HiddenFor(x => x.QuotationId, new { @class = "tel-form-id" })
+                @Html.HiddenFor(x => x.CreateBy)
+                @Html.TextBoxFor(x => x.Quot_ref)
+                @Html.ValidationMessageFor(x => x.Quot_ref)
+            </td>
+            <td>
+                @Html.TextBoxFor(x => x.Requestdt, new { Value = string.Format("{0:MM/dd/yyyy}", Model.Requestdt), @class = "date-box" })
+                @Html.ValidationMessageFor(x => x.Requestdt)
+            </td>
+        </tr>
+        <tr><td colspan="2">@Html.LabelFor(x => x.Quot_title)</td></tr>
+        <tr>
+            <td colspan="2">
+                @Html.TextBoxFor(x => x.Quot_title, new { @class = "long toupper" })
+                @Html.ValidationMessageFor(x => x.Quot_title)
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">@Html.LabelFor(x => x.Requestby)</td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                @Html.TextBoxFor(x => x.Requestby)
+                @Html.ValidationMessageFor(x => x.Requestby)
+            </td>
+        </tr>
+        <tr>
+            <td>
+                @Html.TextBoxFor(x => x.RequestStreet, new { placeholder = Html.DisplayNameFor(n => n.RequestStreet) })
+                @Html.ValidationMessageFor(x => x.RequestStreet)
+            </td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>
+                @Html.TextBoxFor(x => x.RequestCity, new { placeholder = Html.DisplayNameFor(n => n.RequestCity) })
+                @Html.ValidationMessageFor(x => x.RequestCity)
+            </td>
+            <td></td>
+        </tr>   
+        <tr>
+            <td>
+                @Html.TextBoxFor(x => x.RequestCountry, new { placeholder = Html.DisplayNameFor(n => n.RequestCountry) })
+                @Html.ValidationMessageFor(x => x.RequestCountry)
+            </td>
+            <td></td>
+        </tr>        
+    </table>
+}
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('.date-box').datepicker().on('changeDate', function (ev) {
+            $(this).datepicker('hide');
+        });
+    });
+</script>

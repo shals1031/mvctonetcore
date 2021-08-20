@@ -1,0 +1,56 @@
+﻿@model IEnumerable<TeliconLatest.Models.POSummary>
+@{
+    Layout = null;
+}
+<div class="print-holder">
+    <div class="bottom">
+        <h2 class="title" style="margin:10px 0;">Purches Order Invoice Detail Report</h2>
+        @if (ViewBag.DateFrom != null && ViewBag.DateTo != null)
+        {
+            <h2 class="title" style="margin:10px 0;">Period Starting @string.Format("{0:dddd MMMM dd, yyyy}", ViewBag.DateFrom) to @string.Format("{0:dddd MMMM dd, yyyy}", ViewBag.DateTo)</h2>
+        }
+        <table class="prt-data report-table">
+            <thead>
+                <tr>
+                    <th width="80">Invoice No.</th>
+                    <th width="80">Ref. No.</th>
+                    <th width="250">Title</th>
+                    <th width="80">Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var po in Model.Select(x => x.PONum.Trim()).Distinct())
+                {
+                    var list = Model.Where(x => x.PONum.Trim() == po).ToList();
+                    <tr><td colspan="4" class="main-title" style="text-align:left; padding:5px;">PO : @po - @list[0].PODescr</td></tr>
+
+                    foreach (var row in list)
+                    {
+                        <tr>
+                            <td>@row.InvoiceNum</td>
+                            <td>@row.Wo_ref</td>
+                            <td style="text-align:left;">@row.InvoiceTitle</td>
+                            <td class="number" style="text-align:right;">@string.Format("{0:C}", row.InvoiceTotal)</td>
+                        </tr>
+                    }
+                    <tr class="totals">
+                        <td colspan="3" style="text-align:right;">Total:</td>
+                        <td class="number" style="text-align:right">@string.Format("{0:C}", list.Sum(x => x.InvoiceTotal))</td>
+                    </tr>
+                }
+            </tbody>
+        </table>        
+    </div>   
+    @using (Html.BeginForm("POSummaryDetailsToExcel", "Report", FormMethod.Post))
+    {
+        <input type="hidden" name="yearFrom" value="@ViewBag.yearFrom" />
+        <input type="hidden" name="yearTo" value="@ViewBag.YearTo" />
+        <input type="hidden" name="dateFrom" value="@ViewBag.dateFrom" />
+        <input type="hidden" name="dateTo" value="@ViewBag.dateTo" />
+        <input type="hidden" name="poNum" value="@ViewBag.PONum" />
+        
+        <button class="export-clicker" type="submit"><i class="fe-export-1"></i></button>
+        <button class="print-clicker"><i class="fe-print-1"></i></button>
+    }
+</div>
+

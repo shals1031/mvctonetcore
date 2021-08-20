@@ -1,0 +1,123 @@
+﻿@using TeliconLatest.Reusables;
+@{
+    ViewBag.Title = "Telicon Users";
+}
+<table class="admin-tbl" data-url="@Url.Action("index", "user")" data-name="User">
+    <thead>
+        <tr><th></th><th>First Name</th><th>Last Name</th><th>Phone</th><th>Role</th><th>Active</th><th>Locked</th><th></th></tr>
+    </thead>
+    <tbody></tbody>
+</table>
+@section Breadcrumbs{
+    <li>Administration</li>
+    <li>Users</li>
+}
+@section Scripts{
+    <script type="text/javascript">
+    $(document).ready(function() {
+        dataTableOptions.ajax.url = "@Url.Action("users", "list")";
+        dataTableOptions.columnDefs = [
+            { "targets": 0, "class": "more-details", "orderable": false, "searchable": false, "data": null, "defaultContent": "<span><i class='fe-plus'></i></span>" },
+            { "targets": 1, "name": "FirstName", "data": "FirstName" },
+            { "targets": 2, "name": "LastName", "data": "LastName" },
+            { "targets": 3, "name": "Phone", "data": "Phone" },
+            { "targets": 4, "name": "Role", "data": "Role", },
+            { "targets": 5, "name": "IsApproved", "data": "IsApproved", "searchable": false },
+            { "targets": 6, "name": "IsLocked", "data": "IsLocked", "searchable": false },
+            {
+                "targets": 7,
+                "class": "actions",
+                "orderable": false,
+                "searchable": false,
+                "data": null,
+                "defaultContent": "<a href='#edit' class='dt-reset-pswd' title='Reset Password'><i class='fe-lock-filled'></i></a>" +
+                    "<a href='#edit' class='dt-edit' title='Edit'><i class='fe-pencil-2'></i></a>" +
+                    "<a href='#delete' class='dt-delete' title='Delete'><i class='fe-cancel-1'></i></a>"
+            },
+        ];
+        dataTableOptions.order = [[1, 'asc']];
+        dataTableOptions.initComplete = function (settings, json) {
+            $(".dataTables_wrapper .sub-top").append('<div class="dropdown">' +
+                    '<button id="new-ddl" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">' +
+                    'New <i class="fe-down-open-mini"></i></button>' +
+                    '<ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">' +
+                    '<li><a href="' + "@Url.Action("create", "user")" + '">Administrator</a></li>' +
+                    '<li><a href="' + "@Url.Action("create", "contractor")" + '">Contractor</a></li>' +
+                    '</ul></div>');
+                $(".dataTables_wrapper .top select").select2({ minimumResultsForSearch: -1, width: "resolve" });
+            }
+            dTable = $("table").DataTable(dataTableOptions);
+            dTable.search('').draw();
+            $(".dataTables_wrapper .sub-top .dataTables_filter label")
+                .after('@Html.Raw(Html.DropDownList("status", (List<SelectListItem>) ViewBag.Roles, new {@style = "width:220px;"}).ToHtmlString().Replace(Environment.NewLine, ""))');
+
+        $(document).on("click", ".dt-reset-pswd", function() {
+            var self = $(this);
+            var itemName = self.parents("tr").find(".dt-item-title").text();
+            var id = self.parents("tr").attr("id");
+            var itemType = self.parents("table").data("name");
+            var buttons = [
+                { text: "Cancel", click: function() { $(this).dialog("close"); } },
+                {
+                    text: "Continue",
+                    click: function() {
+                        $(this).dialog("close");
+                        $.ajax({
+                            url: "@Url.Action("resetpassword")",
+                            data: { id: id },
+                            type: "post",
+                            success: function(data) {
+                                if (typeof data.msg !== 'undefined') {
+                                    var htmlMsg = "<p>This User Account has been <b>Locked</b>. Please <b>Unlock</b> the account and try again.</p>";
+                                    var htmlTitle = "<i class='fe-comment'></i>User Account Locked";
+                                    displayDialogMsg(htmlMsg, htmlTitle);
+                                } else {
+                                    var htmlMsg = "<p>Password was <b>Reset</b> Successfully!</p>";
+                                    var htmlTitle = "<i class='fe-comment'></i>Password Reset";
+                                    displayDialogMsg(htmlMsg, htmlTitle);
+                                }
+                            }
+                        });
+                    }
+                }
+            ];
+            var msg = '<p>Are you sure you want to <b class="default-col">Reset</b> the <b class="default-col">Password</b> for <b>' + itemName + '</b>?</p></div>';
+            displayConfirmationMsg(msg, 'Reset ' + itemType, buttons);
+        });
+        $(document).on("click", ".locker", function() {
+            var self = $(this);
+            if (!self.is(".on")) {
+                var htmlMsg = "<p>This User Account is already <b>Unlocked</b>. A User's Account cannot be forced into a locked state.</p>";
+                var htmlTitle = "<i class='fe-comment'></i>User Account Unlocked";
+                displayDialogMsg(htmlMsg, htmlTitle);
+            }
+            else
+            {
+                var id = self.parents("tr").attr("id");
+                $.ajax({
+                    url: "@Url.Action("unlockaccount")",
+                    data: { id: id },
+                    type: "post",
+                    success: function(data) {
+                        if (data != null)
+                            self.toggleClass("on");
+                    }
+                });
+            }
+        });
+        $(document).on("click", ".approver", function() {
+            var self = $(this);
+            var id = self.parents("tr").attr("id");
+            $.ajax({
+                url: "@Url.Action("activateaccount")",
+                data: { id: id },
+                type: "post",
+                success: function(data) {
+                    if (data != null)
+                        self.toggleClass("on");
+                }
+            });
+        });
+    });
+    </script>
+}

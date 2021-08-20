@@ -1,0 +1,52 @@
+﻿@model TeliconLatest.DataEntities.ADM16100
+@{
+    ViewBag.Title = "Period";
+    Layout = "~/Views/Shared/_FormLayout.cshtml";
+}
+
+@using (Html.BeginForm("createorupdate", "Period", FormMethod.Post))
+{
+    @*@Html.AntiForgeryToken()*@
+    @Html.ValidationSummary(true)
+    <table>
+        <tr><td colspan="2">@Html.LabelFor(x => x.Week)</td></tr>
+        <tr>
+            <td colspan="2">
+                @Html.HiddenFor(x => x.PeriodID, new { @class = "tel-form-id" })
+                @Html.TextBoxFor(x => x.Week, new { @class = "long" })
+                @Html.ValidationMessageFor(x => x.Week)
+            </td>
+        </tr>
+        <tr><td colspan="2">@Html.LabelFor(x => x.PeriodStart)</td></tr>
+        <tr>
+            <td colspan="2">
+                <input type="text" asp-for="PeriodStart" value="@Model.PeriodStart.ToString("MM/dd/yyyy")" asp-format="{0:MM/dd/yyyy}" class="date-box" readonly="readonly" />
+            </td>
+        </tr>
+        <tr><td colspan="2">@Html.LabelFor(x => x.PeriodEnd)</td></tr>
+        <tr>
+            <td colspan="2">
+                <input type="text" asp-for="PeriodEnd" value="@Model.PeriodEnd.ToString("MM/dd/yyyy")" asp-format="{0:MM/dd/yyyy}" class="date-box" readonly="readonly" />
+            </td>
+        </tr>
+        <tr><td colspan="2">@Html.LabelFor(x => x.DueDate)</td></tr>
+        <tr>
+            <td colspan="2">
+                <input type="text" asp-for="DueDate" value="@Model.DueDate.ToString("MM/dd/yyyy")" asp-format="{0:MM/dd/yyyy}" class="date-box" readonly="readonly" />                
+            </td>
+        </tr>
+        <tr><td colspan="2">@Html.LabelFor(x => x.PayDate)</td></tr>
+        <tr>
+            <td colspan="2">
+                <input type="text" asp-for="PayDate" value="@Model.PayDate.ToString("MM/dd/yyyy")" asp-format="{0:MM/dd/yyyy}" class="date-box" readonly="readonly" />
+            </td>
+        </tr>
+        <tr><td colspan="2">@Html.LabelFor(x => x.periodYear)</td></tr>
+        <tr>
+            <td colspan="2">
+                @Html.TextBoxFor(x => x.periodYear, new { @class = "long" })
+                @Html.ValidationMessageFor(x => x.periodYear)
+            </td>
+        </tr>
+    </table>
+}

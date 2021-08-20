@@ -1,0 +1,59 @@
+﻿@model TeliconLatest.Models.ClientInvoice
+
+@{
+    Layout = null;
+    ViewBag.IsInvoice = true;
+    var grandTotal = Model.Activities.Sum(x => Convert.ToDecimal(x.ActivityCost) * x.ActivityQty);
+}
+
+<div class="print-holder" data-id="@Model.Client.InvoiceNo">    
+    <h2 class="title" style="text-align:center; font-size:16pt;">External Plant Cabling and Jointing</h2>
+    <h2 class="sub-title" style="margin-bottom:10px; text-align:center; font-size:14pt; color:black;">Cabling Grand Total</h2>
+    <partial name="SummaryDataPartial" model="Model.Client" />
+    <div class="bottom">
+        <table class="prt-data">            
+            <tbody>
+                <tr>
+                    <td width="400px;" style="text-align:right; border: 1px solid black;"></td>
+                    <td width="250px;" style="text-align:center; border: 1px solid black;">Sub-Total</td>
+                </tr>
+                <tr>
+                    <td style="text-align:right; border: 1px solid black;">Cabling Activities Reported</td>
+                    <td style="text-align:right; border: 1px solid black;">@string.Format("{0:C}", grandTotal)</td>
+                </tr>
+            </tbody>
+        </table>        
+        <table class="prt-data">
+            <tbody>
+                <tr>
+                    <td width="400px;" style="text-align:right; border: 1px solid black;">Grand Total</td>
+                    <td width="250px;" style="text-align:right; border: 1px solid black;">@string.Format("{0:C}", grandTotal)</td>
+                </tr>
+                <tr>
+                    <td style="text-align:right; border: 1px solid black;">10% RETENTION</td>
+                    <td style="text-align:right; border: 1px solid black;"></td>
+                </tr>
+                <tr>
+                    <td width="400px;" style="text-align:right; border: 1px solid black;">Sub Total</td>
+                    <td width="250px;" style="text-align:right; border: 1px solid black;">@string.Format("{0:C}", grandTotal)</td>
+                </tr>
+                <tr>
+                    <td style="text-align:right; border: 1px solid black;">2% GOVERNMET LEVY</td>
+                    <td style="text-align:right; border: 1px solid black;">@string.Format("{0:C}", (grandTotal * 0.02M))</td>
+                </tr>
+                <tr>
+                    <td style="text-align:right; border: 1px solid black;">NET PAY</td>
+                    <td style="text-align:right; border: 1px solid black;">@string.Format("{0:C}", grandTotal + (grandTotal * 0.02M))</td>
+                </tr>
+            </tbody>
+        </table> 
+    </div>
+    <div id="breakdown-holder"></div>
+    @using (Html.BeginForm("cablingworkdiary", "invoice", FormMethod.Post, new { @id = "cablingworkdiaryForm" }))
+    {
+        <input type="hidden" name="id" value="@ViewBag.InvoiceNo" />
+        <button class="export-clicker" type="submit"><i class="fe-export-1"></i></button>
+        <button class="print-clicker"><i class="fe-print-1"></i></button>
+    }
+</div>
+

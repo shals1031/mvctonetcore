@@ -1,0 +1,58 @@
+﻿@model TeliconLatest.Models.ClientInvoice
+
+@{
+    Layout = null;
+    ViewBag.IsInvoice = true;
+    var activities = (List<TeliconLatest.DataEntities.ADM01100>)ViewBag.Activities;
+    var acts = Model.Activities.Select(x => new { x.ActId, x.AltCode, x.ActivityDesc }).OrderBy(x => x.AltCode).Distinct();
+    decimal grandTotal = 0;
+}
+
+<div class="print-holder" data-id="@Model.Client.InvoiceNo">
+    <h2 class="title" style="margin-bottom:10px; text-align: center;">Cabling Work Diary Summary</h2>
+    <partial name="SummaryDataPartial" model="Model.Client" />
+    <div class="bottom">
+        <table class="prt-data">
+            <thead>
+                <tr>
+                    <th>ITEM NO.</th>
+                    <th>DESCRIPTION</th>
+                    <th>UNIT</th>
+                    <th>UNIT RATE</th>
+                    <th>QUANTITY</th>
+                    <th>TOTAL</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var ALTcODE in acts)
+                {
+                    var dtl = Model.Activities.FindAll(x => x.ActivityDesc == ALTcODE.ActivityDesc);
+                    var activity = activities.FirstOrDefault(x => x.RateID == ALTcODE.ActId);
+                    var rate = dtl[0].ActivityCost;
+                    decimal total = Convert.ToDecimal(rate) * (dtl != null ? dtl.Sum(x => x.ActivityQty) : 0);
+                    grandTotal = grandTotal + total;
+                    <tr>
+                        <td style="text-align:center">@(string.IsNullOrEmpty(activity.AltCode) ? "" : activity.AltCode.ToUpper())</td>
+                        <td style="text-align:left">@activity.RateDescr.ToUpper()</td>
+                        <td style="text-align:center">@activity.RateUnit.ToUpper()</td>
+                        <td style="text-align:right">@string.Format("{0:C}", rate)</td>
+                        <td style="text-align:right">@(dtl != null ? dtl.Sum(x => x.ActivityQty).ToString() : "")</td>
+                        <td style="text-align:right">@string.Format("{0:C}", total)</td>
+                    </tr>
+                }
+                <tr class="totals">
+                    <td colspan="5">GRAND TOTAL: </td>
+                    <td class="number">@string.Format("{0:C}", grandTotal)</td>
+                </tr>
+            </tbody>
+        </table>
+
+    </div>
+    <div id="breakdown-holder"></div>
+    @using (Html.BeginForm("cablingworkdiary", "invoice", FormMethod.Post, new { @id = "cablingworkdiaryForm" }))
+    {
+        <input type="hidden" name="id" value="@ViewBag.InvoiceNo" />
+        <button class="export-clicker" type="submit"><i class="fe-export-1"></i></button>
+        <button class="print-clicker"><i class="fe-print-1"></i></button>
+    }
+</div>

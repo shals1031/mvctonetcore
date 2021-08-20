@@ -1,0 +1,61 @@
+﻿@model TeliconLatest.DataEntities.ADM16200
+@{
+    ViewBag.Title = "PO";
+    Layout = "~/Views/Shared/_FormLayout.cshtml";
+}
+
+@using (Html.BeginForm("createorupdate", "PO", FormMethod.Post))
+{
+    @*@Html.AntiForgeryToken()*@
+    @Html.ValidationSummary(true)
+
+    <table>
+        <tr>
+            <td>@Html.LabelFor(x => x.PONUM)</td>
+            <td>@Html.LabelFor(x => x.PODate)</td>
+        </tr>
+        <tr>
+            <td>
+                @Html.HiddenFor(x => x.POID, new { @class = "tel-form-id" })
+                @Html.TextBoxFor(x => x.PONUM)
+                @Html.ValidationMessageFor(x => x.PONUM)
+            </td>
+            <td>
+                <input type="text" asp-for="PODate" value="@(Model.PODate.HasValue ? Model.PODate.Value.ToString("MM/dd/yyyy") : "")" asp-format="{0:MM/dd/yyyy}" class="date-box" readonly="readonly" />
+                <span asp-validation-for="PODate"></span>                
+            </td>
+        </tr>
+        <tr><td colspan="2">@Html.LabelFor(x => x.Description)</td></tr>
+        <tr>
+            <td colspan="2">
+                @Html.TextBoxFor(x => x.Description, new { @class = "long" })
+                @Html.ValidationMessageFor(x => x.Description)
+            </td>
+        </tr>
+        <tr>
+            <td>@Html.LabelFor(x => x.TOTAL)</td>
+            <td>@Html.LabelFor(x => x.BALANCE)</td>
+        </tr>
+        <tr>
+            <td>
+                @Html.TextBoxFor(x => x.TOTAL)
+                @Html.ValidationMessageFor(x => x.TOTAL)
+            </td>
+            <td>
+                @Html.TextBoxFor(x => x.BALANCE, new { @readonly = "readonly" })
+                @Html.ValidationMessageFor(x => x.BALANCE)
+            </td>
+        </tr>        
+        <tr>
+            <td colspan="2">@Html.LabelFor(x => x.IsClosed)</td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <button class="tel-checkbox @(Model.IsClosed ? "checked": "")">
+                    <i class="fe-ok"></i>
+                    @Html.HiddenFor(x => x.IsClosed)
+                </button>
+            </td>
+        </tr>
+    </table>
+}

@@ -1,0 +1,97 @@
+﻿@model TeliconLatest.Models.ClientInvoice
+
+@{
+    Layout = null;
+    ViewBag.IsInvoice = true;
+}
+
+<div class="print-holder" data-id="@Model.Client.InvoiceNo">
+    <div class="print-top-options">
+        <label class="toggle-holder">
+            <span>Attach Breakdown</span>
+            <button id="add-breakdown" class='simple-toggler'><span></span></button>
+        </label>
+    </div>
+    <partial name="NewClientDataPartial" model="Model.Client" />
+    <div class="bottom">
+        <table class="prt-data">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Qty</th>
+                    <th>Description</th>
+                    <th>Rate</th>
+                    <th>Amount</th>
+
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="date">@string.Format("{0:dd/MM/yyyy}", Model.Date)</td>
+                    <td class="title" colspan="4">
+                        @Model.Title
+                    </td>
+                </tr>
+                @foreach (var desc in Model.Activities.Select(x => x.ActivityDesc).Distinct())
+                {
+                    int count = 1;
+                    var act = Model.Activities.Where(x => x.ActivityDesc == desc).ToList();
+                    <tr>
+                        <td class="date"></td>
+                        <td>@act.Sum(x => x.ActivityQty)</td>
+                        <td><div style="text-align:left">@desc</div></td>
+                        <td class="number">@string.Format("{0:C}", act[0].ActivityCost)</td>
+                        <td class="number">@string.Format("{0:C}", act[0].ActivityCost * Convert.ToDouble(act.Sum(x => x.ActivityQty)))</td>
+                    </tr>
+                    count++;
+                }
+                @{
+                    var total = Model.Activities.Sum(x => x.ActivityCost * Convert.ToDouble(x.ActivityQty));
+                    var gct = total * Convert.ToDouble(Model.GCT);
+                    var grandTotal = total + gct;
+                }
+                <tr class="totals"><td colspan="4">Total: </td><td class="number">@string.Format("{0:C}", total)</td></tr>
+                <tr class="totals"><td colspan="4">GCT(@((Model.GCT * 100).ToString("#.##"))%): </td><td class="number">@string.Format("{0:C}", gct) </td></tr>
+                <tr class="totals"><td colspan="4">Grand Total: </td><td class="number">@string.Format("{0:C}", grandTotal)</td></tr>
+            </tbody>
+        </table>
+        @if (Model.Materials.Count > 0)
+        {
+            <br />
+            <br />
+            <h2 class="sub-title" style="margin: 10px 0px;">Material Usage:</h2>
+            <table class="prt-data">
+                <thead>
+                    <tr>
+                        <th>Nos.</th>
+                        <th>Description</th>
+                        <th>Qty</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        int matCout = 1;
+                        foreach (var mat in Model.Materials.Select(x => x.MatDesc).Distinct())
+                        {
+                            var mats = Model.Materials.Where(x => x.MatDesc == mat).ToList();
+                            <tr>
+                                <td style="text-align:center;" width="70px">@matCout</td>
+                                <td><div style="text-align:left">@mat</div></td>
+                                <td style="text-align:center;" width="80px">@mats.Sum(x => x.MatQty)</td>
+                            </tr>
+                            matCout++;
+                        }
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+    <div id="breakdown-holder"></div>
+    @using (Html.BeginForm("NewClientInvoiceToExcel", "invoice", FormMethod.Post))
+    {
+        <input type="hidden" name="InvoiceNo" value="@ViewBag.InvoiceNo" />
+        <input type="hidden" name="HasBreakDown" id="hasBreakeDownHdn" value="false" />
+        <button class="export-clicker" type="submit"><i class="fe-export-1"></i></button>
+        <button class="print-clicker"><i class="fe-print-1"></i></button>
+    }
+</div>

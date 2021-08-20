@@ -1,0 +1,106 @@
+﻿@model IEnumerable<TeliconLatest.Models.PeriodDetail>
+@{
+    Layout = null;
+    int count = 1;
+    var deductions = (List<TeliconLatest.Models.ContractorDeductionReport>)ViewBag.DeductionData;
+}
+<div class="print-holder">
+    <div class="bottom">
+        @if (Model.Any())
+        {
+            var period = (TeliconLatest.Models.Period)ViewBag.Period;
+            <h1 class="sub-title">Contractor Invoice #@period.PeriodNo</h1>
+            <h1 class="sub-title">
+                Pay Period: @string.Format("{0:MMMM dd, yyyy} - {1:MMMM dd, yyyy}", period.DateFrom, period.DateTo)
+            </h1>
+            <table class="report">
+                <thead>
+                    <tr>
+                        <th>Item No.</th>
+                        <th>Description</th>
+                        <th>Unit</th>
+                        <th>Rate</th>
+                        <th>Qty</th>
+                        <th>Amount</th>
+                        <th>Penalty</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                @foreach (var act in Model)
+                {
+                    <tr>
+                        <td>@count</td>
+                        <td>@act.Description</td>
+                        <td>@act.Unit</td>
+                        <td>@string.Format("{0:C}", act.Rate)</td>
+                        <td>@act.Quantity</td>
+                        <td>@string.Format("{0:C}", act.Amount)</td>
+                        <td>@string.Format("{0:C}", act.Penalty)</td>
+                        <td>@string.Format("{0:C}", act.Total)</td>
+                        @*<td>@string.Format("{0:C}", act.Rate * Convert.ToDouble(act.Quantity))</td>*@
+                    </tr>
+                    count++;
+                }
+                @{
+                    var amount = Model.Sum(x => x.Amount);
+                    var penalizeTotal = Model.Sum(x => x.Total);
+                }
+                <tr class="totals">
+                    <td colspan="5">Total: </td>
+                    <td class="number">@string.Format("{0:C}", amount)</td>
+                    <td class="number">@string.Format("{0:C}", amount - penalizeTotal)</td>
+                    <td class="number">@string.Format("{0:C}", penalizeTotal)</td>
+                </tr>
+                <tr class="totals">
+                    <td colspan="7">Net Amount: </td>
+                    <td class="number">@string.Format("{0:C}", (penalizeTotal - deductions.Sum(x=> x.Amount)))</td>
+                </tr>
+            </table>
+
+            @*if (deductions.Count() > 0)
+            {
+                int d = 1;
+                <h2 class="sub-title">Deductions</h2>
+                <table class="report">
+                    <thead>
+                        <tr>
+                            <th>Item No.</th>
+                            <th>Deduction Name</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Amount</th>
+                        </tr>
+                    </thead>
+                    @foreach (var deduction in deductions)
+                    {
+                        <tr>
+                            <td>@d</td>
+                            <td>@deduction.DeductionName</td>
+                            <td>@string.Format("{0:dd/MM/yyyy}", deduction.StartDate)</td>
+                            <td>@string.Format("{0:dd/MM/yyyy}", deduction.EndDate)</td>
+                            <td class="number">@string.Format("{0:C}", deduction.Amount)</td>
+                        </tr>
+                        d++;
+                    }
+                    <tr class="totals">
+                        <td colspan="4">Total: </td>
+                        <td class="number">@string.Format("{0:C}", deductions.Sum(x => x.Amount))</td>
+                    </tr>
+                </table>
+            }*@
+            <div id="doc">
+                <div><span class="title">Name:</span><span class="line"></span></div>
+                <div><span class="title">Signature:</span><span class="line"></span></div>
+                <div><span class="title">Date:</span><span class="line"></span></div>
+            </div>
+        }
+    </div>
+    @using (Html.BeginForm("PeriodDetailToExcel", "Technician", FormMethod.Post))
+    {
+        <input type="hidden" name="pdate" value="@ViewBag.pdate" />
+        <input type="hidden" name="id" value="@ViewBag.id" />
+        <button class="export-clicker" type="submit"><i class="fe-export-1"></i></button>
+        <button class="print-clicker"><i class="fe-print-1"></i></button>
+    }
+    
+</div>

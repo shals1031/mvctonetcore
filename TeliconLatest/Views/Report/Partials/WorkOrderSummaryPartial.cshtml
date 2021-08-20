@@ -1,0 +1,124 @@
+﻿@model List<TeliconLatest.Models.WorkOrderSummaryData>
+@{
+    Layout = null;
+}
+<style>
+    .print-holder {
+        width: 1050px;
+    }
+
+        .print-holder table tr th {
+            text-align: center;
+            vertical-align: middle;
+            font-size: 14px;
+            padding: 0px 5px;
+            line-height: 23px;
+        }
+
+        .print-holder table tr td {
+            line-height: 23px;
+            vertical-align: middle;
+            text-align: center;
+        }
+
+        .print-holder .bottom .prt-data tr td, .print-holder .bottom .prt-data tr th {
+            padding: 1px;
+        }
+        .total-row td {
+            font-weight: bold;
+            border-top:2px solid #3c81cc;
+        }
+       
+</style>
+@if (Model.Count > 0)
+{
+    int i = 1;
+    <div class="print-holder">
+        <div class="bottom">
+            <div>
+                <img src="~/Images/logo.png" style=" width: 150px; height: auto; float: left;" />
+                <h2 class="title">Work Order Summary Report</h2>
+                <h2 class="title"> @Model[0].Date.Year -  @Model[0].Date.ToString("MMMM")</h2>
+            </div>          
+            <table class="prt-data">
+                <thead>
+                    <tr>
+                        @*<th rowspan="2" style=" width: 20px;"></th>*@
+                        <th rowspan="2" style=" width: 110px;">Date</th>
+
+                        <th colspan="2">Installation<br />Rate : $ @Model[0].InstallationRate</th>
+
+                        <th colspan="2">Rewire of cable<br />Rate : $ @Model[0].RewireCableRate</th>
+                        <th colspan="2">Extra Outlets<br />Rate : $ @Model[0].ExtraOutletsRate</th>
+                        <th colspan="2">Rewire and/or<br /> SRO Outlet<br />Rate : $ @Model[0].RewireOutletRate</th>
+                        <th colspan="2">Non Standard<br /> Installation<br />Rate : $ @Model[0].NonStandardRate</th>
+                        <th colspan="2">Rejected Fee<br /> (Not Done)<br />Rate : $ @Model[0].RejectedRate</th>
+                        <th colspan="2">Service Calls<br />Rate : $ @Model[0].ServiceCallsRate</th>
+                        <th rowspan="2" style=" width:110px;">Grand Total</th>
+                    </tr>
+                    <tr>
+                        <th style=" width:40px;">QTY</th>
+                        <th style=" width:80px;">J$</th>
+                        <th style=" width:40px;">QTY</th>
+                        <th style=" width:80px;">J$</th>
+                        <th style=" width:40px;">QTY</th>
+                        <th style=" width:80px;">J$</th>
+                        <th style=" width:40px;">QTY</th>
+                        <th style=" width:80px;">J$</th>
+                        <th style=" width:40px;">QTY</th>
+                        <th style=" width:80px;">J$</th>
+                        <th style=" width:40px;">QTY</th>
+                        <th style=" width:80px;">J$</th>
+                        <th style=" width:40px;">QTY</th>
+                        <th style=" width:80px;">J$</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                    @foreach (var row in Model)
+                    {                       
+                         <tr @(row.InstallationUnit == "Total"?"class=total-row" : "")>
+                               
+                                @*<td>@i.ToString()</td>*@
+                                @if (row.InstallationUnit == "Total")
+                                {
+                                    <td style=" text-align: left; ">Total</td>
+                                }
+                                else
+                                {
+                                    <td style=" text-align: left;">@row.Date.ToString("MMM dd")</td>
+                                }
+
+                                <td>@row.InstallationQty</td>
+                                <td style=" text-align: right;">@(String.Format("{0:n}", row.InstallationTotal))</td>
+
+                                <td>@row.RewireCableQty</td>
+                                <td style=" text-align: right;">@(String.Format("{0:n}", row.RewireCableTotal))</td>
+                                <td>@row.ExtraOutletsQty</td>
+                                <td style=" text-align: right;">@(String.Format("{0:n}", row.ExtraOutletsTotal))</td>
+                                <td>@row.RewireOutletQty</td>
+                                <td style=" text-align: right;">@(String.Format("{0:n}", row.RewireOutletTotal))</td>
+                                <td>@row.NonStandardQty</td>
+                                <td style=" text-align: right;">@(String.Format("{0:n}", row.NonStandardTotal))</td>
+                                <td>@row.RejectedQty</td>
+                                <td style=" text-align: right;">@(String.Format("{0:n}", row.RejectedTotal))</td>
+                                <td>@row.ServiceCallsQty</td>
+                                <td style=" text-align: right;">@(String.Format("{0:n}", row.ServiceCallsTotal))</td>
+                                <td style=" text-align: right;">@(String.Format("{0:n}", row.RewireCableTotal + row.ExtraOutletsTotal + row.RewireOutletTotal + row.NonStandardTotal + row.RejectedTotal + row.ServiceCallsTotal))</td>
+                            </tr>
+                        i++;
+                    }
+                </tbody>
+            </table>
+        </div>
+        <button class="print-clicker"><i class="fe-print-1"></i></button>
+    </div>
+}
+else
+{
+    <div class="filler animated tada">
+        <i class="mdi mdi-emoticon-sad"></i>
+        <h1>No results found</h1>
+        <h2>Please change your filter and try again.</h2>
+    </div>
+}

@@ -1,0 +1,57 @@
+﻿@model TeliconLatest.DataEntities.ADM26100
+@{
+    ViewBag.Title = "Zone";
+    Layout = "~/Views/Shared/_FormLayout.cshtml";
+}
+
+@using (Html.BeginForm("createorupdate", "Zone", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(true)
+
+    <table>
+        <tr><td colspan="2">@Html.LabelFor(x => x.Name)</td></tr>
+        <tr>
+            <td colspan="2">
+                @Html.HiddenFor(x => x.ZoneID, new { @class = "tel-form-id" })
+                @Html.TextBoxFor(x => x.Name, new { @class = "long" })
+                @Html.ValidationMessageFor(x => x.Name)
+            </td>
+        </tr>
+        <tr><td colspan="2">@Html.LabelFor(x => x.SupervisorName)</td></tr>
+        <tr>
+            <td colspan="2">
+                @Html.TextBoxFor(x => x.SupervisorName, new { @class = "long" })
+                @Html.ValidationMessageFor(x => x.SupervisorName)
+            </td>
+        </tr>
+        <tr><td colspan="2">@Html.LabelFor(x => x.Addr)</td></tr>
+        <tr>
+            <td>
+                @Html.TextBoxFor(x => x.Addr, new { @class = "long" })
+                @Html.ValidationMessageFor(x => x.Addr)
+            </td>
+        </tr>
+        <tr><td colspan="2">@Html.LabelFor(x => x.Email)</td></tr>
+        <tr>
+            <td>
+                @Html.TextBoxFor(x => x.Email, new { @class = "long" })
+                @Html.ValidationMessageFor(x => x.Email)
+            </td>
+        </tr>
+        <tr><td colspan="2">@Html.LabelFor(x => x.Phone)</td></tr>
+        <tr>
+            <td>
+                @Html.TextBoxFor(x => x.Phone, new { @class = "long" })
+                @Html.ValidationMessageFor(x => x.Phone)
+            </td>
+        </tr>
+        <tr><td colspan="2">@Html.LabelFor(x => x.Place)</td></tr>
+        <tr>
+            <td>
+                @Html.TextBoxFor(x => x.Place, new { @class = "long" })
+                @Html.ValidationMessageFor(x => x.Place)
+            </td>
+        </tr>
+    </table>
+}

@@ -1,0 +1,51 @@
+﻿@model IEnumerable<TeliconLatest.Models.PeriodDetail>
+@{
+    Layout = null;
+    int count = 1;
+}
+<div class="print-holder">
+    <div class="bottom">
+        @if (Model.Any())
+        {
+            var period = (TeliconLatest.Models.Period)ViewBag.Period;
+            <h1 class="sub-title">Contractor Invoice #@period.PeriodNo</h1>
+            <h1 class="sub-title">
+                Pay Period: @string.Format("{0:MMMM dd, yyyy} - {1:MMMM dd, yyyy}", period.DateFrom, period.DateTo)
+            </h1>
+            <table class="report">
+                <thead>
+                    <tr>
+                        <th>Item No.</th>
+                        <th>Description</th>
+                        <th>Unit</th>
+                        <th>Rate</th>
+                        <th>Qty</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                @foreach (var act in Model)
+                {
+                    <tr>
+                        <td>@count</td>
+                        <td>@act.Description</td>
+                        <td>@act.Unit</td>
+                        <td>@string.Format("{0:C}", act.Rate)</td>
+                        <td>@act.Quantity</td>
+                        <td>@string.Format("{0:C}", act.Total)</td>
+                    </tr>
+                    count++;
+                }
+                @{
+                    var total = Model.Sum(x => x.Total);
+                }
+                <tr class="totals"><td colspan="5">Total: </td><td class="number">@string.Format("{0:C}", total)</td></tr>
+            </table>
+            <div id="doc">
+                <div><span class="title">Name:</span><span class="line"></span></div>
+                <div><span class="title">Signature:</span><span class="line"></span></div>
+                <div><span class="title">Date:</span><span class="line"></span></div>
+            </div>
+        }
+    </div>
+    <button class="print-clicker"><i class="fe-print-1"></i></button>
+</div>

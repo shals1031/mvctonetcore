@@ -1,0 +1,22 @@
+﻿@model TeliconLatest.DataEntities.ADM04200
+@{
+    ViewBag.Title = "Department";
+    Layout = "~/Views/Shared/_FormLayout.cshtml";
+}
+
+@using (Html.BeginForm("createorupdate", "department", FormMethod.Post))
+{
+    @*@Html.AntiForgeryToken()*@
+    @Html.ValidationSummary(true)
+
+    <table>
+        <tr><td colspan="2">@Html.LabelFor(x => x.Name)</td></tr>
+        <tr>
+            <td colspan="2">
+                @Html.HiddenFor(x => x.DepartmentID, new { @class = "tel-form-id" })
+                @Html.TextBoxFor(x => x.Name, new { @class = "long" })
+                @Html.ValidationMessageFor(x => x.Name)
+            </td>
+        </tr>        
+    </table>
+}

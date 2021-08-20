@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Html;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -44,9 +45,9 @@ namespace TeliconLatest.Controllers
             if (!string.IsNullOrEmpty(pieces[1]) && !string.IsNullOrEmpty(pieces[2]))
             {
                 var pastList = periods.Where(x => x.PayDate <= from);
-                var nearestDateFrom = pastList != null && pastList.Count() > 0 ? pastList.OrderByDescending(x => x.PayDate).FirstOrDefault().PayDate : from;
+                var nearestDateFrom = pastList != null && pastList.Any() ? pastList.OrderByDescending(x => x.PayDate).FirstOrDefault().PayDate : from;
                 var futureList = periods.Where(x => x.PayDate >= to);
-                var nearestDateTo = futureList != null && futureList.Count() > 0 ? futureList.OrderBy(x => x.PayDate).FirstOrDefault().PayDate : to;
+                var nearestDateTo = futureList != null && futureList.Any() ? futureList.OrderBy(x => x.PayDate).FirstOrDefault().PayDate : to;
                 periods = periods.Where(x => x.PayDate >= nearestDateFrom && x.PayDate <= nearestDateTo).ToList();
             }
             foreach (var p in periods)
@@ -251,93 +252,93 @@ namespace TeliconLatest.Controllers
             });
         }
 
-        //[HttpPost]
-        //public JsonResult WorkOrders(DataTablesParam model)
-        //{
-        //    string order = Customs.GetSortString(model.order, model.columns);
-        //    var data = db.Trn23100s.Where(x => x.ClassId != 18).Search(model.columns.Where(x => x.searchable).ToList(), model.search);
-        //    if (!model.year.HasValue)
-        //        model.year = db.Trn23100s.Max(x => x.Requestdt).Year;
-        //    if (model.year != 0)
-        //        data = data.Where(x => x.Requestdt.Year == model.year);
-        //    if (model.zone.HasValue)
-        //        data = data.Where(x => x.Area.Zone.ZoneId == model.zone);
-        //    if (model.clas.HasValue)
-        //        data = data.Where(x => x.ClassId == model.clas);
-        //    if (model.additional != null && model.additional.ToString() != "a")
-        //    {
-        //        data = model.additional.ToString() == "s" ? data.Where(x => x.Status.ToLower() == "s" && x.DateSubmitted.HasValue && x.Submitted) :
-        //            data.Where(x => x.Status.ToLower() == model.additional.ToString());
-        //    }
-        //    return Json(new DataTableReturn
-        //    {
-        //        draw = model.draw,
-        //        recordsFiltered = data.Count(),
-        //        recordsTotal = db.Trn23100s.Count(),
-        //        data = data.OrderBy(order).Skip(model.start).Take(model.length).ToList().Select(x => new
-        //        {
-        //            DT_RowId = DataDictionaries.WordOrderStatuses[x.Status.ToLower()] + "_" + x.Workid,
-        //            ReferenceNo = x.WoRef,
-        //            Title = x.WoTitle.ToUpper(),
-        //            //Title = new HtmlString("<span" + (x.CompletionDt != null && x.CompletionDt.Value - x.Dispatchdt > new TimeSpan(4, 0, 0, 0,0) ? " style='color:red;'" : "") + ">" + x.Wo_title.ToUpper() + "</span>"),
-        //            Date = string.Format("{0:MMM dd, yyyy}", x.Requestdt),
-        //            //Submitted = new HtmlString("<i class='fe-" + (x.Submitted ? "ok yes" : "cancel-1 no") + "'></i>"),
-        //            Completiondt = x.CompletionDt != null ? string.Format("{0:MMM dd, yyyy}", x.CompletionDt.Value) : "",
-        //            Status = new HtmlString("<i title='" + DataDictionaries.WordOrderStatuses[x.Status.ToLower()] + "' class='fe-flag-filled " + DataDictionaries.WordOrderStatuses[x.Status.ToLower()].ToLower() + "'></i>")
-        //        }).AsQueryable().ToStringArray()
-        //    });
-        //}
+        [HttpPost]
+        public JsonResult WorkOrders(DataTablesParam model)
+        {
+            string order = Customs.GetSortString(model.order, model.columns);
+            var data = db.TRN23100.Where(x => x.ClassId != 18).Search(model.columns.Where(x => x.searchable).ToList(), model.search);
+            if (!model.year.HasValue)
+                model.year = db.TRN23100.Max(x => x.Requestdt).Year;
+            if (model.year != 0)
+                data = data.Where(x => x.Requestdt.Year == model.year);
+            if (model.zone.HasValue)
+                data = data.Where(x => x.ADM01400.ADM26100.ZoneID == model.zone);
+            if (model.clas.HasValue)
+                data = data.Where(x => x.ClassId == model.clas);
+            if (model.additional != null && model.additional.ToString() != "a")
+            {
+                data = model.additional.ToString() == "s" ? data.Where(x => x.Status.ToLower() == "s" && x.DateSubmitted.HasValue && x.Submitted) :
+                    data.Where(x => x.Status.ToLower() == model.additional.ToString());
+            }
+            return Json(new DataTableReturn
+            {
+                draw = model.draw,
+                recordsFiltered = data.Count(),
+                recordsTotal = db.TRN23100.Count(),
+                data = Extensions.OrderByDynamic(data, order.Split(" ")[0], order.Split(" ")[1] != "asc").Skip(model.start).Take(model.length).ToList().Select(x => new
+                {
+                    DT_RowId = DataDictionaries.WordOrderStatuses[x.Status.ToLower()] + "_" + x.Workid,
+                    ReferenceNo = x.Wo_ref,
+                    Title = x.Wo_title.ToUpper(),
+                    //Title = new HtmlString("<span" + (x.CompletionDt != null && x.CompletionDt.Value - x.Dispatchdt > new TimeSpan(4, 0, 0, 0,0) ? " style='color:red;'" : "") + ">" + x.Wo_title.ToUpper() + "</span>"),
+                    Date = string.Format("{0:MMM dd, yyyy}", x.Requestdt),
+                    //Submitted = new HtmlString("<i class='fe-" + (x.Submitted ? "ok yes" : "cancel-1 no") + "'></i>"),
+                    Completiondt = x.CompletionDt != null ? string.Format("{0:MMM dd, yyyy}", x.CompletionDt.Value) : "",
+                    Status = new HtmlString("<i title='" + DataDictionaries.WordOrderStatuses[x.Status.ToLower()] + "' class='fe-flag-filled " + DataDictionaries.WordOrderStatuses[x.Status.ToLower()].ToLower() + "'></i>")
+                }).AsQueryable().ToStringArray()
+            });
+        }
 
-        //[HttpPost]
-        //public JsonResult ServiceWorkOrders(DataTablesParam model)
-        //{
-        //    try
-        //    {
-        //        string order = Customs.GetSortString(model.order, model.columns);
-        //        var data = db.Trn23100s.Where(x => x.ClassId == 18).Search(model.columns.Where(x => x.searchable).ToList(), model.search);
-        //        if (model.additional != null && model.additional.ToString() != "a")
-        //        {
-        //            data = model.additional.ToString() == "s" ? data.Where(x => x.Status == "s" || x.Submitted && !new[] { "v", "i" }.Contains(x.Status)) :
-        //                data.Where(x => x.Status == model.additional.ToString());
-        //        }
-        //        DataTableReturn dtr = new DataTableReturn
-        //        {
-        //            draw = model.draw,
-        //            recordsFiltered = data.Count(),
-        //            recordsTotal = db.Trn23100s.Where(x => x.ClassId == 18).Count(),
-        //            data = data.OrderBy(order).Skip(model.start).Take(model.length).ToList().Select(x => new
-        //            {
-        //                DT_RowId = DataDictionaries.WordOrderStatuses[x.Status] + "_" + x.Workid,
-        //                ReferenceNo = x.WoRef,
-        //                Title = x.WoTitle,
-        //                Date = string.Format("{0:MMM dd, yyyy}", x.Requestdt),
-        //                Submitted = new HtmlString("<i class='fe-" + (x.Submitted ? "ok yes" : "cancel-1 no") + "'></i>"),
-        //                Status = new HtmlString("<i title='" + DataDictionaries.WordOrderStatuses[x.Status] + "' class='fe-flag-filled " + DataDictionaries.WordOrderStatuses[x.Status].ToLower() + "'></i>")
-        //            }).AsQueryable().ToStringArray()
-        //        };
-        //        return Json(dtr);
-        //    }
-        //    catch { throw; }
-        //}
+        [HttpPost]
+        public JsonResult ServiceWorkOrders(DataTablesParam model)
+        {
+            try
+            {
+                string order = Customs.GetSortString(model.order, model.columns);
+                var data = db.TRN23100.Where(x => x.ClassId == 18).Search(model.columns.Where(x => x.searchable).ToList(), model.search);
+                if (model.additional != null && model.additional.ToString() != "a")
+                {
+                    data = model.additional.ToString() == "s" ? data.Where(x => x.Status == "s" || x.Submitted && !new[] { "v", "i" }.Contains(x.Status)) :
+                        data.Where(x => x.Status == model.additional.ToString());
+                }
+                DataTableReturn dtr = new DataTableReturn
+                {
+                    draw = model.draw,
+                    recordsFiltered = data.Count(),
+                    recordsTotal = db.TRN23100.Where(x => x.ClassId == 18).Count(),
+                    data = Extensions.OrderByDynamic(data, order.Split(" ")[0], order.Split(" ")[1] != "asc").Skip(model.start).Take(model.length).ToList().Select(x => new
+                    {
+                        DT_RowId = DataDictionaries.WordOrderStatuses[x.Status] + "_" + x.Workid,
+                        ReferenceNo = x.Wo_ref,
+                        Title = x.Wo_title,
+                        Date = string.Format("{0:MMM dd, yyyy}", x.Requestdt),
+                        Submitted = new HtmlString("<i class='fe-" + (x.Submitted ? "ok yes" : "cancel-1 no") + "'></i>"),
+                        Status = new HtmlString("<i title='" + DataDictionaries.WordOrderStatuses[x.Status] + "' class='fe-flag-filled " + DataDictionaries.WordOrderStatuses[x.Status].ToLower() + "'></i>")
+                    }).AsQueryable().ToStringArray()
+                };
+                return Json(dtr);
+            }
+            catch { throw; }
+        }
 
-        //public JsonResult MergedOrders(DataTablesParam model)
-        //{
-        //    string order = Customs.GetSortString(model.order, model.columns);
-        //    var data = db.Trn13120s.Search(model.columns.Where(x => x.searchable).ToList(), model.search);
-        //    return Json(new DataTableReturn
-        //    {
-        //        draw = model.draw,
-        //        recordsFiltered = data.Count(),
-        //        recordsTotal = db.Trn13120s.Count(),
-        //        data = data.OrderBy(order).Skip(model.start).Take(model.length).ToList().Select(x => new
-        //        {
-        //            DT_RowId = x.MergedOrderId,
-        //            RefNum = x.MergedRefNum,
-        //            Title = x.MergerdTitle,
-        //            Date = string.Format("{0:MMM dd, yyyy}", x.MergerdDate),
-        //        }).AsQueryable().ToStringArray()
-        //    });
-        //}
+        public JsonResult MergedOrders(DataTablesParam model)
+        {
+            string order = Customs.GetSortString(model.order, model.columns);
+            var data = db.TRN13120.Search(model.columns.Where(x => x.searchable).ToList(), model.search);
+            return Json(new DataTableReturn
+            {
+                draw = model.draw,
+                recordsFiltered = data.Count(),
+                recordsTotal = db.TRN13120.Count(),
+                data = Extensions.OrderByDynamic(data, order.Split(" ")[0], order.Split(" ")[1] != "asc").Skip(model.start).Take(model.length).ToList().Select(x => new
+                {
+                    DT_RowId = x.MergedOrderId,
+                    RefNum = x.MergedRefNum,
+                    Title = x.MergerdTitle,
+                    Date = string.Format("{0:MMM dd, yyyy}", x.MergerdDate),
+                }).AsQueryable().ToStringArray()
+            });
+        }
 
         [HttpPost]
         public JsonResult Activities(DataTablesParam model)
@@ -465,27 +466,27 @@ namespace TeliconLatest.Controllers
         //    });
         //}
 
-        //[HttpPost]
-        //public JsonResult Materials(DataTablesParam model)
-        //{
-        //    string order = Customs.GetSortString(model.order, model.columns);
-        //    var data = db.Adm13100s.Search(model.columns.Where(x => x.searchable).ToList(), model.search);
-        //    if (model.additional != null && model.additional.ToString() != "a")
-        //        data = data.Where(x => x.MaterialUnit == model.additional.ToString());
-        //    return Json(new DataTableReturn
-        //    {
-        //        draw = model.draw,
-        //        recordsFiltered = data.Count(),
-        //        recordsTotal = db.Adm13100s.Count(),
-        //        data = data.OrderBy(order).Skip(model.start).Take(model.length).ToList().Select(x => new
-        //        {
-        //            DT_RowId = x.MaterialId,
-        //            Code = x.MaterialCode,
-        //            Name = x.MaterialName,
-        //            Unit = DataDictionaries.Units[x.MaterialUnit],
-        //        }).AsQueryable().ToStringArray()
-        //    });
-        //}
+        [HttpPost]
+        public JsonResult Materials(DataTablesParam model)
+        {
+            string order = Customs.GetSortString(model.order, model.columns);
+            var data = db.ADM13100.Search(model.columns.Where(x => x.searchable).ToList(), model.search);
+            if (model.additional != null && model.additional.ToString() != "a")
+                data = data.Where(x => x.MaterialUnit == model.additional.ToString());
+            return Json(new DataTableReturn
+            {
+                draw = model.draw,
+                recordsFiltered = data.Count(),
+                recordsTotal = db.ADM13100.Count(),
+                data = Extensions.OrderByDynamic(data, order.Split(" ")[0], order.Split(" ")[1] != "asc").Skip(model.start).Take(model.length).ToList().Select(x => new
+                {
+                    DT_RowId = x.MaterialID,
+                    Code = x.MaterialCode,
+                    Name = x.MaterialName,
+                    Unit = DataDictionaries.Units[x.MaterialUnit],
+                }).AsQueryable().ToStringArray()
+            });
+        }
 
         [HttpPost]
         public JsonResult Classifications(DataTablesParam model)
@@ -507,195 +508,172 @@ namespace TeliconLatest.Controllers
             });
         }
 
-        //[HttpPost]
-        //public JsonResult Departments(DataTablesParam model)
-        //{
-        //    string order = Customs.GetSortString(model.order, model.columns);
-        //    var data = db.Adm04200s.Search(model.columns.Where(x => x.searchable).ToList(), model.search);
-        //    if (model.additional != null && model.additional != "a")
-        //    {
-        //        int statusID = Convert.ToInt32(model.additional);
-        //        data = data.Where(x => x.DepartmentId == statusID);
-        //    }
-        //    return Json(new DataTableReturn
-        //    {
-        //        draw = model.draw,
-        //        recordsFiltered = data.Count(),
-        //        recordsTotal = db.Adm04200s.Count(),
-        //        data = data.OrderBy(order).Skip(model.start).Take(model.length).ToList().Select(x => new
-        //        {
-        //            DT_RowId = x.DepartmentId,
-        //            Name = x.Name
-        //        }).AsQueryable().ToStringArray()
-        //    });
-        //}
+        [HttpPost]
+        public JsonResult Departments(DataTablesParam model)
+        {
+            string order = Customs.GetSortString(model.order, model.columns);
+            var data = db.ADM04200.Search(model.columns.Where(x => x.searchable).ToList(), model.search);
+            if (model.additional != null && model.additional != "a")
+            {
+                int statusID = Convert.ToInt32(model.additional);
+                data = data.Where(x => x.DepartmentID == statusID);
+            }
+            return Json(new DataTableReturn
+            {
+                draw = model.draw,
+                recordsFiltered = data.Count(),
+                recordsTotal = db.ADM04200.Count(),
+                data = Extensions.OrderByDynamic(data, order.Split(" ")[0], order.Split(" ")[1] != "asc").Skip(model.start).Take(model.length).ToList().Select(x => new
+                {
+                    DT_RowId = x.DepartmentID,
+                    Name = x.Name
+                }).AsQueryable().ToStringArray()
+            });
+        }
 
-        //[HttpPost]
-        //public JsonResult Deductions(DataTablesParam model)
-        //{
-        //    string order = Customs.GetSortString(model.order, model.columns);
-        //    var data = db.Adm04100s.Search(model.columns.Where(x => x.searchable).ToList(), model.search);
-        //    if (model.additional != null && model.additional.ToString() != "a")
-        //    {
-        //        int statusID = Convert.ToInt32(model.additional);
-        //        data = data.Where(x => x.DeductionId == statusID);
-        //    }
-        //    return Json(new DataTableReturn
-        //    {
-        //        draw = model.draw,
-        //        recordsFiltered = data.Count(),
-        //        recordsTotal = db.Adm04100s.Count(),
-        //        data = data.OrderBy(order).Skip(model.start).Take(model.length).ToList().Select(x => new
-        //        {
-        //            DT_RowId = x.DeductionId,
-        //            Name = x.Name
-        //        }).AsQueryable().ToStringArray()
-        //    });
-        //}
+        [HttpPost]
+        public JsonResult Deductions(DataTablesParam model)
+        {
+            string order = Customs.GetSortString(model.order, model.columns);
+            var data = db.ADM04100.Search(model.columns.Where(x => x.searchable).ToList(), model.search);
+            if (model.additional != null && model.additional.ToString() != "a")
+            {
+                int statusID = Convert.ToInt32(model.additional);
+                data = data.Where(x => x.DeductionID == statusID);
+            }
+            return Json(new DataTableReturn
+            {
+                draw = model.draw,
+                recordsFiltered = data.Count(),
+                recordsTotal = db.ADM04100.Count(),
+                data = Extensions.OrderByDynamic(data, order.Split(" ")[0], order.Split(" ")[1] != "asc").Skip(model.start).Take(model.length).ToList().Select(x => new
+                {
+                    DT_RowId = x.DeductionID,
+                    x.Name
+                }).AsQueryable().ToStringArray()
+            });
+        }
 
-        //[HttpPost]
-        //public JsonResult ContractorDeductions(DataTablesParam model)
-        //{
-        //    string order = Customs.GetSortString(model.order, model.columns);
-        //    int p_ConId = 0;// Convert.ToInt32(Session["p_ConId"]);
-        //    var data = (from trn41 in db.Trn04100s
-        //                join adm41 in db.Adm04100s on trn41.DeductionId equals adm41.DeductionId
-        //                where trn41.ConductorId == p_ConId
-        //                select new TRN04100Meta.TRN04100MetaData
-        //                {
-        //                    DeductionConductorID = trn41.DeductionConductorId,
-        //                    ConductorID = trn41.ConductorId,
-        //                    DeductionID = trn41.DeductionId,
-        //                    Amount = trn41.Amount,
-        //                    HoldIt = trn41.HoldIt,
-        //                    //Periods = trn41.Periods,
-        //                    Recurring = trn41.Recurring,
-        //                    StartDate = trn41.StartDate,
-        //                    EndDate = trn41.EndDate.Value,
-        //                    YearToDateAmount = trn41.Ytdamount,
-        //                    DeductionName = adm41.Name
-        //                }).Search(model.columns.Where(x => x.searchable).ToList(), model.search);
-        //    if (model.additional != null && model.additional != "a")
-        //    {
-        //        int statusID = Convert.ToInt32(model.additional);
-        //        data = data.Where(x => x.DeductionConductorID == statusID);
-        //    }
-        //    return Json(new DataTableReturn
-        //    {
-        //        draw = model.draw,
-        //        recordsFiltered = data.Count(),
-        //        recordsTotal = db.Trn04100s.Count(),
-        //        data = data.OrderBy(order).Skip(model.start).Take(model.length).ToList().Select(x => new
-        //        {
-        //            DT_RowId = x.DeductionConductorID,
-        //            DeductionName = x.DeductionName,
-        //            Recurring = x.Recurring,
-        //            HoldIt = x.HoldIt,
-        //            Amount = x.Amount,
-        //            StartDate = string.Format("{0:MMMM dd, yyyy}", x.StartDate),
-        //            EndDate = string.Format("{0:MMMM dd, yyyy}", x.EndDate),
-        //            YearToDateAmount = x.YearToDateAmount
-        //        }).AsQueryable().ToStringArray()
-        //    });
-        //}
+        [HttpPost]
+        public JsonResult ContractorDeductions(DataTablesParam model)
+        {
+            string order = Customs.GetSortString(model.order, model.columns);
+            int p_ConId = Convert.ToInt32(HttpContext.Session.GetInt32("p_ConId"));
+            var data = (from trn41 in db.TRN04100
+                        join adm41 in db.ADM04100 on trn41.DeductionID equals adm41.DeductionID
+                        where trn41.ConductorID == p_ConId
+                        select new TRN04100Meta.TRN04100MetaData
+                        {
+                            DeductionConductorID = trn41.DeductionConductorID,
+                            ConductorID = trn41.ConductorID,
+                            DeductionID = trn41.DeductionID,
+                            Amount = trn41.Amount,
+                            HoldIt = trn41.HoldIt,
+                            //Periods = trn41.Periods,
+                            Recurring = trn41.Recurring,
+                            StartDate = trn41.StartDate,
+                            EndDate = trn41.EndDate.Value,
+                            YearToDateAmount = trn41.YTDAmount,
+                            DeductionName = adm41.Name
+                        }).Search(model.columns.Where(x => x.searchable).ToList(), model.search);
+            if (model.additional != null && model.additional != "a")
+            {
+                int statusID = Convert.ToInt32(model.additional);
+                data = data.Where(x => x.DeductionConductorID == statusID);
+            }
+            return Json(new DataTableReturn
+            {
+                draw = model.draw,
+                recordsFiltered = data.Count(),
+                recordsTotal = db.TRN04100.Count(),
+                data = Extensions.OrderByDynamic(data, order.Split(" ")[0], order.Split(" ")[1] != "asc").Skip(model.start).Take(model.length).ToList().Select(x => new
+                {
+                    DT_RowId = x.DeductionConductorID,
+                    DeductionName = x.DeductionName,
+                    Recurring = x.Recurring,
+                    HoldIt = x.HoldIt,
+                    Amount = x.Amount,
+                    StartDate = string.Format("{0:MMMM dd, yyyy}", x.StartDate),
+                    EndDate = string.Format("{0:MMMM dd, yyyy}", x.EndDate),
+                    YearToDateAmount = x.YearToDateAmount
+                }).AsQueryable().ToStringArray()
+            });
+        }
 
-        //[HttpPost]
-        //public JsonResult Fixcodes(DataTablesParam model)
-        //{
-        //    string order = Customs.GetSortString(model.order, model.columns);
-        //    var data = db.ADM06100.Search(model.columns.Where(x => x.searchable).ToList(), model.search);
-        //    if (model.additional != null && model.additional.ToString() != "a")
-        //    {
-        //        int statusID = Convert.ToInt32(model.additional);
-        //        data = data.Where(x => x.FixID == statusID);
-        //    }
-        //    return Json(new DataTableReturn
-        //    {
-        //        draw = model.draw,
-        //        recordsFiltered = data.Count(),
-        //        recordsTotal = db.ADM06100.Count(),
-        //        data = data.OrderBy(order).Skip(model.start).Take(model.length).ToList().Select(x => new
-        //        {
-        //            DT_RowId = x.FixID,
-        //            FixName = x.FixName
-        //        }).AsQueryable().ToStringArray()
-        //    });
-        //}
+        [HttpPost]
+        public JsonResult Periods(DataTablesParam model)
+        {
+            string order = Customs.GetSortString(model.order, model.columns);
+            var data = db.ADM16100.Search(model.columns.Where(x => x.searchable).ToList(), model.search);
+            if (model.additional != null && model.additional.ToString() != "a")
+            {
+                int statusID = Convert.ToInt32(model.additional);
+                data = data.Where(x => x.periodYear == statusID);
+            }
+            return Json(new DataTableReturn
+            {
+                draw = model.draw,
+                recordsFiltered = data.Count(),
+                recordsTotal = db.ADM16100.Count(),
+                data = Extensions.OrderByDynamic(data, order.Split(" ")[0], order.Split(" ")[1] != "asc").Skip(model.start).Take(model.length).ToList().Select(x => new
+                {
+                    DT_RowId = x.PeriodID,
+                    week = x.periodYear + " - " + x.Week,
+                    periodStart = string.Format("{0:dddd MMMM dd, yyyy}", x.PeriodStart),
+                    periodEnd = string.Format("{0:dddd MMMM dd, yyyy}", x.PeriodEnd),
+                    dueDate = string.Format("{0:dddd MMMM dd, yyyy}", x.DueDate),
+                    payDate = string.Format("{0:dddd MMMM dd, yyyy}", x.PayDate)
+                }).AsQueryable().ToStringArray()
+            });
+        }
 
-        //[HttpPost]
-        //public JsonResult Periods(DataTablesParam model)
-        //{
-        //    string order = Customs.GetSortString(model.order, model.columns);
-        //    var data = db.Adm16100s.Search(model.columns.Where(x => x.searchable).ToList(), model.search);
-        //    if (model.additional != null && model.additional.ToString() != "a")
-        //    {
-        //        int statusID = Convert.ToInt32(model.additional);
-        //        data = data.Where(x => x.PeriodYear == statusID);
-        //    }
-        //    return Json(new DataTableReturn
-        //    {
-        //        draw = model.draw,
-        //        recordsFiltered = data.Count(),
-        //        recordsTotal = db.Adm16100s.Count(),
-        //        data = data.OrderBy(order).Skip(model.start).Take(model.length).ToList().Select(x => new
-        //        {
-        //            DT_RowId = x.PeriodId,
-        //            week = x.PeriodYear + " - " + x.Week,
-        //            periodStart = string.Format("{0:dddd MMMM dd, yyyy}", x.PeriodStart),
-        //            periodEnd = string.Format("{0:dddd MMMM dd, yyyy}", x.PeriodEnd),
-        //            dueDate = string.Format("{0:dddd MMMM dd, yyyy}", x.DueDate),
-        //            payDate = string.Format("{0:dddd MMMM dd, yyyy}", x.PayDate)
-        //        }).AsQueryable().ToStringArray()
-        //    });
-        //}
+        [HttpPost]
+        public JsonResult vehicles(DataTablesParam model)
+        {
+            string order = Customs.GetSortString(model.order, model.columns);
+            var data = db.ADM22100.Search(model.columns.Where(x => x.searchable).ToList(), model.search);
+            if (model.additional != null && model.additional.ToString() != "a")
+            {
+                int statusID = Convert.ToInt32(model.additional);
+                data = data.Where(x => x.VehicleID == statusID);
+            }
+            return Json(new DataTableReturn
+            {
+                draw = model.draw,
+                recordsFiltered = data.Count(),
+                recordsTotal = db.ADM22100.Count(),
+                data = Extensions.OrderByDynamic(data, order.Split(" ")[0], order.Split(" ")[1] != "asc").Skip(model.start).Take(model.length).ToList().Select(x => new
+                {
+                    DT_RowId = x.VehicleID,
+                    x.PlateNo,
+                    x.FleetNo
+                }).AsQueryable().ToStringArray()
+            });
+        }
 
-        //[HttpPost]
-        //public JsonResult vehicles(DataTablesParam model)
-        //{
-        //    string order = Customs.GetSortString(model.order, model.columns);
-        //    var data = db.Adm22100s.Search(model.columns.Where(x => x.searchable).ToList(), model.search);
-        //    if (model.additional != null && model.additional.ToString() != "a")
-        //    {
-        //        int statusID = Convert.ToInt32(model.additional);
-        //        data = data.Where(x => x.VehicleId == statusID);
-        //    }
-        //    return Json(new DataTableReturn
-        //    {
-        //        draw = model.draw,
-        //        recordsFiltered = data.Count(),
-        //        recordsTotal = db.Adm22100s.Count(),
-        //        data = data.OrderBy(order).Skip(model.start).Take(model.length).ToList().Select(x => new
-        //        {
-        //            DT_RowId = x.VehicleId,
-        //            PlateNo = x.PlateNo,
-        //            FleetNo = x.FleetNo
-        //        }).AsQueryable().ToStringArray()
-        //    });
-        //}
-
-        //[HttpPost]
-        //public JsonResult Zones(DataTablesParam model)
-        //{
-        //    string order = Customs.GetSortString(model.order, model.columns);
-        //    var data = db.Adm26100s.Search(model.columns.Where(x => x.searchable).ToList(), model.search);
-        //    if (model.additional != null && model.additional.ToString() != "a")
-        //    {
-        //        int statusID = Convert.ToInt32(model.additional);
-        //        data = data.Where(x => x.ZoneId == statusID);
-        //    }
-        //    return Json(new DataTableReturn
-        //    {
-        //        draw = model.draw,
-        //        recordsFiltered = data.Count(),
-        //        recordsTotal = db.Adm04100s.Count(),
-        //        data = data.OrderBy(order).Skip(model.start).Take(model.length).ToList().Select(x => new
-        //        {
-        //            DT_RowId = x.ZoneId,
-        //            Name = x.Name,
-        //            Supervisor = x.SupervisorName
-        //        }).AsQueryable().ToStringArray()
-        //    });
-        //}
+        [HttpPost]
+        public JsonResult Zones(DataTablesParam model)
+        {
+            string order = Customs.GetSortString(model.order, model.columns);
+            var data = db.ADM26100.Search(model.columns.Where(x => x.searchable).ToList(), model.search);
+            if (model.additional != null && model.additional.ToString() != "a")
+            {
+                int statusID = Convert.ToInt32(model.additional);
+                data = data.Where(x => x.ZoneID == statusID);
+            }
+            return Json(new DataTableReturn
+            {
+                draw = model.draw,
+                recordsFiltered = data.Count(),
+                recordsTotal = db.ADM04100.Count(),
+                data = Extensions.OrderByDynamic(data, order.Split(" ")[0], order.Split(" ")[1] != "asc").Skip(model.start).Take(model.length).ToList().Select(x => new
+                {
+                    DT_RowId = x.ZoneID,
+                    Name = x.Name,
+                    Supervisor = x.SupervisorName
+                }).AsQueryable().ToStringArray()
+            });
+        }
 
         [HttpPost]
         public JsonResult Areas(DataTablesParam model)
@@ -721,32 +699,32 @@ namespace TeliconLatest.Controllers
             });
         }
 
-        //[HttpPost]
-        //public JsonResult POs(DataTablesParam model)
-        //{
-        //    string order = Customs.GetSortString(model.order, model.columns);
-        //    var data = db.Adm16200s.Search(model.columns.Where(x => x.searchable).ToList(), model.search);
-        //    if (model.additional != null && model.additional.ToString() != "a")
-        //    {
-        //        int statusID = Convert.ToInt32(model.additional);
-        //        data = data.Where(x => x.Poid == statusID);
-        //    }
-        //    return Json(new DataTableReturn
-        //    {
-        //        draw = model.draw,
-        //        recordsFiltered = data.Count(),
-        //        recordsTotal = db.Adm04100s.Count(),
-        //        data = data.OrderBy(order).Skip(model.start).Take(model.length).ToList().Select(x => new
-        //        {
-        //            DT_RowId = x.Poid,
-        //            PONUM = x.Ponum,
-        //            Total = string.Format("{0:C}", x.Total),
-        //            Balance = string.Format("{0:C}", x.Balance),
-        //            Description = x.Description,
-        //            IsClosed = new HtmlString("<i class='fe-" + (x.IsClosed ? "ok yes" : "cancel-1 no") + "'></i>")
-        //        }).AsQueryable().ToStringArray()
-        //    });
-        //}
+        [HttpPost]
+        public JsonResult POs(DataTablesParam model)
+        {
+            string order = Customs.GetSortString(model.order, model.columns);
+            var data = db.ADM16200.Search(model.columns.Where(x => x.searchable).ToList(), model.search);
+            if (model.additional != null && model.additional.ToString() != "a")
+            {
+                int statusID = Convert.ToInt32(model.additional);
+                data = data.Where(x => x.POID == statusID);
+            }
+            return Json(new DataTableReturn
+            {
+                draw = model.draw,
+                recordsFiltered = data.Count(),
+                recordsTotal = db.ADM04100.Count(),
+                data = Extensions.OrderByDynamic(data, order.Split(" ")[0], order.Split(" ")[1] != "asc").Skip(model.start).Take(model.length).ToList().Select(x => new
+                {
+                    DT_RowId = x.POID,
+                    PONUM = x.PONUM,
+                    Total = string.Format("{0:C}", x.TOTAL),
+                    Balance = string.Format("{0:C}", x.BALANCE),
+                    Description = x.Description,
+                    IsClosed = new HtmlString("<i class='fe-" + (x.IsClosed ? "ok yes" : "cancel-1 no") + "'></i>")
+                }).AsQueryable().ToStringArray()
+            });
+        }
 
         [HttpPost]
         public JsonResult Banks(DataTablesParam model)
@@ -933,69 +911,69 @@ namespace TeliconLatest.Controllers
 
         #region Quotation
 
-        //[HttpPost]
-        //public JsonResult Quotations(DataTablesParam model)
-        //{
-        //    string order = Customs.GetSortString(model.order, model.columns);
-        //    IQueryable<Trn17100> data = db.Trn17100s.Search(model.columns.Where(x => x.searchable).ToList(), model.search);
-        //    if (!model.year.HasValue)
-        //        model.year = DateTime.Now.Year;
-        //    if (model.year != 0)
-        //        data = data.Where(x => x.Requestdt.Year == model.year);
-        //    var list = data.ToList();
-        //    int tCount = list.Count;
-        //    if (tCount < model.length)
-        //        model.length = tCount;
-        //    var dataList = data.ToList();
-        //    return Json(new DataTableReturn
-        //    {
-        //        draw = model.draw,
-        //        recordsFiltered = tCount,
-        //        recordsTotal = db.Trn17100s.Count(),
-        //        data = dataList.OrderBy(order).Skip(model.start).Take(model.length).AsEnumerable().Select(x => new
-        //        {
-        //            DT_RowId = x.QuotationId,
-        //            ReferenceNo = x.QuotRef,
-        //            Title = x.QuotTitle,
-        //            Date = string.Format("{0:dd/MM/yyyy}", x.Requestdt),
-        //            Requestby = x.Requestby
-        //        }).AsQueryable().ToStringArray()
-        //    });
-        //}
+        [HttpPost]
+        public JsonResult Quotations(DataTablesParam model)
+        {
+            string order = Customs.GetSortString(model.order, model.columns);
+            var data = db.TRN17100.Search(model.columns.Where(x => x.searchable).ToList(), model.search);
+            if (!model.year.HasValue)
+                model.year = DateTime.Now.Year;
+            if (model.year != 0)
+                data = data.Where(x => x.Requestdt.Year == model.year);
+            var list = data.ToList();
+            int tCount = list.Count;
+            if (tCount < model.length)
+                model.length = tCount;
+            var dataList = data.ToList();
+            return Json(new DataTableReturn
+            {
+                draw = model.draw,
+                recordsFiltered = tCount,
+                recordsTotal = db.TRN17100.Count(),
+                data = Extensions.OrderByDynamic(dataList.AsQueryable(), order.Split(" ")[0], order.Split(" ")[1] != "asc").Skip(model.start).Take(model.length).AsEnumerable().Select(x => new
+                {
+                    DT_RowId = x.QuotationId,
+                    ReferenceNo = x.Quot_ref,
+                    Title = x.Quot_title,
+                    Date = string.Format("{0:dd/MM/yyyy}", x.Requestdt),
+                    Requestby = x.Requestby
+                }).AsQueryable().ToStringArray()
+            });
+        }
 
         #endregion
 
         #region StandbyInvoice
 
-        //[HttpPost]
-        //public JsonResult StandbyInvoices(DataTablesParam model)
-        //{
-        //    string order = Customs.GetSortString(model.order, model.columns);
-        //    IQueryable<Trn19100> data = db.Trn19100s.Search(model.columns.Where(x => x.searchable).ToList(), model.search);
-        //    if (!model.year.HasValue)
-        //        model.year = DateTime.Now.Year;
-        //    if (model.year != 0)
-        //        data = data.Where(x => x.Requestdt.Year == model.year);
-        //    var list = data.ToList();
-        //    int tCount = list.Count;
-        //    if (tCount < model.length)
-        //        model.length = tCount;
-        //    var dataList = data.ToList();
-        //    return Json(new DataTableReturn
-        //    {
-        //        draw = model.draw,
-        //        recordsFiltered = tCount,
-        //        recordsTotal = db.Trn19100s.Count(),
-        //        data = dataList.OrderBy(order).Skip(model.start).Take(model.length).AsEnumerable().Select(x => new
-        //        {
-        //            DT_RowId = x.SinvoiceId,
-        //            ReferenceNo = Customs.MakeGenericInvoiceNo(x.SinvoiceId),
-        //            Title = x.SinvTitle,
-        //            Date = string.Format("{0:dd/MM/yyyy}", x.Requestdt),
-        //            Zone = x.Zone.Name
-        //        }).AsQueryable().ToStringArray()
-        //    });
-        //}
+        [HttpPost]
+        public JsonResult StandbyInvoices(DataTablesParam model)
+        {
+            string order = Customs.GetSortString(model.order, model.columns);
+            var data = db.TRN19100.Search(model.columns.Where(x => x.searchable).ToList(), model.search);
+            if (!model.year.HasValue)
+                model.year = DateTime.Now.Year;
+            if (model.year != 0)
+                data = data.Where(x => x.Requestdt.Year == model.year);
+            var list = data.ToList();
+            int tCount = list.Count;
+            if (tCount < model.length)
+                model.length = tCount;
+            var dataList = data.ToList();
+            return Json(new DataTableReturn
+            {
+                draw = model.draw,
+                recordsFiltered = tCount,
+                recordsTotal = db.TRN19100.Count(),
+                data =Extensions.OrderByDynamic(dataList.AsQueryable(), order.Split(" ")[0], order.Split(" ")[1] != "asc").Skip(model.start).Take(model.length).AsEnumerable().Select(x => new
+                {
+                    DT_RowId = x.SInvoiceId,
+                    ReferenceNo = Customs.MakeGenericInvoiceNo(x.SInvoiceId),
+                    Title = x.SInv_title,
+                    Date = string.Format("{0:dd/MM/yyyy}", x.Requestdt),
+                    Zone = x.ADM26100.Name
+                }).AsQueryable().ToStringArray()
+            });
+        }
 
         #endregion
     }

@@ -1,0 +1,57 @@
+﻿@model IEnumerable<TeliconLatest.Models.POSummary>
+@{
+    Layout = null;
+}
+<div class="print-holder">
+    <div class="bottom">
+        <h2 class="title" style="margin:10px 0;">Purchase Order Summary</h2>
+        @if (ViewBag.DateFrom != null && ViewBag.DateTo != null)
+        {
+            <h2 class="title" style="margin:10px 0;">Period Starting @string.Format("{0:dddd MMMM dd, yyyy}", ViewBag.pDateFrom) to @string.Format("{0:dddd MMMM dd, yyyy}", ViewBag.pDateTo)</h2>
+        }
+        <table class="prt-data report-table">
+            <thead>
+                <tr>
+                    <th width="100">PO No.</th>
+                    <th width="300">Description</th>
+                    <th width="100">Ref. No.</th>
+                    <th width="100">Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var po in Model.Select(x => x.PONum.Trim()).Distinct())
+                {
+                    var list = Model.Where(x => x.PONum.Trim() == po).ToList();
+                    <tr>
+                        <td><a href="#" onclick="ShowPOSummaryDetails('@ViewBag.YearFrom', '@ViewBag.YearFrom', '@ViewBag.DateFrom', '@ViewBag.DateTo', '@po')">@po</a></td>
+                        <td style="text-align:left;"><a href="#" onclick="ShowPOSummaryDetails('@ViewBag.YearFrom', '@ViewBag.YearFrom', '@ViewBag.DateFrom', '@ViewBag.DateTo', '@po')">@list[0].PODescr</a></td>
+                        <td>@list[0].Wo_ref</td>
+                        <td class="number" style="text-align:right;">@string.Format("{0:C}", list.Sum(x=> x.InvoiceTotal))</td>
+                    </tr>
+                }
+            </tbody>
+        </table>        
+    </div>    
+    <button class="print-clicker"><i class="fe-print-1"></i></button>
+</div>
+
+<script type="text/javascript">
+    function ShowPOSummaryDetails(yearFrom, yearTo, fromDate, toDate, poNum) {
+        loading(true);
+        $.ajax({
+            url: '/report/POSummaryDetails',
+            type: "post",
+            data: { yearFrom : yearFrom, yearTo: yearTo, dateFrom: fromDate, dateTo: toDate, poNum: poNum },
+            success: function (html) {
+                console.log(html)
+                removeLoader(true, 300, function () {
+                    $(".overlay").hide();
+                    var overlay = $("#drillDown");
+                    overlay.find(".overlay-body").html(html);
+                    if (!overlay.is(":visible"))
+                        overlay.show(200);
+                });
+            }
+        });
+    }
+</script>

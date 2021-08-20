@@ -1,0 +1,163 @@
+﻿@using System.Globalization;
+
+@{
+    ViewBag.Title = "Contractor Statements";
+    
+}
+@section Breadcrumbs{
+    <li>Reports</li>
+    <li>@ViewBag.Title</li>
+}
+
+<div class="report-filter">
+    <h1 class="title">Report Filter</h1>
+    @using (Html.BeginForm("ContractorStatementsToExcel", "report", FormMethod.Post))
+    {
+        <table>
+            <tr>
+                <td colspan="2">
+                    <div class="filter-toggler">
+                        <span class="off">By Date</span>
+                        <button class="approver simple-toggler on"><span></span></button>
+                        <span class="on">By Periods</span>
+                    </div>
+                </td>
+            </tr>
+            <tr><td colspan="2"><label>Sort By</label></td></tr>
+            <tr>
+                <td>
+                    <select name="sortBy" id="sortBy" style="width:150px;">
+                        <option value="EmployeeID">Employee ID</option>
+                        <option value="FirstName">First Name</option>
+                        <option value="LastName">Last Name</option>
+                        <option value="Department">Department</option>
+                        <option value="Level">Level</option>
+                        <option value="Total">Total</option>
+                    </select>
+                </td>
+                <td>
+                    <select name="direction" id="direction"  style="width:125px;">
+                        <option value="asc">Ascending</option>
+                        <option value="desc">Descending</option>
+                    </select>
+                </td>
+            </tr>
+        </table>
+        <table class="date-filter" style="display:none;">
+            <tr>
+                <td colspan="2">
+                    <label>Date</label>
+                    <div class="input-daterange input-group" id="datepicker">
+                        <input type="text" class="input-sm form-control" name="dateFrom" />
+                        <span class="input-group-addon">to</span>
+                        <input type="text" class="input-sm form-control" name="dateTo" />
+                    </div>
+                </td>
+            </tr>
+        </table>
+        <table class="periods-filter">
+            <tr>
+                <td colspan="2"><label>Period Starting</label></td>
+            </tr>
+            <tr>
+                <td>
+                    @Html.DropDownList("periodStart", (List<SelectListItem>)ViewBag.PeriodList, new { style = "width:180px;" })
+                </td>
+                <td>
+                    @Html.DropDownList("periodStartYear", (List<SelectListItem>)ViewBag.Years, new { style = "width:100px;" })
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2"><label>Period Ending</label></td>
+            </tr>
+            <tr>
+                <td>
+                    @Html.DropDownList("periodEnd", (List<SelectListItem>)ViewBag.PeriodList, new { style = "width:180px;" })
+                </td>
+                <td>
+                    @Html.DropDownList("periodEndYear", (List<SelectListItem>)ViewBag.Years, new { style = "width:100px;" })
+                </td>
+            </tr>
+        </table>
+        <table>
+        <tr>
+            <td class="btns"><button class="generate">Generate</button></td>
+            <td class="btns"><button type="submit" class="export" style="width:auto;">Generate Excel</button></td>
+        </tr>
+        </table>
+    }
+</div>
+<div class="report-box">
+    <div class="filler">
+        <i class="mdi mdi-auto-fix"></i>
+        <h1>Report shows here!</h1>
+        <h2>Enter a filter and click Generate to begin.</h2>
+    </div>
+</div>
+@section scripts{
+    <script type="text/javascript">
+        $(window).load(function () {
+            $("select").select2({ minimumResultsForSearch: -1, width: "resolve" });
+            $(".filter-toggler button").click(function (e) {
+                var self = $(this);
+                self.toggleClass("on off");
+                toggleViews(self.is(".on") ? "on" : "off");
+                e.preventDefault();
+            });
+            $(".filter-toggler span").click(function (e) {
+                var self = $(this);
+                var clazz = self.attr("class");
+                self.parent().find("button").removeClass("on off").addClass(clazz);
+                toggleViews(clazz);
+                e.preventDefault();
+            });
+            $('.report-filter .input-daterange').datepicker({ format: "mm/dd/yyyy" });
+            $(".generate").click(function (e) {
+                var ok = true;
+                if ($(".filter-toggler button").is(".off")) {
+                    var dateFrom = $(".date-filter [name='dateFrom']").val();
+                    var dateTo = $(".date-filter [name='dateFrom']").val();
+                    if (dateFrom.isEmpty() || dateTo.isEmpty()) {
+                        var htmlMsg = "<p>Please ensure that a <b class='default-col'>From Date</b> and a <b class='default-col'>To Date</b> are entered when using the <b class='default-col'>Date Range</b></p>";
+                        var htmlTitle = "<i class='fe-comment'></i>Date Range Error";
+                        displayDialogMsg(htmlMsg, htmlTitle);
+                        ok = false;
+                    }
+                }
+                if (ok) {
+                    var form = $(".report-filter form");
+                    loading(true);
+                    $.ajax({
+                        url: "/report/GenerateContractorStatements",
+                        type: "post",
+                        data: form.serialize(),
+                        success: function (html) {
+                            console.log(html)
+                            removeLoader(true, 300, function () {
+                                var overlay = $(".overlay");
+                                overlay.find(".overlay-body").html(html);
+                                if (!overlay.is(":visible"))
+                                    overlay.show(200);
+                            });
+                        }
+                    });
+                }
+                e.preventDefault();
+            });
+        });
+        function toggleViews(state) {
+            var form = $('form');
+            form.find("input[type=text], textarea").val("");
+            if (state == "on") {
+                $(".date-filter").hide(200, function () {
+                    $(".periods-filter").show(200);
+                });
+            }
+            else {
+                $(".periods-filter").hide(200, function () {
+                    $(".date-filter").show(200);
+                });
+            }
+        }
+    </script>
+}

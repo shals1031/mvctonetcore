@@ -1,0 +1,48 @@
+﻿@*@model IEnumerable<string>*@
+@{
+    List<string> _location = new List<string>();
+    List<string> _adtnldetails = new List<string>();
+    if (ViewBag.locations != null)
+    {
+        _location = (List<string>)ViewBag.locations;
+    }
+    if (ViewBag.adtnldetails != null)
+    {
+        _adtnldetails = (List<string>)ViewBag.adtnldetails;
+    }
+    Layout = null;
+    bool invoiced = (bool)ViewBag.Invoiced;
+}
+@if (_location.Any())
+{
+    int counter = 0;
+    <ul class="clearfix">
+        @foreach (var loc in _location)
+        {
+            <li class="clearfix">
+                <span class="loc-details">@loc</span>
+                <span style="display:none;">@(_adtnldetails.Count <= counter ? string.Empty : _adtnldetails[counter])</span>
+                @if (ViewBag.Type == "")
+                {
+                    <div class="wo-actions">
+                        <a href="#" class="del-action" title="Delete"><i class="fe-trash"></i></a>
+                        @if (!invoiced)
+                        {
+                            <a href="#" class="edit-action" title="Edit"><i class="fe-pencil-2"></i></a>
+                        }
+                    </div>
+                }
+            </li>
+            counter++;
+        }
+    </ul>
+}
+else
+{
+    if (!invoiced)
+    {
+        <div class="placeholder">
+            <button><i class="fe-location-2"></i></button>
+        </div>
+    }
+}

@@ -1,0 +1,141 @@
+﻿@using TeliconLatest.Reusables;
+@{
+    Layout = "~/Views/Shared/_TechLayout.cshtml";
+    ViewBag.Title = "Orders";
+}
+
+<table class="tech-tbl" data-url="@Url.Action("index", "workorder")" data-name="Work Order">
+    <thead>
+        <tr><th>Title</th><th>Date</th><th>Status</th><th></th></tr>
+    </thead>
+    <tbody></tbody>
+</table>
+@section Scripts{
+    <script type="text/javascript">
+    $(document).ready(function () {
+        $(document).on("change", "#status", function () {
+            dTable.draw();
+        });
+        $("#stat li a").click(function (e) {
+            var val = $(this).data("val");
+            $("#status").select2("val", val, true);
+            e.preventDefault();
+        });
+        dTable = $("table").DataTable({
+            dom: '<"top"<"sub-top clearfix"fr>pl>t<"bottom clearfix"p>',
+            pagingType: 'full_numbers',
+            columnDefs: [
+                { "targets": 0, "name": "Wo_title", "data": "Title" },
+                { "targets": 1, "name": "Requestdt", "data": "RequestDate" },
+                { "targets": 2, "name": "Status", "data": "Status", "class": "wo-status" },
+                { "targets": 3, "name": "button", "data": "Button", "class":"button", "searchable": false, "orderable": false }
+            ],
+            order: [[0, 'asc']],
+            processing: true,
+            serverSide: true,
+            ajax: {
+                url: "@Url.Action("technicianorders","list")", type: "POST",
+                data: function (d) {
+                    d.additional = typeof $("#status").val() === 'undefined' ? "a" : $("#status").val();
+                    d.year = typeof $("#year").val() === 'undefined' ? '@(DateTime.Now.Year.ToString())' : $("#year").val();
+                    return $.toDictionary(d);
+                }
+            }
+        });
+        //$(".dataTables_wrapper .sub-top").append("<button class='add-new' data-type='c'>New Work Order</button>");
+
+        $(".dataTables_wrapper .sub-top .dataTables_filter label")
+            .after('@Html.Raw(Html.DropDownList("status", (List<SelectListItem>)ViewBag.Statuses).ToHtmlString().Replace(Environment.NewLine, ""))');
+        $(".dataTables_wrapper .sub-top .dataTables_filter label")
+                        .after('@Html.Raw(Html.DropDownList("year", (List<SelectListItem>)ViewBag.Years).ToHtmlString().Replace(Environment.NewLine, ""))');
+        $(document).on("change", "#year", function () {
+            dTable.draw();
+        });
+        dTable.search('').draw();
+            $("select").select2({ minimumResultsForSearch: -1, width: "resolve" });
+
+            $(document).on("click", ".manage-dets", function (e) {
+                var self = $(this);
+                var type = $(this).hasClass("view") ? "view" : "";
+                var wid = self.parents("tr").attr("id");
+                loading(false);
+                if ($(this).hasClass("tt-editw")) {
+                    url = "@Url.Action("Edit", "WorkOrder")";
+                    $.get(url, { id: wid, type:"c" }, function (html) {
+                        $("body").append(html);
+                        removeLoader(false, 1000, function () {
+                            $('.modal').modal({ show: true }).find("select").select2({ minimumResultsForSearch: -1, width: "resolve" });
+                            $('.modal').find(".number").onlyNumbers({ neagtive: false, decimal: true });
+                            $('.modal .date-box').datepicker({ format: "mm/dd/yyyy" }).on('changeDate', function (ev) {
+                                $(this).datepicker('hide');
+                            });
+                            $.validator.unobtrusive.parse($(".tel-form form"));
+                        });
+                    });
+                }
+                else {
+                    url = "@Url.Action("GenerateConstructor", "WorkOrder")";
+                $("body").append("<div class='full-overlay'></div>");
+                $(".full-overlay").fadeIn(200);
+                $.ajax({
+                    url: url,
+                    data: { wid: wid, type: type },
+                    success: function (html) {
+                        removeLoader(false, 1000, function () {
+                            $("body").append(html);
+                            $("#constructor [title]").tooltip({ placement: "top" });
+                            $("#constructor").addClass("animated fadeInRight").show();
+                            $('.const-main .const-holder ul').perfectScrollbar();
+                            $("#constructor .wo-inv select").select2({ minimumResultsForSearch: -1 });
+                            $("#constructor .title span").dotdotdot();
+                        });
+                    }
+                });
+            }
+            e.preventDefault();
+        });
+        $(document).on("click", "#constructor .submit", function (e) {
+            loading(true);
+            var id = $("#constructor").data("id");
+            $.get("@Url.Action("WorkOrderActivityCount", "WorkOrder")", { id: id }, function (data) {
+                removeLoader(true, 200, function () {
+                    if (data.any) {
+                        var buttons = [
+                            { text: "Continue", click: function () { $(this).dialog("close"); submitWorkOrder(); } },
+                            { text: "Cancel", click: function () { $(this).dialog("close"); } }
+                        ];
+                        var msg = '<p>Once the Work Order is <b class="loc-col">Submitted</b> it will no longer be editable. Are you sure you want to <b class="loc-col">Submit</b> this Work Order?</p></div>';
+                        displayConfirmationMsg(msg, 'Submit Work Order', buttons);
+                    }
+                    else {
+                        msg = "<p>Cannot <b class='loc-col'>Submit</b> an empty Workorder. Please ensure that you have added <b>Activities</b> and have clicked the <b>Update</b> button.</p>";
+                        var title = "<i class='fe-comment'></i> No Activities Saved!"
+                        displayDialogMsg(msg, title);
+                    }
+                });
+            });
+        });
+    });
+    function submitWorkOrder() {
+        var id = $("#constructor").data("id");
+        $.post("@Url.Action("ChangeStatus", "WorkOrder")", { wid: id, type: "submit" }, function (result) {
+            if (result.Additional > 0) {
+                $("#constructor .cancel").trigger("click");
+                msg = "<p>Work Order <b class='loc-col'>Submitted</b> Successfully!</p>";
+                var title = "<i class='fe-comment'></i> Success!"
+                if (result.Code == "1001") {
+                    title = "<i class='fe-comment'></i>Penalty Warning!"
+                    msg = result.Msg;
+                }
+                displayDialogMsg(msg, title);
+            }
+            else {
+                var msg = "<p>Something went wrong while trying to complete your request. Please try again or contact your System Administrator.</p>";
+                var title = "<i class='fe-comment'></i> Something went wrong";
+                displayDialogMsg(msg, title);
+            }
+        });
+    }
+    </script>
+}
+

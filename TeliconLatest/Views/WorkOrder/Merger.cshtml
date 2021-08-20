@@ -1,0 +1,142 @@
+﻿@model IEnumerable<TeliconLatest.Models.WorkOrderReferencePartial>
+@{
+    Layout = null;
+    var invNos = (List<SelectListItem>)ViewBag.InvNOs;
+    bool invoiced = (bool)ViewBag.Invoiced;
+    int invoiceId = (int)ViewBag.InvoiceID;
+}
+
+<div id="merger" class="animated bounceInRight">
+    <input type="hidden" id="mergerIdHidden" value="@ViewBag.id" />
+    <button class="close"><i class="fe-cancel"></i></button>
+    <div id="merger-left" class="merger-holder">
+        <div class="filter clearfix">
+            <input type="text" placeholder="filter" />
+        </div>
+        <ul>
+            <partial name="ReferenceListPartial" model="Model" />
+        </ul>        
+    </div>
+    <div id="merger-right" class="merger-holder">
+        <div class="top title clearfix">
+            <span style="float:left; margin:15px 15px;">Work Order Merger</span>
+            <div class="title-editor clearfix">
+                <input type="text" placeholder="Enter Invoice Title" id="txtTitle" value="@ViewBag.Title" style="margin:15px 15px; width:450px;"/>
+            </div>
+        </div>
+        <div class="center">
+            <div class="workorder-holder">
+                <div class="filler">
+                    <i class="fe-flow-merge"></i>
+                    <h1>Select a Reference Code and Start Merging!</h1>
+                </div>
+            </div>
+        </div>
+        <div class="bottom clearfix">            
+                @if (invNos.Count < 1 || invoiced == true)
+                {
+                    <h1 class="total animated" style="float:left;">
+                        Invoice No.:
+                        <span @(!invoiced ? "title='Invoice ID is always assumed'" : "")>
+                            @(invoiceId)
+                            @if (!invoiced)
+                            {
+                                <i class="fe-help-circled"></i>
+                            }
+                        </span>
+                    </h1>
+                    if (!invoiced)
+                    {
+                        <button class="merger-process" style="width: 90px; height: 28px;margin-top: 4px;">Process</button>
+                    }
+                }
+                else
+                {
+                    <h1 class="total animated" style="float:left;">Invoice No.:</h1>
+                    invNos.Insert(0, new SelectListItem { Text = "", Value = "" });
+                    @Html.DropDownList("ddl-invoice-no", invNos, new { style = "width:110px; margin-top: -2px;" })
+                    <button class="merger-process" style="width: 90px; height: 28px;margin-top: 4px;">Process</button>
+                }            
+            <button class="merger-btn"><i class="fe-flow-merge"></i></button>
+            <h1 class="total animated tot" data-total="0">Total: <span>$0.00</span></h1>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $("select").select2({ minimumResultsForSearch: -1, width: "resolve" });
+        var code = '@ViewBag.RefCode';
+        var id = '@ViewBag.id';
+        if (code != "") {
+            LoadMergeWOs(code, id);
+        }
+        $(document).on("click", ".merger-btn", function (e) {
+            var rows = $(".workorder-holder table > tbody  > tr");
+            if (rows.length < 1) {
+                var htmlMsg = "<p>No <b class='loc-col'>Work Order(s)</b> have been selected for <b class='date-col'>Merging</b>. First select your desired <b class='loc-col'>Work Order(s)</b> then try again.</p>";
+                var htmlTitle = "<i class='fe-comment'></i>Cannot Print";
+                displayDialogMsg(htmlMsg, htmlTitle);
+            }
+            else {
+                rows = $.grep(rows, function (row) {
+                    var self = $(row).find("button");
+                    var isChecked = $(self).is(".active");
+                    return isChecked;
+                });
+                var ids = $.map(rows, function (elm) { return $(elm).attr("id").replace("tr-", ""); });
+                var masterId = Math.min.apply(Math, ids);
+                ids = $.grep(ids, function (id) {
+                    return id != masterId;
+                });
+                if (ids.length > 0) {
+                    var buttons = [
+                        { text: "Continue", click: function () { $(this).dialog("close"); SaveMerger(ids, masterId, $(this)); } },
+                        { text: "Cancel", click: function () { $(this).dialog("close"); } }
+                    ];
+                    var msg = "<p>Selected <b class='date-col'>Work Orders</b>, will be <b class='default-col'>Merge</b>. Are you sure you want to Continue?</p></div>";
+                    displayConfirmationMsg(msg, 'Merge Confirmation', buttons);
+                }
+                else {
+                    var htmlMsg = "<p>No <b class='loc-col'>Work Order(s)</b> have been selected for <b class='date-col'>Merging</b>. First select your desired <b class='loc-col'>Work Order(s)</b> then try again.</p>";
+                    var htmlTitle = "<i class='fe-comment'></i>Cannot Merge";
+                    displayDialogMsg(htmlMsg, htmlTitle);
+                }
+            }
+            e.preventDefault();
+        });
+    });
+
+    function SaveMerger(ids, masterId, dBox) {
+        loading(true);
+        var isUpdate = $("#mergerIdHidden").val() != undefined && $("#mergerIdHidden").val() != "" && $("#mergerIdHidden").val() != "" ? true : false;
+        $.ajax({
+            url: "@Url.Action("MergeWorkOrders", "WorkOrder")",
+            data: $.toDictionary({ wOIds: ids, masterWOId: masterId, isUpdate: isUpdate, id: $("#mergerIdHidden").val(), title: $("#txtTitle").val() }),
+            type: "post",
+            success: function (r) {
+                removeLoader(true, 200, function () {
+                    var htmlMsg = "";
+                    var htmlTitle = "";
+                    if (r.Code == "100") {
+                        $("#mergerIdHidden").val(r.Additional);
+                        htmlMsg = "<p>Work Orders were <b>Merged</b> Successfully!.</p>";
+                        htmlTitle = "<i class='fe-comment'></i> Success";
+                        dTable2.draw();
+                    }
+                    else {
+                        htmlMsg = r.Msg;
+                        htmlTitle = "<i class='fe-comment'></i>Cannot Merge";
+                    }
+                    displayDialogMsg(htmlMsg, htmlTitle);
+                });
+                try{
+                    dBox.dialog("close");
+                }
+                catch(e){
+
+                }
+            }
+        });
+    }
+</script>

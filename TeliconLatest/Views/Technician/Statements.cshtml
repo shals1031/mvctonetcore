@@ -1,0 +1,55 @@
+﻿@{
+    Layout = "~/Views/Shared/_TechLayout.cshtml";
+    ViewBag.Title = "Statements";
+}
+<table class="tech-tbl" data-id="@ViewBag.ContractorID">
+    <thead>
+        <tr><th>Period No.</th><th>From</th><th>To</th><th>Total</th><th></th></tr>
+    </thead>
+    <tbody></tbody>
+</table>
+@section Scripts{
+    <script src="@Url.Content("~/Scripts/bootstrap-datepicker.js")"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            var options = {
+                dom: '<"top"<"sub-top tech-prt clearfix"r>pl>t<"bottom clearfix"p>',
+                pagingType: 'full_numbers',
+                language: { "lengthMenu": "Show _MENU_ entries" },
+                searching: false,
+                columnDefs: [
+                    { "targets": 0, "name": "PeriodNo", "data": "PeriodNo" },
+                    { "targets": 1, "name": "DateFrom", "data": "From" },
+                    { "targets": 2, "name": "DateTo", "data": "To" },
+                    { "targets": 3, "name": "Total", "data": "Total", "class": "money" },
+                    {
+                        "targets": 4, "class": "button", "orderable": false, "searchable": false, "data": null,
+                        "defaultContent": "<button class='manage-dets tt-details'><i class='fe-doc-text-1'></i></button>" +
+                            "<button class='manage-dets tt-print'><i class='fe-print-1'></i></button>" +
+                            "<button class='manage-dets tt-print-payslip'><i class='fe-money'></i></button>"
+                    },
+                ],
+                order: [[1, 'desc']],
+                processing: true,
+                serverSide: true,
+                ajax: {
+                    url: "@Url.Action("technicianstatement", "list")", type: "POST",
+                    data: function (d) {
+                        var from = $(".tech-prt .input-daterange input[name='start']").val();
+                        var to = $(".tech-prt .input-daterange input[name='end']").val();
+                        var id = $(".tech-tbl").data("id");
+                        if ((typeof to !== 'undefined' && typeof from !== 'undefined') && (to !== "" && from !== ""))
+                            data = id + "|" + from + "|" + to;
+                        else
+                            data = id + "||";
+                        d.additional = data;
+                        return $.toDictionary(d);
+                    }
+                }
+            }
+            setupTechPrintOuts(options);
+        });
+    </script>
+}
+
+

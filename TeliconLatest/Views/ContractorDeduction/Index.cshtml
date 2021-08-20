@@ -1,0 +1,39 @@
+﻿@{
+    ViewBag.Title = "Contractor Deduction";
+}
+<table class="admin-tbl" data-url="@Url.Action("index", "ContractorDeduction")" data-name="Contractor Deduction">
+    <thead>
+        <tr><th>Deduction Name</th><th>Recurring</th><th>Hold</th><th>Amount</th><th>Start Date</th><th>End Date</th><th>YTD Amount</th><th></th></tr>
+    </thead>
+    <tbody></tbody>
+</table>
+@section Breadcrumbs{
+    <li>Administration</li>
+    <li style="color:#3c81cc;">@Html.ActionLink("Contractor Deductions", "index", "Contractor")</li>
+    <li id="liContractorName">@ViewBag.ContName</li>
+}
+@section Scripts{
+    <script type="text/javascript">
+        $(document).ready(function () {
+            dataTableOptions.ajax.url = "@Url.Action("ContractorDeductions", "list")";
+            dataTableOptions.columnDefs = [
+                    { "targets": 0, "name": "DeductionName", "data": "DeductionName", "class": "dt-item-title" },
+                    { "targets": 1, "name": "Recurring", "data": "Recurring", "searchable": false },
+                    { "targets": 2, "name": "HoldIt", "data": "HoldIt", "searchable": false },
+                    { "targets": 3, "name": "Amount", "data": "Amount" },
+                    { "targets": 4, "name": "StartDate", "data": "StartDate", "searchable": false },
+                    { "targets": 5, "name": "EndDate", "data": "EndDate", "searchable": false },
+                    { "targets": 6, "name": "YearToDateAmount", "data": "YearToDateAmount", "searchable": false },
+                    {
+                        "targets": 7, "class": "actions",
+                        "orderable": false, "searchable": false, "data": null,
+                        "defaultContent": "<a href='#edit' class='dt-edit'><i class='fe-pencil-2'></i></a>" +
+                            "<a href='#delete' class='dt-delete'><i class='fe-cancel'></i></a>"
+                    }
+            ];
+            dataTableOptions.order = [[0, 'asc']];
+            dTable = $("table").DataTable(dataTableOptions);
+            dTable.search('').draw();
+        });
+    </script>
+}

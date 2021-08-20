@@ -1,0 +1,57 @@
+﻿@model IEnumerable<TeliconLatest.Models.MaterialUsage>
+@{
+    Layout = null;
+    int i = 1;
+}
+<div class="print-holder">
+    <div class="bottom">
+        <h2 class="title" style="margin:10px 0;">Material Usage Report</h2>
+        @if (ViewBag.DateFrom != null && ViewBag.DateTo != null)
+        {
+            <h2 class="title" style="margin:10px 0;">Period Starting @string.Format("{0:dddd MMMM dd, yyyy}", ViewBag.DateFrom) to @string.Format("{0:dddd MMMM dd, yyyy}", ViewBag.DateTo)</h2>
+        }
+        <table class="prt-data report-table">
+            <thead>
+                <tr>
+                    <th width="100">Nos.</th>
+                    <th width="250">Description</th>
+                    <th width="100">Qty</th>
+                </tr>
+            </thead>
+            <tbody>                
+                @foreach (var matId in Model.Select(x => x.WoMatID).Distinct())
+                {
+                    var list = Model.Where(x => x.WoMatID == matId).ToList();
+                    <tr>
+                        <td>@i</td>
+                        <td style="text-align:left;"><a href="#" onclick="ShowMatDetails('@ViewBag.DateFrom', '@ViewBag.DateTo', '@matId')">@list[0].MaterialName</a></td>
+                        <td class="number" style="text-align:right;">@list.Sum(x=> x.WoMatQty)</td>
+                    </tr>
+                    i++;
+                }
+            </tbody>
+        </table>        
+    </div>    
+    <button class="print-clicker"><i class="fe-print-1"></i></button>
+</div>
+
+<script type="text/javascript">
+    function ShowMatDetails(fromDate, toDate, matId) {
+        loading(true);
+        $.ajax({
+            url: '/report/MaterialUsageDetail',
+            type: "post",
+            data: { dateFrom: fromDate, dateTo: toDate, matId: matId },
+            success: function (html) {
+                console.log(html)
+                removeLoader(true, 300, function () {
+                    $(".overlay").hide();
+                    var overlay = $("#drillDown");
+                    overlay.find(".overlay-body").html(html);
+                    if (!overlay.is(":visible"))
+                        overlay.show(200);
+                });
+            }
+        });
+    }
+</script>

@@ -1,0 +1,58 @@
+﻿@using TeliconLatest.Reusables;
+@{
+    ViewBag.Title = "Batch";
+}
+<table class="admin-tbl workorder">
+    <thead>
+        <tr><th>Batch No.</th><th>Invoice Range</th><th>Date</th><th>Invoice Count</th><th>Total</th><th></th></tr>
+    </thead>
+    <tbody></tbody>
+</table>
+@section Breadcrumbs{
+    <li>Invoicing</li>
+    <li>Batches</li>
+}
+@section Scripts{
+    <script type="text/javascript">
+        $(document).ready(function () {
+            requiresNew = false;
+            deleteUrl = "@Url.Action("deleteBatch", "invoice")";
+            dataTableOptions.ajax.url = "@Url.Action("batches","list")";
+            dataTableOptions.columnDefs = [
+                    { "targets": 0, "name": "BatchID", "data": "BatchNo" },
+                    { "targets": 1, "name": "Range", "data": "BatchRange", "orderable": false, "searchable": false },
+                    { "targets": 2, "name": "BatchDate", "data": "Date", },
+                    { "targets": 3, "name": "Count", "data": "InvoiceCount", },
+                    { "targets": 4, "name": "Total", "data": "Total" },
+                    {
+                        "targets": 5, "class": "actions", "orderable": false, "searchable": false, "data": null,
+                        "defaultContent":
+                            "<a href='#delete' class='dt-print'><i class='fe-print-1'></i></a>" +
+                            "<a href='#delete' class='dt-delete'><i class='fe-cancel'></i></a>"
+                    },
+            ];
+            dataTableOptions.order = [[0, 'desc']];
+            dTable = $("table").DataTable(dataTableOptions);
+            $(".dataTables_wrapper:first .sub-top .dataTables_filter label")
+                .after('@Html.Raw(Html.DropDownList("year", (List<SelectListItem>)ViewBag.Years).ToHtmlString().Replace(Environment.NewLine, ""))');
+            $(document).on("change", "#year", function () {
+                dTable.draw();
+            });
+            $(document).on("click", ".dt-print", function (e) {
+                var id = $(this).parents("tr").attr("id");
+                loading(true);
+                $.ajax({
+                    url: "@Url.Action("BatchPrintOut")",
+                    data: $.toDictionary({ id: id }),
+                    success: function (html) {
+                        removeLoader(true, 300, function () {
+                            $(".overlay .overlay-body").append(html)
+                            $(".overlay").show(200);
+                        });
+                    }
+                });
+                e.preventDefault();
+            });
+        });
+    </script>
+}

@@ -1,0 +1,89 @@
+﻿@model IEnumerable<TeliconLatest.Models.ConstructorActivity>
+@{
+    Layout = null;
+    var actsDdl = (List<TeliconLatest.Models.ConstructorActivityDisplay>)ViewBag.ActsDdl;
+}
+@if (Model.Any())
+{
+    <ul class="clearfix">
+        @foreach (var act in Model)
+        {
+            <li class="clearfix" data-id="@act.RID">
+                @if (ViewBag.Type == "")
+                {
+                    <div class="act-holder">
+                        @Html.DropDownList("acts", new SelectList(actsDdl, "ActivityID", "Description", act.ActivityID), new { @class = "act-ddl" })
+                        <input type="text" class="act-amt" value="@act.ActivityAmount" />
+                    </div>
+                    <div class="wo-actions">
+                        <a href="#" class="del-action" title="Delete"><i class="fe-trash"></i></a>
+                        @if (act.HasMaterials)
+                        {
+                            <div class="add-materials-contn">
+                                <div class="add-materials">
+                                    <label>
+                                        @*<span>Materials</span>
+                                            <button>
+                                                <span></span>
+                                            </button>
+                                            <input type="hidden" value="@act.AddMaterial" />*@
+                                        @*<input type="text" class="mat-amt" value="@act.ActivityAmount" />*@
+                                    </label>
+                                </div>
+                            </div>
+                            <input type="hidden" class="mats-req" value="@act.MatsReq" />
+                            <a href="#" class="mat-action" title="Materials"><i class="mdi mdi-server" style="@(act.CapturedMaterials ? "color: green;" : "" )"></i></a>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <span class="temp-loc">@actsDdl.FirstOrDefault(x => x.ActivityID == act.ActivityID).Description</span>
+                    <span class="temp-act">@act.ActivityAmount</span>
+                }
+            </li>
+        }
+    </ul>
+}
+else
+{
+    <div class="placeholder">
+        <button><i class="fe-bell-1"></i></button>
+    </div>
+}
+
+<script>
+    $(document).ready(function () {
+        //$("input.act-amt").on("blur", function (e) {
+        //    var self = $(this);
+        //    temp = self.parents("li");
+        //    var prnt = $(this.parentElement);
+        //    var id = prnt.find("select").val();
+        //    $.post("/workorder/GetMaxQty", { actId: id }, function (r) {
+        //        debugger;
+        //        var msgAddl = "";
+        //        if (r.MaxQty != 0) {
+        //            if (Number(self.val()) > r.MaxQty)
+        //                msgAddl = "You have exceed the <b class='default-col'>Maximum Quantity ( " + r.MaxQty + " )</b> level for the activity.";
+        //        }
+        //        if (Number(self.val()) < 1)
+        //            msgAddl = "You are going to insert <b class='default-col'>Nagavite</b> value as activity quantity.";
+        //        if (msgAddl != "") {
+        //            var buttons = [
+        //                    { text: "Continue", click: function () { $(this).dialog("close"); ContinueFun(r.hasMats) } },
+        //                    { text: "Cancel", click: function () { $(this).dialog("close"); self.val(r.MaxQty); } }
+        //            ];
+        //            var msg = "<div><p>" + msgAddl + " Are you sure you want to Continue?</p></div>";
+        //            displayConfirmationMsg(msg, 'Quantity Warning', buttons);
+        //        }
+        //        else
+        //            if (r.hasMats == true)
+        //                LoadMaterialPopup(temp);
+        //    });
+        //});
+    });
+    //function ContinueFun(hasMats) {
+    //    if (hasMats == true)
+    //        LoadMaterialPopup(temp);
+    //}
+</script>

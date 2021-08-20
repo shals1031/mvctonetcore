@@ -1,0 +1,189 @@
+﻿@{
+    ViewBag.Title = "Individual Orders";
+}
+@using (Html.BeginForm("UploadWoExcel", "WorkOrder", FormMethod.Post, new { enctype = "multipart/form-data", @id = "frmTel" }))
+{
+    <input type="file" name="TelXL" id="TelXL" style="display:none;" onchange="UploadWoXL();" />
+}
+<div class="extras">
+    <button class="merged-singular merged"><i class="fe-shuffle"></i></button>
+    <button class="merge-adder"><i class="fe-flow-merge"></i></button>
+</div>
+<div class="slider active">
+    <table class="admin-tbl workorder has-constructor" data-wurl="@Url.Action("generateconstructor","workorder")" data-maturl="@Url.Action("generatemetarialconstructor","workorder")" data-url="@Url.Action("index", "workorder")" data-name="Work Order">
+        <thead>
+            <tr><th>Reference No.</th><th>Title</th><th>Date</th><th>Completion</th><th>Status</th><th></th></tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+<div class="slider">
+    <table class="admin-tbl mergedorders" data-name="Merged Order">
+        <thead>
+            <tr><th>Ref #</th><th>Title</th><th>Date</th><th></th></tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+@section Breadcrumbs{
+    <li>Work Orders</li>
+}
+@section Scripts{
+    <script type="text/javascript">
+        isWO = true;
+        $(document).ready(function () {
+            var dtempOptions = $.extend(true, {}, dataTableOptions);
+            dtempOptions.ajax.url = "@Url.Action("workorders","list")";
+            dtempOptions.columnDefs = [
+                    { "targets": 0, "name": "Wo_ref", "data": "ReferenceNo" },
+                    { "targets": 1, "name": "Wo_title", "data": "Title", "width": "10%" },
+                    { "targets": 2, "name": "Requestdt", "data": "Date", },
+                    //{ "targets": 3, "name": "Submitted", "data": "Submitted", "class": "dt-check" },
+                    { "targets": 3, "name": "CompletionDt", "data": "Completiondt", "searchable": false },
+                    { "targets": 4, "name": "Status", "data": "Status", "class": "dt-flag" },
+                    {
+                        "targets": 5, "class": "actions", "orderable": false, "searchable": false, "data": null,
+                        "defaultContent": "<a href='#details' class='dt-details'><i class='fe-news'></i></a>" +
+                            //"<a href='#matDetails' class='dt-details-mat'><i class='fe-clipboard-1'></i></a>" +
+                            "<a href='#edit' class='dt-edit'><i class='fe-pencil-2'></i></a>" +
+                            "<a href='#delete' class='dt-delete'><i class='fe-cancel'></i></a>"
+                    }
+            ];
+            dtempOptions.order = [[2, 'asc']];
+            dtempOptions.initComplete = function (settings, json) {
+                $(".dataTables_wrapper:first .sub-top").append("<button class='tel-xl-uploader' title='Excel Upload' style='background-color:#34b636;color:#fff;height:30px;border:1px solid #209c21;float:right;margin-left:20px;'><i class='fe-upload'></i></button><button class='add-new'>New</button>");
+                $(".dataTables_wrapper .top select").select2({ minimumResultsForSearch: -1, width: "resolve" });
+            }
+
+            dTable = $("table.workorder").DataTable(dtempOptions);
+            dTable.search('').draw();
+
+            $(".dataTables_wrapper:first .sub-top .dataTables_filter label")
+                .after('@Html.Raw(Html.DropDownList("status", (List<SelectListItem>)ViewBag.Statuses).ToHtmlString().Replace(Environment.NewLine, ""))');
+
+            $(".dataTables_wrapper:first .sub-top .dataTables_filter label")
+                .after('@Html.Raw(Html.DropDownList("zone", (List<SelectListItem>)ViewBag.Zones).ToHtmlString().Replace(Environment.NewLine, ""))');
+            $(document).on("change", "#zone", function () {
+                dTable.draw();
+            });
+
+            $(".dataTables_wrapper:first .sub-top .dataTables_filter label")
+                .after('@Html.Raw(Html.DropDownList("clas", (List<SelectListItem>)ViewBag.Clas).ToHtmlString().Replace(Environment.NewLine, ""))');
+            $(document).on("change", "#clas", function () {
+                dTable.draw();
+            });
+
+            $(".dataTables_wrapper:first .sub-top .dataTables_filter label")
+                .after('@Html.Raw(Html.DropDownList("year", (List<SelectListItem>)ViewBag.Years).ToHtmlString().Replace(Environment.NewLine, ""))');
+            $(document).on("change", "#year", function () {
+                dTable.draw();
+            });
+
+
+
+            var dtempOptions1 = $.extend(true, {}, dataTableOptions);
+            dtempOptions1.ajax.url = "@Url.Action("mergedorders","list")";
+            dtempOptions1.columnDefs = [
+                { "targets": 0, "name": "MergedRefNum", "data": "RefNum", "class": "dt-item-refnum" },
+                { "targets": 1, "name": "MergerdTitle", "data": "Title" },
+                { "targets": 2, "name": "MergerdDate", "data": "Date", },
+                {
+                    "targets": 3, "class": "actions", "orderable": false, "searchable": false, "data": null,
+                    "defaultContent": "<a href='#edit' class='dt-edit-merge'><i class='fe-pencil-2'></i></a>" +
+                        "<a href='#delete' class='dt-delete-merge'><i class='fe-cancel'></i></a>"
+                }
+            ];
+            dtempOptions1.order = [[0, 'asc']];
+            dtempOptions1.initComplete = function (settings, json) {
+                $(".dataTables_wrapper .top select").select2({ minimumResultsForSearch: -1, width: "resolve" });
+            };
+            dTable2 = $("table.mergedorders").DataTable(dtempOptions1);
+            dTable2.search('').draw();
+            canEdit = '@ViewBag.canEdit';
+        });
+
+        $(document).on("click", ".tel-xl-uploader", function (e) {
+            $('#TelXL').trigger("click");
+            e.preventDefault();
+        });
+
+        function UploadWoXL() {
+            var ext = $('#TelXL').val().split('.').pop().toLowerCase();
+            if ($.inArray(ext, ['xls', 'xlsx']) == -1) {
+                alert("File format allowed xls , xlsx only!");
+                return false;
+            }
+
+            var formData = new FormData();
+            var imagefile = document.getElementById("TelXL").files[0];            
+            formData.append("imageFile", imageFile);
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "/UploadWoExcel/WorkOrder", true);
+            xhr.addEventListener("load", function (evt) { UploadComplete(evt); }, false);
+            xhr.addEventListener("error", function (evt) { UploadFailed(evt); }, false);
+            xhr.send(formData);
+        
+
+            //if (window.FormData !== undefined) {
+
+            //    var fileUpload = $("#TelXL").get(0);
+            //    var files = fileUpload.files;
+
+            //    // Create FormData object
+            //    var fileData = new FormData();
+
+<<<<<<< working copy
+            //    // Looping over all files and add it to FormData object
+            //    for (var i = 0; i < files.length; i++) {
+            //        fileData.append(files[i].name, files[i]);
+            //    }
+=======
+                // Looping over all files and add it to FormData object
+                for (var i = 0; i < files.length; i++) {
+                    fileData.append("file", files[i]);
+                }
+>>>>>>> destination
+
+            //    loading(true);
+
+            //    $.ajax({
+            //        url: $("#frmTel").attr("action"),
+            //        type: "POST",
+            //        contentType: false, // Not to set any content header
+            //        processData: false, // Not to process data
+            //        data: fileData,
+            //        success: function (data) {
+            //            if (data.Code == "999")
+            //                alert(data.Additional);
+            //            else if (data.Code == "100") {
+            //                alert("File data upload successfully.");
+            //                window.location.reload(true);
+            //            }
+            //            loading(false);
+            //        },
+            //        error: function (err) {
+            //            alert(err.statusText);
+            //            loading(false);
+            //        }
+            //    });
+            //} else {
+            //    alert("FormData is not supported.");
+            //}
+        }
+
+        function UploadComplete(evt) {
+            if (evt.target.status == 200)
+                alert("File uploaded successfully.");
+            else
+            {
+                alert(evt.Additional);
+                alert(evt.Msg);
+            }
+        }
+
+        function UploadFailed(evt) {
+            alert(evt.Additional);
+            alert(evt.Msg);
+        }
+    </script>
+}

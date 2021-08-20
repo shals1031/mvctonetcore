@@ -1,0 +1,53 @@
+﻿@model TeliconLatest.DataEntities.TRN19100
+
+@{
+    ViewBag.Title = "Standby Invoice";
+    Layout = "~/Views/Shared/_FormLayout.cshtml";
+}
+
+@using (Html.BeginForm("createorupdate", "StandbyInvoice", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(true)
+    
+    <table>
+        <tr>
+            @*<td>@Html.LabelFor(x => x.SInv_ref)</td>*@
+            <td colspan="2">@Html.LabelFor(x => x.Requestdt)</td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                @Html.HiddenFor(x => x.SInvoiceId, new { @class = "tel-form-id" })
+                @Html.HiddenFor(x => x.CreateBy)
+                @*@Html.TextBoxFor(x => x.SInv_ref)
+                @Html.ValidationMessageFor(x => x.SInv_ref)*@
+            @*</td>
+            <td>*@
+                @Html.TextBoxFor(x => x.Requestdt, new { Value = string.Format("{0:MM/dd/yyyy}", Model.Requestdt), @class = "date-box" })
+                @Html.ValidationMessageFor(x => x.Requestdt)
+            </td>
+        </tr>
+        <tr><td colspan="2">@Html.LabelFor(x => x.ZoneId)</td></tr>
+        <tr>
+            <td colspan="2">
+                @Html.DropDownListFor(x => x.ZoneId, (List<SelectListItem>)ViewBag.Zones, new { @class = "long" })
+                @Html.ValidationMessageFor(x => x.ZoneId)
+            </td>
+        </tr>     
+        <tr><td colspan="2">@Html.LabelFor(x => x.SInv_title)</td></tr>
+        <tr>
+            <td colspan="2">
+                @Html.TextBoxFor(x => x.SInv_title, new { @class = "long toupper" })
+                @Html.ValidationMessageFor(x => x.SInv_title)
+            </td>
+        </tr>           
+    </table>
+}
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('.date-box').datepicker().on('changeDate', function (ev) {
+            $(this).datepicker('hide');
+        });
+    });
+</script>

@@ -1,0 +1,77 @@
+﻿@model TeliconLatest.Models.TeliconUser
+
+@{
+    ViewBag.Title = "Telicon User";
+    Layout = "~/Views/Shared/_FormLayout.cshtml";
+}
+
+@using (Html.BeginForm("createorupdate", "user", FormMethod.Post)) {
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary(true)
+
+    <table>
+        <tr><td colspan="2">@Html.LabelFor(x=> x.UserName)</td></tr>
+        <tr>
+            <td colspan="2">
+                @Html.HiddenFor(x => x.OldUserName, new { @class = "tel-form-id" })
+                @Html.HiddenFor(x => x.OldRole)
+                @Html.HiddenFor(x => x.IsNew)
+                @Html.TextBoxFor(x => x.UserName, new { @class = "long" })
+                @Html.ValidationMessageFor(x=> x.UserName)
+            </td>
+        </tr>
+        <tr>
+            <td>@Html.LabelFor(x => x.Profile.FirstName)</td>
+            <td>@Html.LabelFor(x => x.Profile.LastName)</td>
+        </tr>
+        <tr>
+            <td>
+                @Html.TextBoxFor(x => x.Profile.FirstName)
+                @Html.ValidationMessageFor(x => x.Profile.FirstName)
+            </td>
+            <td>
+                @Html.TextBoxFor(x => x.Profile.LastName)
+                @Html.ValidationMessageFor(x => x.Profile.LastName)
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">@Html.LabelFor(x=> x.Email) </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                @Html.TextBoxFor(x => x.Email, new { @class = "long" })
+                @Html.ValidationMessageFor(x => x.Email)
+            </td>
+        </tr>
+        <tr>
+            <td>@Html.LabelFor(x => x.Profile.Phone)</td>
+            <td>@Html.LabelFor(x => x.Profile.AltPhone)</td>
+        </tr>
+        <tr>
+            <td>
+                @Html.TextBoxFor(x => x.Profile.Phone)
+                @Html.ValidationMessageFor(x => x.Profile.AltPhone)
+            </td>
+            <td>
+                @Html.TextBoxFor(x=> x.Profile.Phone)
+                @Html.ValidationMessageFor(x => x.Profile.AltPhone)
+            </td>
+        </tr>
+        <tr>
+            <td>@Html.LabelFor(x => x.Role)</td>
+            <td>@Html.LabelFor(x => x.IsApproved)</td>
+        </tr>
+        <tr>
+            <td>
+                @Html.DropDownListFor(x => x.Role, (List<SelectListItem>)ViewBag.Roles)
+                @Html.ValidationMessageFor(x => x.Role)
+            </td>
+            <td>
+                <button class="tel-checkbox @(Model.IsApproved ? "checked": "")">
+                    <i class="fe-ok"></i>
+                    @Html.HiddenFor(x => x.IsApproved)
+                </button>
+            </td>
+        </tr>
+    </table>
+}

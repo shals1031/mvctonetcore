@@ -1,0 +1,222 @@
+﻿@using System.Globalization;
+@model TeliconLatest.Models.DailyWorkOrderData
+
+@{
+    Layout = null;
+}
+<style>
+    .print-holder
+    {
+    width: 1050px;
+    }
+    .print-holder table tr th{
+        text-align: center;
+        vertical-align: middle;
+        font-size: 14px;
+        padding: 0px 5px;
+        line-height: 23px;
+    }
+    .print-holder table tr td{
+        line-height: 23px;
+        vertical-align: middle;
+        text-align: center;
+    }
+    .print-holder .bottom .prt-data tr td, .print-holder .bottom .prt-data tr th{
+        padding: 1px;
+    }
+</style>
+@if (Model != null && Model.orders != null && Model.orders.Count > 0)
+{
+    int j = 1;
+    List<int> conIds = Model.orders.GroupBy(x => x.ContractorId).Select(x => x.First().ContractorId).ToList();
+    <div class="print-holder">
+        <div class="bottom">
+            @foreach (var conId in conIds)
+            {
+                var groupList = Model.orders.FindAll(x => x.ContractorId == conId);
+                int i = 1;
+                <h2 class="title" style=" text-decoration:underline; text-align: center;">CONTRACTOR’S DAILY INSTALLATION LOG</h2>
+                <div>
+                    <ul style=" text-decoration-style:none; ">
+                        <li style=" float: left; width: 30%; font-weight: 900; font-size:14px;">TELiCON Limited</li>
+                        <li style=" float: left; width: 45%;"><b>Day</b><u>&nbsp;&nbsp;@groupList[0].InstallationDate.DayOfWeek&nbsp;&nbsp;&nbsp;&nbsp;</u><b>Date</b><u>&nbsp;&nbsp;@groupList[0].InstallationDate.Day&nbsp;&nbsp;&nbsp;&nbsp;</u><b>Month</b><u>&nbsp;&nbsp;@(groupList[0].InstallationDate.ToString("MMMM", CultureInfo.CreateSpecificCulture("en-US")))&nbsp;&nbsp;&nbsp;&nbsp;</u>@groupList[0].InstallationDate.Year</li>
+                        <li style=" float: left; width: 20%;">$ @(groupList[0].Price != 0 ? groupList[0].Price.ToString() : "")</li>
+                    </ul>
+                    <ul style=" text-decoration-style:none; ">
+                        <li style=" float: left; width: 45%;">Installer’s Name: @groupList[0].ContractorName (@groupList[0].TechNo)</li>
+                        <li style=" float: left; width: 45%;">Vehicle Registration/ Fleet#: @groupList[0].VehicleRegistration</li>
+                    </ul>
+                </div>
+                <table class="prt-data">
+                    <thead>
+                        @*<tr>
+                            <th colspan="14"><label style=" text-align: left; width: 50%;">Departure Time From Base: @(groupList[0].DepartureTime != new TimeSpan() ? groupList[0].DepartureTime.ToString() : " ") am / pm</label><label style=" text-align: right; width:40%;">USAGE c/f: </label></th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                        </tr>*@
+                        <tr>
+                            <th colspan="4">Customer Information</th>
+                            <th colspan="4" style=" width: 200px;">Services Installed</th>
+                            <th colspan="2">QA100</th>
+                            <th colspan="2">Working</th>
+                            <th colspan="2">Time</th>
+                            <th colspan="3">Usage</th>
+                            <th>Remarks</th>
+                        </tr>
+                        <tr>
+                            <th style="width:20px;"></th>
+                            <th style=" width: 200px;">Customer Name</th>
+                            <th>Address</th>
+                            <th>N/E</th>
+                            <th>W</th>
+                            <th>T</th>
+                            <th>C</th>
+                            <th>ND</th>
+                            <th>Yes</th>
+                            <th>No</th>
+                            <th>Yes</th>
+                            <th>No</th>
+                            <th>In</th>
+                            <th>Out</th>
+                            <th>RG6M</th>
+                            <th>RG6I</th>
+                            <th>RG11</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var row in groupList)
+                        {
+                            <tr>
+                                <td>@i.ToString()</td>
+                                <td>@row.CustomerName</td>
+                                <td>@row.CustomerAddress</td>
+                                <td>@row.NE</td>
+                                <td>@(row.ServiceInstalledW != 0 ? row.ServiceInstalledW.ToString() : "")</td>
+                                <td>@(row.ServiceInstalledT != 0 ? row.ServiceInstalledT.ToString() : "")</td>
+                                <td>@(row.ServiceInstalledC != 0 ? row.ServiceInstalledC.ToString() : "")</td>
+                                <td>@(row.ServiceInstalledND != 0 ? row.ServiceInstalledND.ToString() : "")</td>
+                                <td>@(row.QA100 == 1 ? "✔" : "")</td>
+                                <td>@(row.QA100 == 0 ? "✔" : "")</td>
+                                <td>@(row.Working == 1 ? "✔" : "")</td>
+                                <td>@(row.Working == 0 ? "✔" : "")</td>
+                                <td>@(row.InTime != new TimeSpan() ? row.InTime.ToString() : "")</td>
+                                <td>@(row.OutTime != new TimeSpan() ? row.OutTime.ToString() : "")</td>
+                                <td>@(row.RG6M != 0 ? row.RG6M.ToString() : "")</td>
+                                <td>@(row.RG6I != 0 ? row.RG6I.ToString() : "")</td>
+                                <td>@(row.RG11 != 0 ? row.RG11.ToString() : "")</td>
+                                <td>@row.Remarks</td>
+                            </tr>
+                            i++;
+                        }
+                        <tr>
+                            <td colspan="12"><label style=" text-align: left; width: 50%;">@*Return Time To Base: @(groupList[0].ReturnTime != new TimeSpan() ? groupList[0].ReturnTime.ToString() : " ") am / pm*@ </label><label style=" text-align:right; width: 40%;"> Total Hours Worked and Usage</label></td>
+                            <td colspan="2">@(groupList.Sum(x => x.OutTime.Ticks - x.InTime.Ticks) != 0 ? new TimeSpan(groupList.Sum(x => x.OutTime.Ticks - x.InTime.Ticks)).ToString() : "")</td>
+                            <td>@(groupList.Sum(x => x.RG6M) != 0 ? groupList.Sum(x => x.RG6M).ToString() : "")</td>
+                            <td>@(groupList.Sum(x => x.RG6I) != 0 ? groupList.Sum(x => x.RG6I).ToString() : "")</td>
+                            <td>@(groupList.Sum(x => x.RG11) != 0 ? groupList.Sum(x => x.RG11).ToString() : "")</td>
+                            <td rowspan="2"></td>
+                        </tr>
+                        @*<tr>
+                            <td colspan="14" style=" text-align: right;">Usage Balance</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>*@
+                    </tbody>
+                </table>
+            }
+            <br />
+            <h3 class="title" style=" text-decoration:underline; text-align: center;">COMPENSATION</h3>
+            <table class="prt-data">
+                <thead>
+                    <tr>
+                        <th></th>                        
+                        <th>Account Number</th>
+                        <th>Work Order Number</th>
+                        <th>New Installation</th>
+                        <th>Existing. Svrc.</th>
+                        <th>Rewire of cable</th>
+                        <th>Extra Outlets</th>
+                        <th>Rewire and/or SRO Outlet</th>
+                        <th>Non Standard Installation</th>
+                        <th>Not Done</th>
+                        <th>Service Calls</th>
+                        @*<th colspan="3">Office Use Only</th>*@
+                        <th colspan="2">TOTAL</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="width: 20px;"></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        @*<td style="width:50px;"></td>
+                        <td style="width:50px;"></td>
+                        <td style="width:50px;"></td>*@
+                        <td style="width:20px;"></td>
+                        <td style=" width: 150px;"></td>
+                    </tr>
+                    @foreach (var row in Model.Compensations)
+                    {
+                        <tr>
+                            <td>@j.ToString()</td>                            
+                            <td style=" width: 200px; text-align: left; ">@row.AccountNumber</td>
+                            <td style=" width: 150px; text-align: left; ">@row.WorkOrderId</td>
+                            <td>@(row.Installation ? "✔" : "")</td>
+                            <td>@(row.Service == 1 ? "✔" : "")</td>
+                            <td>@(row.RewireCable ? "✔" : "")</td>
+                            <td>@(row.ExtraOutlets ? "✔" : "")</td>
+                            <td>@(row.RewireOutlets ? "✔" : "")</td>
+                            <td>@(row.NonStandard ? "✔" : "")</td>
+                            <td>@(row.Rejected ? "✔" : "")</td>
+                            <td>@(row.ServiceCalls ? "✔" : "")</td>
+                            @*<td></td>
+                            <td></td>
+                            <td></td>*@
+                            <td>$</td>
+                            <td>@(row.Total != 0 ? row.Total.ToString() : "")</td>
+                        </tr>
+                        j++;
+                    }
+                    <tr>
+                        <td></td>
+                        <td colspan="2">Service Totals</td>
+                        <td>@(Model.Compensations.FindAll(x => x.Service == 0).Count != 0 ? Model.Compensations.FindAll(x => x.Service == 0).Count.ToString() : "")</td>
+                        <td>@(Model.Compensations.FindAll(x => x.Service == 1).Count != 0 ? Model.Compensations.FindAll(x => x.Service == 1).Count.ToString() : "")</td>
+                        <td>@(Model.Compensations.FindAll(x => x.RewireCable).Count != 0 ? Model.Compensations.FindAll(x => x.RewireCable).Count.ToString() : "")</td>
+                        <td>@(Model.Compensations.FindAll(x => x.ExtraOutlets).Count != 0 ? Model.Compensations.FindAll(x => x.ExtraOutlets).Count.ToString() : "")</td>
+                        <td>@(Model.Compensations.FindAll(x => x.RewireOutlets).Count != 0 ? Model.Compensations.FindAll(x => x.RewireOutlets).Count.ToString() : "")</td>
+                        <td>@(Model.Compensations.FindAll(x => x.NonStandard).Count != 0 ? Model.Compensations.FindAll(x => x.NonStandard).Count.ToString() : "")</td>
+                        <td>@(Model.Compensations.FindAll(x => x.Rejected).Count != 0 ? Model.Compensations.FindAll(x => x.Rejected).Count.ToString() : "")</td>
+                        <td>@(Model.Compensations.FindAll(x => x.ServiceCalls).Count != 0 ? Model.Compensations.FindAll(x => x.ServiceCalls).Count.ToString() : "")</td>
+                        @*<td></td>
+                        <td></td>
+                        <td></td>*@
+                        <td>$</td>
+                        <td>@(Model.Compensations.Sum(x => x.Total) != 0 ? Model.Compensations.Sum(x => x.Total).ToString() : "")</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <button class="print-clicker"><i class="fe-print-1"></i></button>
+    </div>
+}
+else
+{
+    <div class="filler animated tada">
+        <i class="mdi mdi-emoticon-sad"></i>
+        <h1>No results found</h1>
+        <h2>Please change your filter and try again.</h2>
+    </div>
+}

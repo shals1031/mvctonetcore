@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Settings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Name>TELICON GROUP LTD.</Name>
+  <Street>P.O. BOX 3069</Street>
+  <City>Kingston</City>
+  <Parish>Clarendon</Parish>
+  <Phone1>1-876-618-3628</Phone1>
+  <Phone2>1-876-618-3628</Phone2>
+  <Email>admin@teligroup.com</Email>
+  <GctReg>001-829-874</GctReg>
+  <DefaultTaxRate>16.5</DefaultTaxRate>
+  <TeamMax>5</TeamMax>
+  <TimeOut>1200</TimeOut>
+</Settings>

@@ -1,0 +1,128 @@
+﻿@model List<TeliconLatest.Models.ClientInvoice>
+
+@{
+    Layout = "~/Views/Shared/_LayoutEmpty.cshtml";
+    ViewBag.IsInvoice = true;
+    bool isAbs = false;
+    //if (Request.Browser.Type.ToUpper().Contains("IE") || Request.Browser.Type.ToUpper().Contains("INTERNETEXPLORER"))
+    //{
+    //    isAbs = false;
+    //}
+    //else
+    //{
+    //    isAbs = true;
+    //}
+}
+<link href="~/Content/bootstrap.css" rel="stylesheet" />
+<link href="~/Content/css/reusables.css" rel="stylesheet" />
+<link href="~/Content/css/admin.css" rel="stylesheet" />
+
+<div style="@( isAbs ? "position:absolute;" : "" )top:10px;
+    left:10px;
+    bottom:10px;
+    right:10px; width:900px; height:100%; margin:auto !important;">
+    <div class="overlay-body">
+
+        <div class="print-holder">
+            @foreach (var inv in Model)
+            {
+                int count = 18;
+                <div id="inv-holder" data-id="@inv.Client.InvoiceNo">
+                    <div class="print-top-options">
+                        <label class="toggle-holder">
+                            <span>Attach Breakdown</span>
+                            <button id="add-breakdown" class='simple-toggler'><span></span></button>
+                        </label>
+                    </div>
+                    <partial name="ClientDataPartial" model="inv.Client" />
+                    <div class="bottom">
+                        <h2 class="title">@inv.Title</h2>
+                        <table class="prt-data">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Qty</th>
+                                    <th>Description</th>
+                                    <th>Rate</th>
+                                    <th>Amount</th>
+
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var loc in inv.Activities.Select(x => new { x.ActivityLocation, x.Comments }).Distinct())
+                                {
+                                    <tr>
+                                        <td class="title" colspan="5">
+                                            @loc.ActivityLocation
+                                            @if (!string.IsNullOrEmpty(loc.Comments))
+                                            {
+                                                <h1><b>Comments:</b> @loc.Comments</h1>
+                                            }
+                                        </td>
+                                    </tr>
+
+                                    count++;
+                                    count++;
+                                    foreach (var act in inv.Activities.Where(x => x.ActivityLocation == loc.ActivityLocation))
+                                    {
+                                        <tr>
+                                            <td class="date">@string.Format("{0:dd/MM/yyyy}", act.ActivityDate)</td>
+                                            <td>@act.ActivityQty</td>
+                                            <td><div style="text-align:left">@act.ActivityDesc</div></td>
+                                            <td class="number">@string.Format("{0:C}", act.ActivityCost)</td>
+                                            <td class="number">@string.Format("{0:C}", act.ActivityCost * Convert.ToDouble(act.ActivityQty))</td>
+                                        </tr>
+                                        count++;
+                                    }
+                                }
+                                @{
+                                    var total = inv.Activities.Sum(x => x.ActivityCost * Convert.ToDouble(x.ActivityQty));
+                                    var gct = total * Convert.ToDouble(inv.GCT);
+                                    var grandTotal = total + gct;
+                                }
+                                <tr class="totals"><td colspan="4">Total: </td><td class="number">@string.Format("{0:C}", total)</td></tr>
+                                <tr class="totals"><td colspan="4">GCT(@((inv.GCT * 100).ToString("#.##"))%): </td><td class="number">@string.Format("{0:C}", gct) </td></tr>
+                                <tr class="totals"><td colspan="4">Grand Total: </td><td class="number">@string.Format("{0:C}", grandTotal)</td></tr>
+                            </tbody>
+                        </table>
+                        @if (inv.Materials.Count > 0)
+                        {
+                            <br />
+                            <br />
+                            <h2 class="sub-title" style="margin: 10px 0px;">Material Usage:</h2>
+                            <table class="prt-data">
+                                <thead>
+                                    <tr>
+                                        <th>Nos.</th>
+                                        <th>Description</th>
+                                        <th>Qty</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{
+                                        int matCout = 1;
+                                        foreach (var mat in inv.Materials)
+                                        {
+                                            <tr>
+                                                <td style="text-align:center;" width="70px">@matCout</td>
+                                                <td><div style="text-align:left">@mat.MatDesc</div></td>
+                                                <td style="text-align:center;" width="80px">@mat.MatQty</td>
+                                            </tr>
+                                            matCout++;
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+                        }
+                    </div>
+                    <div id="breakdown-holder-@inv.Client.InvoiceNo"></div>
+                </div>
+
+                var h = isAbs ? (count % 55) > 2 ? (55 - (count % 55)) * 0.655 : 0 : 0;
+
+                <div class="break-footer" style="height:@(h)cm;"></div>
+            }
+            <button class="print-clicker"><i class="fe-print-1"></i></button>
+        </div>
+    </div>
+</div>

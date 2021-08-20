@@ -1,0 +1,52 @@
+﻿@model List<TeliconLatest.Models.WorkOrderSplitData>
+@{
+    Layout = null;
+}
+@if (Model.Count > 0)
+{
+    <div class="print-holder">
+        <div class="bottom">
+
+            <h2 class="title">Work Order Split</h2>
+            <table class="prt-data">
+                <thead>
+                    <tr>
+                        <th style="text-align:center; width:135px; padding:0px;">Ref. No.</th>
+                        <th style="text-align:center; padding:0px;">Title</th>
+                        <th style="text-align:center; width:70px; padding:0px;">Mgmt.</th>
+                        <th style="text-align:center; width:70px; padding:0px;">Contr.</th>
+                        <th style="text-align:center; width:200px; padding:0px;">Team</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in Model)
+                    {
+                        <tr>
+                            <td style="vertical-align:top;">@row.referenceCode</td>
+                            <td style="text-align:left; vertical-align:top;">@row.name</td>
+                            <td style="vertical-align:top;">@row.managementSplit</td>
+                            <td style="vertical-align:top;">@row.contractorSplit</td>
+                            <td style="text-align:left;">
+                                @foreach (var member in row.team)
+                                {
+                                    <div>
+                                        <div class="no-wrap" style="width:140px; float:left;">@member.fullName: </div><div style="width:53px; float:left; text-align:right;"><b>@string.Format("{0:C}", member.split)</b></div>
+                                    </div>
+                                }
+                            </td>
+                        </tr>                        
+                    }
+                </tbody>
+            </table>
+        </div>
+        <button class="print-clicker"><i class="fe-print-1"></i></button>
+    </div>
+}
+else
+{
+    <div class="filler animated tada">
+        <i class="mdi mdi-emoticon-sad"></i>
+        <h1>No results found</h1>
+        <h2>Please change your filter and try again.</h2>
+    </div>
+}

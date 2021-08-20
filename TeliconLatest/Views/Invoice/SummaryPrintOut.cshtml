@@ -1,0 +1,61 @@
+﻿@model TeliconLatest.Models.SummaryPrintOutWithClient
+
+@{
+    Layout = null;
+}
+
+<div class="print-holder">
+    <partial name="ClientDataPartial" model="Model.Client" />
+    <div class="bottom">
+        <h2 class="title">Invoice Summary</h2>
+        <table class="prt-data sml-font">
+            <thead>
+                <tr>
+                    <th>Invoice #</th>
+                    <th>Ticket #</th>
+                    <th>Description</th>
+                    @*<th>Audit Docs</th>*@
+                    <th>Docs</th>
+                    <th>Technicians</th>
+                    <th>Subtotal</th>
+                    <th>Gct</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.PrintData)
+                {
+                    <tr>
+                        <td><div style="padding-left :10px;padding-right:10px; text-align:left"> @item.InvoiceID</div></td>
+                        <td><div style="text-align:left">@item.RefNo</div></td>
+                        <td><div style="text-align:left;width:300px"> @item.Title</div></td>
+                        @*<td class="ad-on-summary" align="center">
+                            <input type="checkbox"/>
+                        </td>*@
+                        <td class="sd-on-summary" align="center">
+                            <div style="padding-left :10px;padding-right:10px"> <input type="checkbox" /></div>
+                        </td>
+                        <td>
+                            @for (var x = 0; x < item.Contractors.Count(); x++)
+                            {
+                                if (x == item.Contractors.Count() - 1)
+                                {
+                                    @item.Contractors.ElementAt(x)
+                                }
+                                else
+                                {
+                                    @(item.Contractors.ElementAt(x) + ", ")
+                                }
+                            }
+                        </td>
+                        <td>@string.Format("{0:C}", item.Total)</td>
+                        <td>@string.Format("{0:C}", item.GCT)</td>
+                        <td>@string.Format("{0:C}", item.Total + item.GCT)</td>
+                    </tr>
+                }
+                <tr class="totals"><td colspan="7">Total</td><td class="number">@string.Format("{0:C}", Model.PrintData.Sum(x => x.Total))</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <button class="print-clicker"><i class="fe-print-1"></i></button>
+</div>

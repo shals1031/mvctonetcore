@@ -1,0 +1,68 @@
+﻿@model IEnumerable<TeliconLatest.Models.ConstructorQuotationActivity>
+@{
+    Layout = null;
+    var actsDdl = (List<TeliconLatest.Models.ConstructorActivityDisplay>)ViewBag.ActsDdl;
+}
+@if (Model.Any())
+{
+    <ul class="clearfix">
+        @foreach (var act in Model)
+        {
+            <li class="clearfix" data-id="@act.RecID">
+                @if (ViewBag.Type == "")
+                {
+                    <div class="act-holder">
+                        @Html.DropDownList("acts", new SelectList(actsDdl, "Description", "Description", act.ActivityDesc), new { @class = "act-ddl" })
+                        <input type="text" class="act-amt" value="@act.ActivityAmount" />
+                        a
+                        <input type="text" class="act-rat" value="@act.Rate" />
+                        a
+                    </div>
+                    <div class="wo-actions">
+                        <a href="#" class="del-action"><i class="fe-trash"></i></a>
+                    </div>
+                }
+                else
+                {
+                    <span class="temp-loc">@actsDdl.FirstOrDefault(x => x.Description == act.ActivityDesc).Description</span>
+                    <span class="temp-act">@act.ActivityAmount</span>
+                    <span class="temp-rat">@act.Rate</span>
+                }
+            </li>
+        }
+    </ul>
+}
+else
+{
+    <div class="placeholder">
+        <button><i class="fe-bell-1"></i></button>
+    </div>
+}
+
+<script>
+    $(document).ready(function () {
+        $("select").select2({ width: "resolve", tags: true });
+        $("input.act-amt").on("blur", function (e) {
+            var self = $(this);
+            var prnt = $(this.parentElement);
+            var val = prnt.find("select").val();
+            $.post("/workorder/GetMaxQty", { act: val }, function (r) {
+                var msg = "";
+                var title = "<i class='fe-comment'></i>Quntity Warning!"
+                if (r.MaxQty != 0) {
+                    if (Number(self.val()) > r.MaxQty)
+                        msg = "Quntity cannot be greater than " + r.MaxQty + ".";
+                }
+                if (Number(self.val()) < 1)
+                    msg = "Quntity cannot be 0 or minus value.";
+                if (msg != "") {
+                    displayDialogMsg(msg, title);
+                    self.val(1.00);
+                }
+                self.parent("li").find(".input.act-rat");
+            });
+        });
+    });
+
+
+</script>

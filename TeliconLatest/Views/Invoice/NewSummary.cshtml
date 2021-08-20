@@ -1,0 +1,83 @@
+﻿@model TeliconLatest.Models.ClientInvoice
+
+@{
+    Layout = null;
+    ViewBag.IsInvoice = true;
+}
+
+<div class="print-holder" data-id="@Model.Client.InvoiceNo">
+    <h2 class="title" style="margin-bottom:10px; text-decoration:underline; text-align:center;">CABLING WORKS DIARY - JAMAICA</h2>
+    <partial name="SummaryDataPartial" model="Model.Client" />
+    <div class="bottom">
+        <table class="prt-data">
+            <thead>
+                <tr>
+                    <th>DATE</th>
+                    <th>JOB #</th>
+                    <th>Ticket #</th>
+                    <th>REF #</th>
+                    <th>Description & LOCATION</th>
+                    @foreach (var ALTcODE in Model.Activities.Select(x => new { x.AltCode, x.ActivityDesc }).OrderBy(X => X.AltCode).Distinct())
+                    {
+                        <th>@ALTcODE.AltCode</th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var refNum in Model.Activities.Select(x => x.RefNum).Distinct())
+                {
+                    var dlts = Model.Activities.FindAll(x => x.RefNum == refNum);
+                    <tr>
+                        <td class="date">@string.Format("{0:dd/MM/yyyy}", dlts[0].ActivityDate)</td>
+                        <td style="text-align:left"></td>
+                        <td style="text-align:left">@refNum</td>
+                        <td style="text-align:left">@dlts[0].WoId</td>
+                        <td style="text-align:left">
+                            <a href="#" onclick="ShowWorkOrderBreakdown('@dlts[0].WoId', '@Model.Client.InvoiceNo')">@(dlts[0].WOTitle)</a>
+                        </td>
+                        @foreach (var ALTcODE in Model.Activities.Select(x => new { x.AltCode, x.ActivityDesc }).OrderBy(x => x.AltCode).Distinct())
+                        {
+                            var acts = Model.Activities.FindAll(x => x.RefNum == refNum && x.ActivityDesc == ALTcODE.ActivityDesc);
+                            <td>@(acts != null ? acts.Sum(x=> x.ActivityQty).ToString() : "")</td>
+                        }
+                    </tr>
+                }
+                <tr class="totals">
+                    <td colspan="5">Total: </td>
+                    @foreach (var ALTcODE in Model.Activities.Select(x => new { x.AltCode, x.ActivityDesc }).OrderBy(X => X.AltCode).Distinct())
+                    {
+                        <td class="number">@Model.Activities.Where(x => x.ActivityDesc == ALTcODE.ActivityDesc).Sum(x => x.ActivityQty)</td>
+                    }
+                </tr>
+            </tbody>
+        </table>
+
+    </div>
+    <div id="breakdown-holder"></div>
+    @using (Html.BeginForm("cablingworkdiary", "invoice", FormMethod.Post, new { @id = "cablingworkdiaryForm" }))
+    {
+        <input type="hidden" name="id" value="@ViewBag.InvoiceNo" />
+        <button class="export-clicker" type="submit"><i class="fe-export-1"></i></button>
+        <button class="print-clicker"><i class="fe-print-1"></i></button>
+    }
+</div>
+<script type="text/javascript">
+    function ShowWorkOrderBreakdown(woId, invId) {
+        loading(true);
+        $.ajax({
+            url: '/invoice/WorkOrderBreakDown',
+            type: "post",
+            data: { id: woId, invNo: invId },
+            success: function (html) {
+                console.log(html)
+                removeLoader(true, 300, function () {
+                    $(".overlay").hide();
+                    var overlay = $("#drillDown");
+                    overlay.find(".overlay-body").html(html);
+                    if (!overlay.is(":visible"))
+                        overlay.show(200);
+                });
+            }
+        });
+    }
+</script>

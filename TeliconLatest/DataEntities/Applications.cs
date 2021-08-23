@@ -13,14 +13,14 @@ namespace TeliconLatest.DataEntities
             Roles = new HashSet<Roles>();
             Users = new HashSet<Users>();
         }
-        [StringLength(235)]
+        [StringLength(470)]
         [Required]
         public string ApplicationName { get; set; }
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [StringLength(36)]
         public string ApplicationId { get; set; } = Guid.NewGuid().ToString();
-        [StringLength(256)]
+        [StringLength(512)]
         public string Description { get; set; }
 
         public virtual ICollection<Memberships> Memberships { get; set; }

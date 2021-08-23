@@ -15,11 +15,11 @@ namespace TeliconLatest.DataEntities
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int SInvoiceId { get; set; }
         [Display(Name = "Invoice #")]
-        [StringLength(20)]
+        [StringLength(40)]
         [Required]
         public string SInv_ref { get; set; }
         [Required]
-        [StringLength(150)]
+        [StringLength(300)]
         [Display(Name = "Title")]
         public string SInv_title { get; set; }
         [Required]

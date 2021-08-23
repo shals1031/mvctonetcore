@@ -9,7 +9,7 @@ using TeliconLatest.DataEntities;
 namespace TeliconLatest.Migrations
 {
     [DbContext(typeof(TeliconDbContext))]
-    [Migration("20210809173912_InitializeDB")]
+    [Migration("20210823122640_InitializeDB")]
     partial class InitializeDB
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -46,7 +46,7 @@ namespace TeliconLatest.Migrations
                         .HasColumnType("tinyint(1)");
 
                     b.Property<decimal?>("MaxQty")
-                        .HasColumnType("decimal(18, 2)");
+                        .HasColumnType("decimal(65,30)");
 
                     b.Property<int>("RateClass")
                         .HasColumnType("int");
@@ -62,7 +62,7 @@ namespace TeliconLatest.Migrations
                         .HasColumnType("varchar(2)");
 
                     b.Property<DateTime>("StartDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime(6)");
 
                     b.HasKey("RateID")
                         .HasName("PRIMARY");
@@ -139,13 +139,13 @@ namespace TeliconLatest.Migrations
                         .HasColumnType("double");
 
                     b.Property<DateTime>("EndDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<int>("RateID")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("StartDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime(6)");
 
                     b.HasKey("RateHistoryID")
                         .HasName("PRIMARY");
@@ -165,13 +165,13 @@ namespace TeliconLatest.Migrations
                         .HasColumnType("double");
 
                     b.Property<DateTime>("EndDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<int>("RateID")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("StartDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime(6)");
 
                     b.HasKey("RateHistoryID")
                         .HasName("PRIMARY");
@@ -188,28 +188,28 @@ namespace TeliconLatest.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("accType")
-                        .HasMaxLength(1)
-                        .HasColumnType("varchar(1)");
+                        .HasMaxLength(2)
+                        .HasColumnType("varchar(2)");
 
                     b.Property<string>("accountName")
-                        .HasMaxLength(35)
-                        .HasColumnType("varchar(35)");
+                        .HasMaxLength(70)
+                        .HasColumnType("varchar(70)");
 
                     b.Property<string>("accountNo")
-                        .HasMaxLength(8)
-                        .HasColumnType("varchar(8)");
+                        .HasMaxLength(16)
+                        .HasColumnType("varchar(16)");
 
                     b.Property<string>("address1")
-                        .HasMaxLength(35)
-                        .HasColumnType("varchar(35)");
+                        .HasMaxLength(70)
+                        .HasColumnType("varchar(70)");
 
                     b.Property<string>("address2")
-                        .HasMaxLength(35)
-                        .HasColumnType("varchar(35)");
+                        .HasMaxLength(70)
+                        .HasColumnType("varchar(70)");
 
                     b.Property<string>("address3")
-                        .HasMaxLength(35)
-                        .HasColumnType("varchar(35)");
+                        .HasMaxLength(70)
+                        .HasColumnType("varchar(70)");
 
                     b.HasKey("accountID")
                         .HasName("PRIMARY");
@@ -225,8 +225,8 @@ namespace TeliconLatest.Migrations
 
                     b.Property<string>("areaName")
                         .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("varchar(150)");
+                        .HasMaxLength(300)
+                        .HasColumnType("varchar(300)");
 
                     b.Property<int>("zoneID")
                         .HasColumnType("int");
@@ -242,13 +242,13 @@ namespace TeliconLatest.Migrations
             modelBuilder.Entity("TeliconLatest.DataEntities.ADM02100", b =>
                 {
                     b.Property<string>("BankId")
-                        .HasMaxLength(5)
-                        .HasColumnType("varchar(5)");
+                        .HasMaxLength(10)
+                        .HasColumnType("varchar(10)");
 
                     b.Property<string>("BankName")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("varchar(50)");
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
 
                     b.HasKey("BankId")
                         .HasName("PRIMARY");
@@ -264,8 +264,8 @@ namespace TeliconLatest.Migrations
 
                     b.Property<string>("BankId")
                         .IsRequired()
-                        .HasMaxLength(5)
-                        .HasColumnType("varchar(5)");
+                        .HasMaxLength(10)
+                        .HasColumnType("varchar(10)");
 
                     b.Property<string>("BranchId")
                         .IsRequired()
@@ -292,7 +292,7 @@ namespace TeliconLatest.Migrations
                         .HasColumnType("int");
 
                     b.Property<DateTime>("BatchDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime(6)");
 
                     b.HasKey("BatchID")
                         .HasName("PRIMARY");
@@ -333,7 +333,7 @@ namespace TeliconLatest.Migrations
                         .HasColumnType("varchar(50)");
 
                     b.Property<DateTime?>("EndDt")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<string>("Fax")
                         .HasMaxLength(15)
@@ -352,7 +352,7 @@ namespace TeliconLatest.Migrations
                         .HasColumnType("varchar(15)");
 
                     b.Property<DateTime?>("StartDt")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<string>("Street")
                         .HasMaxLength(30)
@@ -392,7 +392,7 @@ namespace TeliconLatest.Migrations
                         .HasColumnType("varchar(15)");
 
                     b.Property<DateTime?>("DOB")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<int?>("DepartmentID")
                         .IsRequired()
@@ -425,12 +425,12 @@ namespace TeliconLatest.Migrations
                         .HasColumnType("varchar(4)");
 
                     b.Property<DateTime?>("EngagementDt")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<string>("FirstName")
                         .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("varchar(30)");
+                        .HasMaxLength(60)
+                        .HasColumnType("varchar(60)");
 
                     b.Property<string>("LastName")
                         .IsRequired()
@@ -457,8 +457,8 @@ namespace TeliconLatest.Migrations
                         .HasColumnType("varchar(7)");
 
                     b.Property<string>("PlateNo")
-                        .HasMaxLength(7)
-                        .HasColumnType("varchar(7)");
+                        .HasMaxLength(14)
+                        .HasColumnType("varchar(14)");
 
                     b.Property<string>("Street")
                         .HasMaxLength(50)
@@ -469,8 +469,8 @@ namespace TeliconLatest.Migrations
                         .HasColumnType("varchar(15)");
 
                     b.Property<string>("TechNo")
-                        .HasMaxLength(7)
-                        .HasColumnType("varchar(7)");
+                        .HasMaxLength(14)
+                        .HasColumnType("varchar(14)");
 
                     b.Property<bool?>("isActive")
                         .HasColumnType("tinyint(1)");
@@ -527,14 +527,14 @@ namespace TeliconLatest.Migrations
 
                     b.Property<string>("ClassName")
                         .IsRequired()
-                        .HasMaxLength(60)
-                        .HasColumnType("varchar(60)");
+                        .HasMaxLength(120)
+                        .HasColumnType("varchar(120)");
 
                     b.Property<DateTime>("EndDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<DateTime>("StartDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime(6)");
 
                     b.HasKey("ClassId")
                         .HasName("PRIMARY");
@@ -550,8 +550,8 @@ namespace TeliconLatest.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(35)
-                        .HasColumnType("varchar(35)");
+                        .HasMaxLength(70)
+                        .HasColumnType("varchar(70)");
 
                     b.HasKey("DeductionID")
                         .HasName("PRIMARY");
@@ -567,8 +567,8 @@ namespace TeliconLatest.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(35)
-                        .HasColumnType("varchar(35)");
+                        .HasMaxLength(70)
+                        .HasColumnType("varchar(70)");
 
                     b.HasKey("DepartmentID")
                         .HasName("PRIMARY");
@@ -605,17 +605,17 @@ namespace TeliconLatest.Migrations
                         .HasColumnType("int");
 
                     b.Property<DateTime?>("EndDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<double>("Percentage")
                         .HasColumnType("double");
 
                     b.Property<DateTime>("StartDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<string>("Type")
-                        .HasMaxLength(30)
-                        .HasColumnType("varchar(30)");
+                        .HasMaxLength(60)
+                        .HasColumnType("varchar(60)");
 
                     b.HasKey("TaxId")
                         .HasName("PRIMARY");
@@ -630,8 +630,8 @@ namespace TeliconLatest.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("locationName")
-                        .HasMaxLength(35)
-                        .HasColumnType("varchar(35)");
+                        .HasMaxLength(70)
+                        .HasColumnType("varchar(70)");
 
                     b.HasKey("locationID")
                         .HasName("PRIMARY");
@@ -647,7 +647,7 @@ namespace TeliconLatest.Migrations
 
                     b.Property<string>("MaterialCode")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("longtext");
 
                     b.Property<string>("MaterialName")
                         .IsRequired()
@@ -660,7 +660,7 @@ namespace TeliconLatest.Migrations
                         .HasColumnType("varchar(20)");
 
                     b.Property<decimal?>("MaxQty")
-                        .HasColumnType("decimal(18, 2)");
+                        .HasColumnType("decimal(65,30)");
 
                     b.HasKey("MaterialID")
                         .HasName("PRIMARY");
@@ -675,16 +675,16 @@ namespace TeliconLatest.Migrations
                         .HasColumnType("int");
 
                     b.Property<DateTime>("DueDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<DateTime>("PayDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<DateTime>("PeriodEnd")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<DateTime>("PeriodStart")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<int>("Week")
                         .HasColumnType("int");
@@ -705,26 +705,26 @@ namespace TeliconLatest.Migrations
                         .HasColumnType("int");
 
                     b.Property<decimal?>("BALANCE")
-                        .HasColumnType("decimal(18, 2)");
+                        .HasColumnType("decimal(65,30)");
 
                     b.Property<string>("Description")
-                        .HasMaxLength(250)
-                        .HasColumnType("varchar(250)");
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
 
                     b.Property<bool>("IsClosed")
                         .HasColumnType("tinyint(1)");
 
                     b.Property<DateTime?>("PODate")
                         .IsRequired()
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<string>("PONUM")
                         .IsRequired()
-                        .HasMaxLength(25)
-                        .HasColumnType("varchar(25)");
+                        .HasMaxLength(50)
+                        .HasColumnType("varchar(50)");
 
                     b.Property<decimal>("TOTAL")
-                        .HasColumnType("decimal(18, 2)");
+                        .HasColumnType("decimal(65,30)");
 
                     b.HasKey("POID")
                         .HasName("PRIMARY");
@@ -739,8 +739,8 @@ namespace TeliconLatest.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("remarkText")
-                        .HasMaxLength(50)
-                        .HasColumnType("varchar(50)");
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
 
                     b.HasKey("remarkID")
                         .HasName("PRIMARY");
@@ -760,8 +760,8 @@ namespace TeliconLatest.Migrations
 
                     b.Property<string>("FleetNo")
                         .IsRequired()
-                        .HasMaxLength(7)
-                        .HasColumnType("varchar(7)");
+                        .HasMaxLength(14)
+                        .HasColumnType("varchar(14)");
 
                     b.Property<int?>("OwnedBy")
                         .IsRequired()
@@ -769,8 +769,8 @@ namespace TeliconLatest.Migrations
 
                     b.Property<string>("PlateNo")
                         .IsRequired()
-                        .HasMaxLength(7)
-                        .HasColumnType("varchar(7)");
+                        .HasMaxLength(14)
+                        .HasColumnType("varchar(14)");
 
                     b.HasKey("VehicleID")
                         .HasName("PRIMARY");
@@ -785,29 +785,29 @@ namespace TeliconLatest.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Addr")
-                        .HasMaxLength(250)
-                        .HasColumnType("varchar(250)");
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
 
                     b.Property<string>("Email")
-                        .HasMaxLength(150)
-                        .HasColumnType("varchar(150)");
+                        .HasMaxLength(300)
+                        .HasColumnType("varchar(300)");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(75)
-                        .HasColumnType("varchar(75)");
+                        .HasMaxLength(150)
+                        .HasColumnType("varchar(150)");
 
                     b.Property<string>("Phone")
-                        .HasMaxLength(20)
-                        .HasColumnType("varchar(20)");
+                        .HasMaxLength(40)
+                        .HasColumnType("varchar(40)");
 
                     b.Property<string>("Place")
-                        .HasMaxLength(100)
-                        .HasColumnType("varchar(100)");
+                        .HasMaxLength(200)
+                        .HasColumnType("varchar(200)");
 
                     b.Property<string>("SupervisorName")
-                        .HasMaxLength(250)
-                        .HasColumnType("varchar(250)");
+                        .HasMaxLength(500)
+                        .HasColumnType("varchar(500)");
 
                     b.HasKey("ZoneID")
                         .HasName("PRIMARY");
@@ -824,12 +824,12 @@ namespace TeliconLatest.Migrations
 
                     b.Property<string>("ApplicationName")
                         .IsRequired()
-                        .HasMaxLength(235)
-                        .HasColumnType("varchar(235)");
+                        .HasMaxLength(470)
+                        .HasColumnType("varchar(470)");
 
                     b.Property<string>("Description")
-                        .HasMaxLength(256)
-                        .HasColumnType("varchar(256)");
+                        .HasMaxLength(512)
+                        .HasColumnType("varchar(512)");
 
                     b.HasKey("ApplicationId")
                         .HasName("PRIMARY");
@@ -849,7 +849,7 @@ namespace TeliconLatest.Migrations
                         .HasColumnType("varchar(100)");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<string>("CustAddress")
                         .IsRequired()
@@ -861,7 +861,7 @@ namespace TeliconLatest.Migrations
                         .HasColumnType("varchar(500)");
 
                     b.Property<DateTime>("CustDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<string>("CustSignature")
                         .IsRequired()
@@ -899,7 +899,7 @@ namespace TeliconLatest.Migrations
                         .HasColumnType("tinyint(1)");
 
                     b.Property<DateTime>("JobDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -912,7 +912,7 @@ namespace TeliconLatest.Migrations
                         .HasColumnType("varchar(100)");
 
                     b.Property<DateTime>("TechDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<string>("TechId")
                         .IsRequired()
@@ -930,10 +930,10 @@ namespace TeliconLatest.Migrations
                         .HasColumnType("varchar(500)");
 
                     b.Property<TimeSpan>("TimeIn")
-                        .HasColumnType("time");
+                        .HasColumnType("time(6)");
 
                     b.Property<TimeSpan>("TimeOut")
-                        .HasColumnType("time");
+                        .HasColumnType("time(6)");
 
                     b.HasKey("CustomerId");
 
@@ -947,7 +947,7 @@ namespace TeliconLatest.Migrations
                         .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<int>("CustomerId")
                         .HasColumnType("int");
@@ -983,15 +983,15 @@ namespace TeliconLatest.Migrations
                         .HasColumnType("varchar(36)");
 
                     b.Property<string>("Comment")
-                        .HasMaxLength(256)
-                        .HasColumnType("varchar(256)");
+                        .HasMaxLength(512)
+                        .HasColumnType("varchar(512)");
 
                     b.Property<DateTime>("CreateDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<string>("Email")
-                        .HasMaxLength(256)
-                        .HasColumnType("varchar(256)");
+                        .HasMaxLength(512)
+                        .HasColumnType("varchar(512)");
 
                     b.Property<bool>("IsApproved")
                         .HasColumnType("tinyint(1)");
@@ -1000,13 +1000,13 @@ namespace TeliconLatest.Migrations
                         .HasColumnType("tinyint(1)");
 
                     b.Property<DateTime>("LastLockoutDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<DateTime>("LastLoginDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<DateTime>("LastPasswordChangedDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<string>("Password")
                         .HasMaxLength(250)
@@ -1028,19 +1028,17 @@ namespace TeliconLatest.Migrations
                         .HasColumnType("varchar(36)");
 
                     b.Property<DateTime>("LastUpdatedDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<string>("PropertyNames")
-                        .HasMaxLength(4000)
-                        .HasColumnType("varchar(4000)");
+                        .HasColumnType("longtext");
 
                     b.Property<byte[]>("PropertyValueBinary")
                         .IsRequired()
                         .HasColumnType("longblob");
 
                     b.Property<string>("PropertyValueStrings")
-                        .HasMaxLength(4000)
-                        .HasColumnType("varchar(4000)");
+                        .HasColumnType("longtext");
 
                     b.HasKey("UserId")
                         .HasName("PRIMARY");
@@ -1060,13 +1058,13 @@ namespace TeliconLatest.Migrations
                         .HasColumnType("varchar(36)");
 
                     b.Property<string>("Description")
-                        .HasMaxLength(256)
-                        .HasColumnType("varchar(256)");
+                        .HasMaxLength(512)
+                        .HasColumnType("varchar(512)");
 
                     b.Property<string>("RoleName")
                         .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("varchar(256)");
+                        .HasMaxLength(512)
+                        .HasColumnType("varchar(512)");
 
                     b.HasKey("RoleId");
 
@@ -1091,7 +1089,7 @@ namespace TeliconLatest.Migrations
                         .HasColumnType("int");
 
                     b.Property<DateTime?>("EndDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<bool>("HoldIt")
                         .HasColumnType("tinyint(1)");
@@ -1100,7 +1098,7 @@ namespace TeliconLatest.Migrations
                         .HasColumnType("tinyint(1)");
 
                     b.Property<DateTime>("StartDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<double>("YTDAmount")
                         .HasColumnType("double");
@@ -1121,27 +1119,24 @@ namespace TeliconLatest.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    b.Property<int?>("ADM02300BatchID")
-                        .HasColumnType("int");
-
                     b.Property<int?>("BatchId")
                         .HasColumnType("int");
 
                     b.Property<DateTime?>("GeneratedDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<int>("InvNewNum")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("InvoiceDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<string>("InvoiceTitle")
-                        .HasMaxLength(150)
-                        .HasColumnType("varchar(150)");
+                        .HasMaxLength(300)
+                        .HasColumnType("varchar(300)");
 
                     b.Property<decimal?>("InvoiceTotal")
-                        .HasColumnType("decimal(18, 2)");
+                        .HasColumnType("decimal(65,30)");
 
                     b.Property<bool>("IsNewFormat")
                         .HasColumnType("tinyint(1)");
@@ -1150,20 +1145,18 @@ namespace TeliconLatest.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Status")
-                        .HasMaxLength(1)
-                        .HasColumnType("varchar(1)");
+                        .HasMaxLength(2)
+                        .HasColumnType("varchar(2)");
 
                     b.Property<int?>("batchTMP")
                         .HasColumnType("int");
 
                     b.Property<string>("statusTMP")
-                        .HasMaxLength(1)
-                        .HasColumnType("varchar(1)");
+                        .HasMaxLength(2)
+                        .HasColumnType("varchar(2)");
 
                     b.HasKey("InvoiceNum")
                         .HasName("PRIMARY");
-
-                    b.HasIndex("ADM02300BatchID");
 
                     b.ToTable("trn09100");
                 });
@@ -1178,24 +1171,24 @@ namespace TeliconLatest.Migrations
                         .HasColumnType("int");
 
                     b.Property<DateTime?>("GeneratedDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<DateTime>("InvoiceDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<string>("InvoiceTitle")
-                        .HasMaxLength(75)
-                        .HasColumnType("varchar(75)");
+                        .HasMaxLength(150)
+                        .HasColumnType("varchar(150)");
 
                     b.Property<decimal?>("InvoiceTotal")
-                        .HasColumnType("decimal(18, 2)");
+                        .HasColumnType("decimal(65,30)");
 
                     b.Property<int?>("NewInvNo")
                         .HasColumnType("int");
 
                     b.Property<string>("Status")
-                        .HasMaxLength(1)
-                        .HasColumnType("varchar(1)");
+                        .HasMaxLength(2)
+                        .HasColumnType("varchar(2)");
 
                     b.HasKey("newnum")
                         .HasName("PRIMARY");
@@ -1213,7 +1206,7 @@ namespace TeliconLatest.Migrations
                         .HasColumnType("int");
 
                     b.Property<decimal>("InvoicedAmount")
-                        .HasColumnType("decimal(18, 2)");
+                        .HasColumnType("decimal(65,30)");
 
                     b.HasKey("WoActID", "InvoiceNum")
                         .HasName("PRIMARY")
@@ -1253,13 +1246,13 @@ namespace TeliconLatest.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("MergedRefNum")
-                        .HasColumnType("text");
+                        .HasColumnType("longtext");
 
                     b.Property<DateTime?>("MergerdDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<string>("MergerdTitle")
-                        .HasColumnType("text");
+                        .HasColumnType("longtext");
 
                     b.Property<int>("WorkOrderId")
                         .HasColumnType("int");
@@ -1284,33 +1277,33 @@ namespace TeliconLatest.Migrations
 
                     b.Property<string>("Quot_ref")
                         .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("varchar(20)");
+                        .HasMaxLength(40)
+                        .HasColumnType("varchar(40)");
 
                     b.Property<string>("Quot_title")
                         .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("varchar(300)");
+
+                    b.Property<string>("RequestCity")
                         .HasMaxLength(150)
                         .HasColumnType("varchar(150)");
 
-                    b.Property<string>("RequestCity")
-                        .HasMaxLength(75)
-                        .HasColumnType("varchar(75)");
-
                     b.Property<string>("RequestCountry")
-                        .HasMaxLength(75)
-                        .HasColumnType("varchar(75)");
+                        .HasMaxLength(150)
+                        .HasColumnType("varchar(150)");
 
                     b.Property<string>("RequestStreet")
-                        .HasMaxLength(75)
-                        .HasColumnType("varchar(75)");
+                        .HasMaxLength(150)
+                        .HasColumnType("varchar(150)");
 
                     b.Property<string>("Requestby")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("varchar(50)");
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
 
                     b.Property<DateTime>("Requestdt")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime(6)");
 
                     b.HasKey("QuotationId")
                         .HasName("PRIMARY");
@@ -1327,10 +1320,10 @@ namespace TeliconLatest.Migrations
                         .HasColumnType("int");
 
                     b.Property<decimal>("ActQty")
-                        .HasColumnType("decimal(18, 2)");
+                        .HasColumnType("decimal(65,30)");
 
                     b.Property<string>("ActivityDesc")
-                        .HasColumnType("text");
+                        .HasColumnType("longtext");
 
                     b.Property<double?>("ActivityRate")
                         .HasColumnType("double");
@@ -1357,17 +1350,17 @@ namespace TeliconLatest.Migrations
                         .HasColumnType("varchar(36)");
 
                     b.Property<DateTime>("Requestdt")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<string>("SInv_ref")
                         .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("varchar(20)");
+                        .HasMaxLength(40)
+                        .HasColumnType("varchar(40)");
 
                     b.Property<string>("SInv_title")
                         .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("varchar(150)");
+                        .HasMaxLength(300)
+                        .HasColumnType("varchar(300)");
 
                     b.Property<int>("ZoneId")
                         .HasColumnType("int");
@@ -1389,7 +1382,7 @@ namespace TeliconLatest.Migrations
                         .HasColumnType("int");
 
                     b.Property<decimal>("ActQty")
-                        .HasColumnType("decimal(18, 2)");
+                        .HasColumnType("decimal(65,30)");
 
                     b.Property<int>("ActivityId")
                         .HasColumnType("int");
@@ -1423,47 +1416,47 @@ namespace TeliconLatest.Migrations
                         .HasColumnType("int");
 
                     b.Property<DateTime?>("CompletionDt")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<string>("CreateBy")
                         .HasMaxLength(36)
                         .HasColumnType("varchar(36)");
 
                     b.Property<DateTime?>("DateSubmitted")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<int?>("DepartmentID")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("Dispatchdt")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<int?>("LocationID")
                         .HasColumnType("int");
 
                     b.Property<string>("PONum")
-                        .HasMaxLength(20)
-                        .HasColumnType("varchar(20)");
+                        .HasMaxLength(40)
+                        .HasColumnType("varchar(40)");
 
                     b.Property<DateTime?>("PaidDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<string>("Requestby")
-                        .HasMaxLength(150)
-                        .HasColumnType("varchar(150)");
+                        .HasMaxLength(300)
+                        .HasColumnType("varchar(300)");
 
                     b.Property<DateTime>("Requestdt")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<DateTime?>("RollbackDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<bool>("SpliceDocs")
                         .HasColumnType("tinyint(1)");
 
                     b.Property<string>("Status")
-                        .HasMaxLength(1)
-                        .HasColumnType("varchar(1)");
+                        .HasMaxLength(2)
+                        .HasColumnType("varchar(2)");
 
                     b.Property<bool>("Submitted")
                         .HasColumnType("tinyint(1)");
@@ -1473,8 +1466,8 @@ namespace TeliconLatest.Migrations
 
                     b.Property<string>("Wo_ref")
                         .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("varchar(20)");
+                        .HasMaxLength(40)
+                        .HasColumnType("varchar(40)");
 
                     b.Property<double>("Wo_split")
                         .HasColumnType("double");
@@ -1484,15 +1477,15 @@ namespace TeliconLatest.Migrations
 
                     b.Property<string>("Wo_title")
                         .IsRequired()
-                        .HasMaxLength(150)
-                        .HasColumnType("varchar(150)");
+                        .HasMaxLength(300)
+                        .HasColumnType("varchar(300)");
 
                     b.Property<DateTime?>("dateVerified")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<string>("tempValue")
-                        .HasMaxLength(1)
-                        .HasColumnType("varchar(1)");
+                        .HasMaxLength(2)
+                        .HasColumnType("varchar(2)");
 
                     b.HasKey("Workid")
                         .HasName("PRIMARY");
@@ -1515,13 +1508,13 @@ namespace TeliconLatest.Migrations
                         .HasColumnType("int");
 
                     b.Property<DateTime>("ActDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<DateTime?>("ActPaid")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<decimal>("ActQty")
-                        .HasColumnType("decimal(18, 2)");
+                        .HasColumnType("decimal(65,30)");
 
                     b.Property<int>("ActivityID")
                         .HasColumnType("int");
@@ -1541,7 +1534,7 @@ namespace TeliconLatest.Migrations
                         .HasColumnType("varchar(100)");
 
                     b.Property<decimal>("OActQty")
-                        .HasColumnType("decimal(18, 2)");
+                        .HasColumnType("decimal(65,30)");
 
                     b.Property<int>("WorkOID")
                         .HasColumnType("int");
@@ -1592,7 +1585,7 @@ namespace TeliconLatest.Migrations
                         .HasColumnType("tinyint(1)");
 
                     b.Property<string>("RoleId")
-                        .HasColumnType("text");
+                        .HasColumnType("longtext");
 
                     b.Property<int>("TaskId")
                         .HasColumnType("int");
@@ -1617,12 +1610,12 @@ namespace TeliconLatest.Migrations
                         .HasColumnType("tinyint(1)");
 
                     b.Property<DateTime>("LastActivityDate")
-                        .HasColumnType("datetime");
+                        .HasColumnType("datetime(6)");
 
                     b.Property<string>("UserName")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("varchar(50)");
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
 
                     b.HasKey("UserId");
 
@@ -1856,15 +1849,6 @@ namespace TeliconLatest.Migrations
                     b.Navigation("ADM04100");
                 });
 
-            modelBuilder.Entity("TeliconLatest.DataEntities.TRN09100", b =>
-                {
-                    b.HasOne("TeliconLatest.DataEntities.ADM02300", "ADM02300")
-                        .WithMany("TRN09100")
-                        .HasForeignKey("ADM02300BatchID");
-
-                    b.Navigation("ADM02300");
-                });
-
             modelBuilder.Entity("TeliconLatest.DataEntities.TRN09110", b =>
                 {
                     b.HasOne("TeliconLatest.DataEntities.TRN09100", "TRN09100")
@@ -2093,11 +2077,6 @@ namespace TeliconLatest.Migrations
             modelBuilder.Entity("TeliconLatest.DataEntities.ADM02200", b =>
                 {
                     b.Navigation("ADM03300");
-                });
-
-            modelBuilder.Entity("TeliconLatest.DataEntities.ADM02300", b =>
-                {
-                    b.Navigation("TRN09100");
                 });
 
             modelBuilder.Entity("TeliconLatest.DataEntities.ADM03200", b =>

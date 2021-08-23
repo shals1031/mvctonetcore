@@ -8,12 +8,15 @@ namespace TeliconLatest.Migrations
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.AlterDatabase()
+                .Annotation("MySql:CharSet", "utf8mb4");
+
             migrationBuilder.CreateTable(
                 name: "adm01120",
                 columns: table => new
                 {
                     splitID = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySQL:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     activityID = table.Column<int>(type: "int", nullable: false),
                     OVSenior1 = table.Column<double>(type: "double", nullable: false),
                     OVSenior2 = table.Column<double>(type: "double", nullable: false),
@@ -24,271 +27,334 @@ namespace TeliconLatest.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PRIMARY", x => x.splitID);
-                });
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
                 name: "adm01300",
                 columns: table => new
                 {
                     accountID = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySQL:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    accountName = table.Column<string>(type: "varchar(35)", maxLength: 35, nullable: true),
-                    address1 = table.Column<string>(type: "varchar(35)", maxLength: 35, nullable: true),
-                    address2 = table.Column<string>(type: "varchar(35)", maxLength: 35, nullable: true),
-                    address3 = table.Column<string>(type: "varchar(35)", maxLength: 35, nullable: true),
-                    accType = table.Column<string>(type: "varchar(1)", maxLength: 1, nullable: true),
-                    accountNo = table.Column<string>(type: "varchar(8)", maxLength: 8, nullable: true)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    accountName = table.Column<string>(type: "varchar(70)", maxLength: 70, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    address1 = table.Column<string>(type: "varchar(70)", maxLength: 70, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    address2 = table.Column<string>(type: "varchar(70)", maxLength: 70, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    address3 = table.Column<string>(type: "varchar(70)", maxLength: 70, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    accType = table.Column<string>(type: "varchar(2)", maxLength: 2, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    accountNo = table.Column<string>(type: "varchar(16)", maxLength: 16, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4")
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PRIMARY", x => x.accountID);
-                });
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
                 name: "adm02100",
                 columns: table => new
                 {
-                    BankId = table.Column<string>(type: "varchar(5)", maxLength: 5, nullable: false),
-                    BankName = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: false)
+                    BankId = table.Column<string>(type: "varchar(10)", maxLength: 10, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    BankName = table.Column<string>(type: "varchar(100)", maxLength: 100, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4")
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PRIMARY", x => x.BankId);
-                });
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
                 name: "adm02300",
                 columns: table => new
                 {
                     BatchID = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySQL:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    BatchDate = table.Column<DateTime>(type: "datetime", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    BatchDate = table.Column<DateTime>(type: "datetime(6)", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PRIMARY", x => x.BatchID);
-                });
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
                 name: "adm03200",
                 columns: table => new
                 {
                     CustID = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySQL:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    CustName = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: false),
-                    Street = table.Column<string>(type: "varchar(30)", maxLength: 30, nullable: true),
-                    City = table.Column<string>(type: "varchar(30)", maxLength: 30, nullable: true),
-                    Parish = table.Column<string>(type: "varchar(30)", maxLength: 30, nullable: true),
-                    Phone1 = table.Column<string>(type: "varchar(15)", maxLength: 15, nullable: true),
-                    Phone2 = table.Column<string>(type: "varchar(15)", maxLength: 15, nullable: true),
-                    Fax = table.Column<string>(type: "varchar(15)", maxLength: 15, nullable: true),
-                    Email = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: false),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    CustName = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Street = table.Column<string>(type: "varchar(30)", maxLength: 30, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    City = table.Column<string>(type: "varchar(30)", maxLength: 30, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Parish = table.Column<string>(type: "varchar(30)", maxLength: 30, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Phone1 = table.Column<string>(type: "varchar(15)", maxLength: 15, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Phone2 = table.Column<string>(type: "varchar(15)", maxLength: 15, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Fax = table.Column<string>(type: "varchar(15)", maxLength: 15, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Email = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
                     CustClass = table.Column<int>(type: "int", nullable: false),
-                    ClientCode = table.Column<string>(type: "varchar(6)", maxLength: 6, nullable: false),
-                    Currency = table.Column<string>(type: "varchar(3)", maxLength: 3, nullable: true),
-                    StartDt = table.Column<DateTime>(type: "datetime", nullable: true),
-                    EndDt = table.Column<DateTime>(type: "datetime", nullable: true)
+                    ClientCode = table.Column<string>(type: "varchar(6)", maxLength: 6, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Currency = table.Column<string>(type: "varchar(3)", maxLength: 3, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    StartDt = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    EndDt = table.Column<DateTime>(type: "datetime(6)", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PRIMARY", x => x.CustID);
-                });
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
                 name: "adm03500",
                 columns: table => new
                 {
                     ClassId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySQL:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    ClassName = table.Column<string>(type: "varchar(60)", maxLength: 60, nullable: false),
-                    StartDate = table.Column<DateTime>(type: "datetime", nullable: false),
-                    EndDate = table.Column<DateTime>(type: "datetime", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    ClassName = table.Column<string>(type: "varchar(120)", maxLength: 120, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    StartDate = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    EndDate = table.Column<DateTime>(type: "datetime(6)", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PRIMARY", x => x.ClassId);
-                });
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
                 name: "adm04100",
                 columns: table => new
                 {
                     DeductionID = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySQL:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    Name = table.Column<string>(type: "varchar(35)", maxLength: 35, nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Name = table.Column<string>(type: "varchar(70)", maxLength: 70, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4")
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PRIMARY", x => x.DeductionID);
-                });
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
                 name: "adm04200",
                 columns: table => new
                 {
                     DepartmentID = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySQL:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    Name = table.Column<string>(type: "varchar(35)", maxLength: 35, nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Name = table.Column<string>(type: "varchar(70)", maxLength: 70, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4")
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PRIMARY", x => x.DepartmentID);
-                });
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
                 name: "adm07100",
                 columns: table => new
                 {
                     TaxId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySQL:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    Type = table.Column<string>(type: "varchar(30)", maxLength: 30, nullable: true),
-                    StartDate = table.Column<DateTime>(type: "datetime", nullable: false),
-                    EndDate = table.Column<DateTime>(type: "datetime", nullable: true),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Type = table.Column<string>(type: "varchar(60)", maxLength: 60, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    StartDate = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    EndDate = table.Column<DateTime>(type: "datetime(6)", nullable: true),
                     Percentage = table.Column<double>(type: "double", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PRIMARY", x => x.TaxId);
-                });
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
                 name: "adm12100",
                 columns: table => new
                 {
                     locationID = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySQL:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    locationName = table.Column<string>(type: "varchar(35)", maxLength: 35, nullable: true)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    locationName = table.Column<string>(type: "varchar(70)", maxLength: 70, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4")
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PRIMARY", x => x.locationID);
-                });
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
                 name: "adm13100",
                 columns: table => new
                 {
                     MaterialID = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySQL:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    MaterialName = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: false),
-                    MaterialUnit = table.Column<string>(type: "varchar(20)", maxLength: 20, nullable: false),
-                    MaterialCode = table.Column<string>(type: "text", nullable: false),
-                    MaxQty = table.Column<decimal>(type: "decimal(18, 2)", nullable: true)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    MaterialName = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    MaterialUnit = table.Column<string>(type: "varchar(20)", maxLength: 20, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    MaterialCode = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    MaxQty = table.Column<decimal>(type: "decimal(65,30)", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PRIMARY", x => x.MaterialID);
-                });
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
                 name: "adm16100",
                 columns: table => new
                 {
                     PeriodID = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySQL:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     Week = table.Column<int>(type: "int", nullable: false),
-                    PeriodStart = table.Column<DateTime>(type: "datetime", nullable: false),
-                    PeriodEnd = table.Column<DateTime>(type: "datetime", nullable: false),
-                    DueDate = table.Column<DateTime>(type: "datetime", nullable: false),
-                    PayDate = table.Column<DateTime>(type: "datetime", nullable: false),
+                    PeriodStart = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    PeriodEnd = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    DueDate = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    PayDate = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     periodYear = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PRIMARY", x => x.PeriodID);
-                });
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
                 name: "adm16200",
                 columns: table => new
                 {
                     POID = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySQL:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    PONUM = table.Column<string>(type: "varchar(25)", maxLength: 25, nullable: false),
-                    TOTAL = table.Column<decimal>(type: "decimal(18, 2)", nullable: false),
-                    BALANCE = table.Column<decimal>(type: "decimal(18, 2)", nullable: true),
-                    Description = table.Column<string>(type: "varchar(250)", maxLength: 250, nullable: true),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    PONUM = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    TOTAL = table.Column<decimal>(type: "decimal(65,30)", nullable: false),
+                    BALANCE = table.Column<decimal>(type: "decimal(65,30)", nullable: true),
+                    Description = table.Column<string>(type: "varchar(500)", maxLength: 500, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
                     IsClosed = table.Column<bool>(type: "tinyint(1)", nullable: false),
-                    PODate = table.Column<DateTime>(type: "datetime", nullable: false)
+                    PODate = table.Column<DateTime>(type: "datetime(6)", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PRIMARY", x => x.POID);
-                });
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
                 name: "adm18100",
                 columns: table => new
                 {
                     remarkID = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySQL:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    remarkText = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: true)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    remarkText = table.Column<string>(type: "varchar(100)", maxLength: 100, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4")
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PRIMARY", x => x.remarkID);
-                });
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
                 name: "adm22100",
                 columns: table => new
                 {
                     VehicleID = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySQL:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    PlateNo = table.Column<string>(type: "varchar(7)", maxLength: 7, nullable: false),
-                    FleetNo = table.Column<string>(type: "varchar(7)", maxLength: 7, nullable: false),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    PlateNo = table.Column<string>(type: "varchar(14)", maxLength: 14, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    FleetNo = table.Column<string>(type: "varchar(14)", maxLength: 14, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
                     OwnedBy = table.Column<int>(type: "int", nullable: false),
                     ConID = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PRIMARY", x => x.VehicleID);
-                });
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
                 name: "adm26100",
                 columns: table => new
                 {
                     ZoneID = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySQL:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    Name = table.Column<string>(type: "varchar(75)", maxLength: 75, nullable: false),
-                    SupervisorName = table.Column<string>(type: "varchar(250)", maxLength: 250, nullable: true),
-                    Addr = table.Column<string>(type: "varchar(250)", maxLength: 250, nullable: true),
-                    Email = table.Column<string>(type: "varchar(150)", maxLength: 150, nullable: true),
-                    Phone = table.Column<string>(type: "varchar(20)", maxLength: 20, nullable: true),
-                    Place = table.Column<string>(type: "varchar(100)", maxLength: 100, nullable: true)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Name = table.Column<string>(type: "varchar(150)", maxLength: 150, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    SupervisorName = table.Column<string>(type: "varchar(500)", maxLength: 500, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Addr = table.Column<string>(type: "varchar(500)", maxLength: 500, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Email = table.Column<string>(type: "varchar(300)", maxLength: 300, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Phone = table.Column<string>(type: "varchar(40)", maxLength: 40, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Place = table.Column<string>(type: "varchar(200)", maxLength: 200, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4")
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PRIMARY", x => x.ZoneID);
-                });
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
                 name: "applications",
                 columns: table => new
                 {
-                    ApplicationId = table.Column<string>(type: "varchar(36)", maxLength: 36, nullable: false),
-                    ApplicationName = table.Column<string>(type: "varchar(235)", maxLength: 235, nullable: false),
-                    Description = table.Column<string>(type: "varchar(256)", maxLength: 256, nullable: true)
+                    ApplicationId = table.Column<string>(type: "varchar(36)", maxLength: 36, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    ApplicationName = table.Column<string>(type: "varchar(470)", maxLength: 470, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Description = table.Column<string>(type: "varchar(512)", maxLength: 512, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4")
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PRIMARY", x => x.ApplicationId);
-                });
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
                 name: "Customers",
                 columns: table => new
                 {
                     CustomerId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySQL:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    Name = table.Column<string>(type: "varchar(200)", maxLength: 200, nullable: false),
-                    AccountNo = table.Column<string>(type: "varchar(100)", maxLength: 100, nullable: false),
-                    JobDate = table.Column<DateTime>(type: "datetime", nullable: false),
-                    TechName = table.Column<string>(type: "varchar(200)", maxLength: 200, nullable: false),
-                    TechId = table.Column<string>(type: "varchar(100)", maxLength: 100, nullable: false),
-                    ServiceOrdNo = table.Column<string>(type: "varchar(100)", maxLength: 100, nullable: false),
-                    CustAddress = table.Column<string>(type: "varchar(500)", maxLength: 500, nullable: false),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Name = table.Column<string>(type: "varchar(200)", maxLength: 200, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    AccountNo = table.Column<string>(type: "varchar(100)", maxLength: 100, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    JobDate = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    TechName = table.Column<string>(type: "varchar(200)", maxLength: 200, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    TechId = table.Column<string>(type: "varchar(100)", maxLength: 100, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    ServiceOrdNo = table.Column<string>(type: "varchar(100)", maxLength: 100, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    CustAddress = table.Column<string>(type: "varchar(500)", maxLength: 500, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
                     IsWTNew = table.Column<bool>(type: "tinyint(1)", nullable: false),
                     IsWTExisting = table.Column<bool>(type: "tinyint(1)", nullable: false),
                     IsWTRewireCable = table.Column<bool>(type: "tinyint(1)", nullable: false),
@@ -299,27 +365,32 @@ namespace TeliconLatest.Migrations
                     IsSIWatch = table.Column<bool>(type: "tinyint(1)", nullable: false),
                     IsSITalk = table.Column<bool>(type: "tinyint(1)", nullable: false),
                     IsSIClick = table.Column<bool>(type: "tinyint(1)", nullable: false),
-                    CustComment = table.Column<string>(type: "varchar(500)", maxLength: 500, nullable: true),
-                    TimeIn = table.Column<TimeSpan>(type: "time", nullable: false),
-                    TimeOut = table.Column<TimeSpan>(type: "time", nullable: false),
-                    CustSignature = table.Column<string>(type: "varchar(500)", maxLength: 500, nullable: false),
-                    CustDate = table.Column<DateTime>(type: "datetime", nullable: false),
-                    TechSignature = table.Column<string>(type: "varchar(500)", maxLength: 500, nullable: false),
-                    TechDate = table.Column<DateTime>(type: "datetime", nullable: false),
-                    CreatedDate = table.Column<DateTime>(type: "datetime", nullable: false)
+                    CustComment = table.Column<string>(type: "varchar(500)", maxLength: 500, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    TimeIn = table.Column<TimeSpan>(type: "time(6)", nullable: false),
+                    TimeOut = table.Column<TimeSpan>(type: "time(6)", nullable: false),
+                    CustSignature = table.Column<string>(type: "varchar(500)", maxLength: 500, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    CustDate = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    TechSignature = table.Column<string>(type: "varchar(500)", maxLength: 500, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    TechDate = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    CreatedDate = table.Column<DateTime>(type: "datetime(6)", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Customers", x => x.CustomerId);
-                });
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
                 name: "tasksinrole",
                 columns: table => new
                 {
                     RoleTaskId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySQL:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    RoleId = table.Column<string>(type: "text", nullable: true),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    RoleId = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
                     TaskId = table.Column<int>(type: "int", nullable: false),
                     CanRead = table.Column<bool>(type: "tinyint(1)", nullable: false),
                     CanWrite = table.Column<bool>(type: "tinyint(1)", nullable: false)
@@ -327,36 +398,70 @@ namespace TeliconLatest.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PRIMARY", x => x.RoleTaskId);
-                });
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
+                name: "trn09100",
+                columns: table => new
+                {
+                    InvoiceNum = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    InvoiceTitle = table.Column<string>(type: "varchar(300)", maxLength: 300, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    GeneratedDate = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    InvoiceDate = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    InvoiceTotal = table.Column<decimal>(type: "decimal(65,30)", nullable: true),
+                    BatchId = table.Column<int>(type: "int", nullable: true),
+                    Status = table.Column<string>(type: "varchar(2)", maxLength: 2, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    NewInvNo = table.Column<int>(type: "int", nullable: true),
+                    batchTMP = table.Column<int>(type: "int", nullable: true),
+                    statusTMP = table.Column<string>(type: "varchar(2)", maxLength: 2, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    InvNewNum = table.Column<int>(type: "int", nullable: false),
+                    IsNewFormat = table.Column<bool>(type: "tinyint(1)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PRIMARY", x => x.InvoiceNum);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
                 name: "trn09101",
                 columns: table => new
                 {
                     newnum = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySQL:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    InvoiceTitle = table.Column<string>(type: "varchar(75)", maxLength: 75, nullable: true),
-                    GeneratedDate = table.Column<DateTime>(type: "datetime", nullable: true),
-                    InvoiceDate = table.Column<DateTime>(type: "datetime", nullable: false),
-                    InvoiceTotal = table.Column<decimal>(type: "decimal(18, 2)", nullable: true),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    InvoiceTitle = table.Column<string>(type: "varchar(150)", maxLength: 150, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    GeneratedDate = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    InvoiceDate = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    InvoiceTotal = table.Column<decimal>(type: "decimal(65,30)", nullable: true),
                     BatchId = table.Column<int>(type: "int", nullable: true),
-                    Status = table.Column<string>(type: "varchar(1)", maxLength: 1, nullable: true),
+                    Status = table.Column<string>(type: "varchar(2)", maxLength: 2, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
                     NewInvNo = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PRIMARY", x => x.newnum);
-                });
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
                 name: "adm02200",
                 columns: table => new
                 {
                     RecID = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySQL:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    BankId = table.Column<string>(type: "varchar(5)", maxLength: 5, nullable: false),
-                    BranchId = table.Column<string>(type: "varchar(11)", maxLength: 11, nullable: false),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    BankId = table.Column<string>(type: "varchar(10)", maxLength: 10, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    BranchId = table.Column<string>(type: "varchar(11)", maxLength: 11, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
                     BranchName = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4")
                 },
                 constraints: table =>
                 {
@@ -367,55 +472,29 @@ namespace TeliconLatest.Migrations
                         principalTable: "adm02100",
                         principalColumn: "BankId",
                         onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "trn09100",
-                columns: table => new
-                {
-                    InvoiceNum = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySQL:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    InvoiceTitle = table.Column<string>(type: "varchar(150)", maxLength: 150, nullable: true),
-                    GeneratedDate = table.Column<DateTime>(type: "datetime", nullable: true),
-                    InvoiceDate = table.Column<DateTime>(type: "datetime", nullable: false),
-                    InvoiceTotal = table.Column<decimal>(type: "decimal(18, 2)", nullable: true),
-                    BatchId = table.Column<int>(type: "int", nullable: true),
-                    Status = table.Column<string>(type: "varchar(1)", maxLength: 1, nullable: true),
-                    NewInvNo = table.Column<int>(type: "int", nullable: true),
-                    batchTMP = table.Column<int>(type: "int", nullable: true),
-                    statusTMP = table.Column<string>(type: "varchar(1)", maxLength: 1, nullable: true),
-                    InvNewNum = table.Column<int>(type: "int", nullable: false),
-                    IsNewFormat = table.Column<bool>(type: "tinyint(1)", nullable: false),
-                    ADM02300BatchID = table.Column<int>(type: "int", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PRIMARY", x => x.InvoiceNum);
-                    table.ForeignKey(
-                        name: "FK_trn09100_adm02300_ADM02300BatchID",
-                        column: x => x.ADM02300BatchID,
-                        principalTable: "adm02300",
-                        principalColumn: "BatchID",
-                        onDelete: ReferentialAction.Restrict);
-                });
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
                 name: "adm01100",
                 columns: table => new
                 {
                     RateID = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySQL:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    RateDescr = table.Column<string>(type: "varchar(150)", maxLength: 150, nullable: false),
-                    RateUnit = table.Column<string>(type: "varchar(2)", maxLength: 2, nullable: false),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    RateDescr = table.Column<string>(type: "varchar(150)", maxLength: 150, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    RateUnit = table.Column<string>(type: "varchar(2)", maxLength: 2, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
                     RateClass = table.Column<int>(type: "int", nullable: false),
                     Active = table.Column<bool>(type: "tinyint(1)", nullable: false),
                     ClientID = table.Column<int>(type: "int", nullable: false),
-                    StartDate = table.Column<DateTime>(type: "datetime", nullable: false),
+                    StartDate = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     DepartmentId = table.Column<int>(type: "int", nullable: false),
-                    MaxQty = table.Column<decimal>(type: "decimal(18, 2)", nullable: true),
+                    MaxQty = table.Column<decimal>(type: "decimal(65,30)", nullable: true),
                     HasMaterials = table.Column<bool>(type: "tinyint(1)", nullable: false),
                     MaterialsRequired = table.Column<bool>(type: "tinyint(1)", nullable: false),
                     AltCode = table.Column<string>(type: "varchar(5)", maxLength: 5, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4")
                 },
                 constraints: table =>
                 {
@@ -432,16 +511,18 @@ namespace TeliconLatest.Migrations
                         principalTable: "adm04200",
                         principalColumn: "DepartmentID",
                         onDelete: ReferentialAction.Cascade);
-                });
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
                 name: "adm01400",
                 columns: table => new
                 {
                     areaID = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySQL:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     zoneID = table.Column<int>(type: "int", nullable: false),
-                    areaName = table.Column<string>(type: "varchar(150)", maxLength: 150, nullable: false)
+                    areaName = table.Column<string>(type: "varchar(300)", maxLength: 300, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4")
                 },
                 constraints: table =>
                 {
@@ -452,16 +533,21 @@ namespace TeliconLatest.Migrations
                         principalTable: "adm26100",
                         principalColumn: "ZoneID",
                         onDelete: ReferentialAction.Restrict);
-                });
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
                 name: "roles",
                 columns: table => new
                 {
-                    RoleId = table.Column<string>(type: "varchar(36)", maxLength: 36, nullable: false),
-                    ApplicationId = table.Column<string>(type: "varchar(36)", maxLength: 36, nullable: true),
-                    RoleName = table.Column<string>(type: "varchar(256)", maxLength: 256, nullable: false),
-                    Description = table.Column<string>(type: "varchar(256)", maxLength: 256, nullable: true)
+                    RoleId = table.Column<string>(type: "varchar(36)", maxLength: 36, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    ApplicationId = table.Column<string>(type: "varchar(36)", maxLength: 36, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    RoleName = table.Column<string>(type: "varchar(512)", maxLength: 512, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Description = table.Column<string>(type: "varchar(512)", maxLength: 512, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4")
                 },
                 constraints: table =>
                 {
@@ -472,17 +558,21 @@ namespace TeliconLatest.Migrations
                         principalTable: "applications",
                         principalColumn: "ApplicationId",
                         onDelete: ReferentialAction.Restrict);
-                });
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
                 name: "users",
                 columns: table => new
                 {
-                    UserId = table.Column<string>(type: "varchar(36)", maxLength: 36, nullable: false),
-                    ApplicationId = table.Column<string>(type: "varchar(36)", nullable: true),
-                    UserName = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: false),
+                    UserId = table.Column<string>(type: "varchar(36)", maxLength: 36, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    ApplicationId = table.Column<string>(type: "varchar(36)", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    UserName = table.Column<string>(type: "varchar(100)", maxLength: 100, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
                     IsAnonymous = table.Column<bool>(type: "tinyint(1)", nullable: false),
-                    LastActivityDate = table.Column<DateTime>(type: "datetime", nullable: false)
+                    LastActivityDate = table.Column<DateTime>(type: "datetime(6)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -493,19 +583,23 @@ namespace TeliconLatest.Migrations
                         principalTable: "applications",
                         principalColumn: "ApplicationId",
                         onDelete: ReferentialAction.Restrict);
-                });
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
                 name: "CustomerEquipments",
                 columns: table => new
                 {
                     CustomerEquipmentId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySQL:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     CustomerId = table.Column<int>(type: "int", nullable: false),
-                    MacDetail = table.Column<string>(type: "varchar(200)", maxLength: 200, nullable: true),
-                    SerialNo = table.Column<string>(type: "varchar(100)", maxLength: 100, nullable: true),
-                    Description = table.Column<string>(type: "varchar(200)", maxLength: 200, nullable: true),
-                    CreatedDate = table.Column<DateTime>(type: "datetime", nullable: false)
+                    MacDetail = table.Column<string>(type: "varchar(200)", maxLength: 200, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    SerialNo = table.Column<string>(type: "varchar(100)", maxLength: 100, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Description = table.Column<string>(type: "varchar(200)", maxLength: 200, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    CreatedDate = table.Column<DateTime>(type: "datetime(6)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -516,42 +610,62 @@ namespace TeliconLatest.Migrations
                         principalTable: "Customers",
                         principalColumn: "CustomerId",
                         onDelete: ReferentialAction.Cascade);
-                });
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
                 name: "adm03300",
                 columns: table => new
                 {
                     ConID = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySQL:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    EmployeeID = table.Column<string>(type: "varchar(4)", maxLength: 4, nullable: false),
-                    FirstName = table.Column<string>(type: "varchar(30)", maxLength: 30, nullable: false),
-                    LastName = table.Column<string>(type: "varchar(30)", maxLength: 30, nullable: false),
-                    Street = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: true),
-                    City = table.Column<string>(type: "varchar(30)", maxLength: 30, nullable: true),
-                    Parish = table.Column<string>(type: "varchar(30)", maxLength: 30, nullable: true),
-                    Phone1 = table.Column<string>(type: "varchar(7)", maxLength: 7, nullable: true),
-                    Phone2 = table.Column<string>(type: "varchar(7)", maxLength: 7, nullable: true),
-                    Email = table.Column<string>(type: "varchar(30)", maxLength: 30, nullable: false),
-                    TRN = table.Column<string>(type: "varchar(15)", maxLength: 15, nullable: true),
-                    DOB = table.Column<DateTime>(type: "datetime", nullable: true),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    EmployeeID = table.Column<string>(type: "varchar(4)", maxLength: 4, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    FirstName = table.Column<string>(type: "varchar(60)", maxLength: 60, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    LastName = table.Column<string>(type: "varchar(30)", maxLength: 30, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Street = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    City = table.Column<string>(type: "varchar(30)", maxLength: 30, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Parish = table.Column<string>(type: "varchar(30)", maxLength: 30, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Phone1 = table.Column<string>(type: "varchar(7)", maxLength: 7, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Phone2 = table.Column<string>(type: "varchar(7)", maxLength: 7, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Email = table.Column<string>(type: "varchar(30)", maxLength: 30, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    TRN = table.Column<string>(type: "varchar(15)", maxLength: 15, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    DOB = table.Column<DateTime>(type: "datetime(6)", nullable: true),
                     ConClass = table.Column<int>(type: "int", nullable: false),
-                    EmergencyCon = table.Column<string>(type: "varchar(30)", maxLength: 30, nullable: true),
-                    EmerPhone1 = table.Column<string>(type: "varchar(15)", maxLength: 15, nullable: true),
-                    EmerPhone2 = table.Column<string>(type: "varchar(15)", maxLength: 15, nullable: true),
-                    EmerRelation = table.Column<string>(type: "varchar(15)", maxLength: 15, nullable: true),
-                    DLicence = table.Column<string>(type: "varchar(15)", maxLength: 15, nullable: true),
-                    Bankacc = table.Column<string>(type: "varchar(20)", maxLength: 20, nullable: true),
+                    EmergencyCon = table.Column<string>(type: "varchar(30)", maxLength: 30, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    EmerPhone1 = table.Column<string>(type: "varchar(15)", maxLength: 15, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    EmerPhone2 = table.Column<string>(type: "varchar(15)", maxLength: 15, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    EmerRelation = table.Column<string>(type: "varchar(15)", maxLength: 15, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    DLicence = table.Column<string>(type: "varchar(15)", maxLength: 15, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Bankacc = table.Column<string>(type: "varchar(20)", maxLength: 20, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
                     Branch = table.Column<int>(type: "int", nullable: true),
                     DepartmentID = table.Column<int>(type: "int", nullable: false),
-                    TechNo = table.Column<string>(type: "varchar(7)", maxLength: 7, nullable: true),
-                    PlateNo = table.Column<string>(type: "varchar(7)", maxLength: 7, nullable: true),
+                    TechNo = table.Column<string>(type: "varchar(14)", maxLength: 14, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    PlateNo = table.Column<string>(type: "varchar(14)", maxLength: 14, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
                     AreaID = table.Column<int>(type: "int", nullable: true),
                     LocationID = table.Column<int>(type: "int", nullable: true),
                     payScale = table.Column<int>(type: "int", nullable: true),
                     isActive = table.Column<bool>(type: "tinyint(1)", nullable: true),
-                    EngagementDt = table.Column<DateTime>(type: "datetime", nullable: true),
+                    EngagementDt = table.Column<DateTime>(type: "datetime(6)", nullable: true),
                     NIS = table.Column<string>(type: "varchar(15)", maxLength: 15, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4")
                 },
                 constraints: table =>
                 {
@@ -568,14 +682,15 @@ namespace TeliconLatest.Migrations
                         principalTable: "adm04200",
                         principalColumn: "DepartmentID",
                         onDelete: ReferentialAction.Cascade);
-                });
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
                 name: "adm01110",
                 columns: table => new
                 {
                     ActMatID = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySQL:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     ActivID = table.Column<int>(type: "int", nullable: false),
                     MaterID = table.Column<int>(type: "int", nullable: false),
                     ActMatQty = table.Column<int>(type: "int", nullable: false)
@@ -595,18 +710,19 @@ namespace TeliconLatest.Migrations
                         principalTable: "adm13100",
                         principalColumn: "MaterialID",
                         onDelete: ReferentialAction.Restrict);
-                });
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
                 name: "adm01150",
                 columns: table => new
                 {
                     RateHistoryID = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySQL:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     RateID = table.Column<int>(type: "int", nullable: false),
                     Amount = table.Column<double>(type: "double", nullable: false),
-                    StartDate = table.Column<DateTime>(type: "datetime", nullable: false),
-                    EndDate = table.Column<DateTime>(type: "datetime", nullable: false)
+                    StartDate = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    EndDate = table.Column<DateTime>(type: "datetime(6)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -617,18 +733,19 @@ namespace TeliconLatest.Migrations
                         principalTable: "adm01100",
                         principalColumn: "RateID",
                         onDelete: ReferentialAction.Restrict);
-                });
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
                 name: "adm01250",
                 columns: table => new
                 {
                     RateHistoryID = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySQL:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     RateID = table.Column<int>(type: "int", nullable: false),
                     Amount = table.Column<double>(type: "double", nullable: false),
-                    StartDate = table.Column<DateTime>(type: "datetime", nullable: false),
-                    EndDate = table.Column<DateTime>(type: "datetime", nullable: false)
+                    StartDate = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    EndDate = table.Column<DateTime>(type: "datetime(6)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -639,14 +756,15 @@ namespace TeliconLatest.Migrations
                         principalTable: "adm01100",
                         principalColumn: "RateID",
                         onDelete: ReferentialAction.Restrict);
-                });
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
                 name: "adm04210",
                 columns: table => new
                 {
                     DepActID = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySQL:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     DepartmentID = table.Column<int>(type: "int", nullable: false),
                     ActivityID = table.Column<int>(type: "int", nullable: false)
                 },
@@ -665,23 +783,29 @@ namespace TeliconLatest.Migrations
                         principalTable: "adm04200",
                         principalColumn: "DepartmentID",
                         onDelete: ReferentialAction.Restrict);
-                });
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
                 name: "memberships",
                 columns: table => new
                 {
-                    UserId = table.Column<string>(type: "varchar(36)", maxLength: 36, nullable: false),
-                    ApplicationId = table.Column<string>(type: "varchar(36)", maxLength: 36, nullable: true),
-                    Password = table.Column<string>(type: "varchar(250)", maxLength: 250, nullable: true),
-                    Email = table.Column<string>(type: "varchar(256)", maxLength: 256, nullable: true),
+                    UserId = table.Column<string>(type: "varchar(36)", maxLength: 36, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    ApplicationId = table.Column<string>(type: "varchar(36)", maxLength: 36, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Password = table.Column<string>(type: "varchar(250)", maxLength: 250, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Email = table.Column<string>(type: "varchar(512)", maxLength: 512, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
                     IsApproved = table.Column<bool>(type: "tinyint(1)", nullable: false),
                     IsLockedOut = table.Column<bool>(type: "tinyint(1)", nullable: false),
-                    CreateDate = table.Column<DateTime>(type: "datetime", nullable: false),
-                    LastLoginDate = table.Column<DateTime>(type: "datetime", nullable: false),
-                    LastPasswordChangedDate = table.Column<DateTime>(type: "datetime", nullable: false),
-                    LastLockoutDate = table.Column<DateTime>(type: "datetime", nullable: false),
-                    Comment = table.Column<string>(type: "varchar(256)", maxLength: 256, nullable: true)
+                    CreateDate = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    LastLoginDate = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    LastPasswordChangedDate = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    LastLockoutDate = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    Comment = table.Column<string>(type: "varchar(512)", maxLength: 512, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4")
                 },
                 constraints: table =>
                 {
@@ -698,17 +822,21 @@ namespace TeliconLatest.Migrations
                         principalTable: "users",
                         principalColumn: "UserId",
                         onDelete: ReferentialAction.Restrict);
-                });
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
                 name: "profiles",
                 columns: table => new
                 {
-                    UserId = table.Column<string>(type: "varchar(36)", maxLength: 36, nullable: false),
-                    PropertyNames = table.Column<string>(type: "varchar(4000)", maxLength: 4000, nullable: true),
-                    PropertyValueStrings = table.Column<string>(type: "varchar(4000)", maxLength: 4000, nullable: true),
+                    UserId = table.Column<string>(type: "varchar(36)", maxLength: 36, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    PropertyNames = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    PropertyValueStrings = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
                     PropertyValueBinary = table.Column<byte[]>(type: "longblob", nullable: false),
-                    LastUpdatedDate = table.Column<DateTime>(type: "datetime", nullable: false)
+                    LastUpdatedDate = table.Column<DateTime>(type: "datetime(6)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -719,22 +847,30 @@ namespace TeliconLatest.Migrations
                         principalTable: "users",
                         principalColumn: "UserId",
                         onDelete: ReferentialAction.Restrict);
-                });
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
                 name: "trn17100",
                 columns: table => new
                 {
                     QuotationId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySQL:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    Quot_ref = table.Column<string>(type: "varchar(20)", maxLength: 20, nullable: false),
-                    Quot_title = table.Column<string>(type: "varchar(150)", maxLength: 150, nullable: false),
-                    Requestby = table.Column<string>(type: "varchar(50)", maxLength: 50, nullable: false),
-                    Requestdt = table.Column<DateTime>(type: "datetime", nullable: false),
-                    RequestStreet = table.Column<string>(type: "varchar(75)", maxLength: 75, nullable: true),
-                    RequestCity = table.Column<string>(type: "varchar(75)", maxLength: 75, nullable: true),
-                    RequestCountry = table.Column<string>(type: "varchar(75)", maxLength: 75, nullable: true),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Quot_ref = table.Column<string>(type: "varchar(40)", maxLength: 40, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Quot_title = table.Column<string>(type: "varchar(300)", maxLength: 300, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Requestby = table.Column<string>(type: "varchar(100)", maxLength: 100, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Requestdt = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    RequestStreet = table.Column<string>(type: "varchar(150)", maxLength: 150, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    RequestCity = table.Column<string>(type: "varchar(150)", maxLength: 150, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    RequestCountry = table.Column<string>(type: "varchar(150)", maxLength: 150, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
                     CreateBy = table.Column<string>(type: "varchar(36)", maxLength: 36, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4")
                 },
                 constraints: table =>
                 {
@@ -745,19 +881,23 @@ namespace TeliconLatest.Migrations
                         principalTable: "users",
                         principalColumn: "UserId",
                         onDelete: ReferentialAction.Restrict);
-                });
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
                 name: "trn19100",
                 columns: table => new
                 {
                     SInvoiceId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySQL:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    SInv_ref = table.Column<string>(type: "varchar(20)", maxLength: 20, nullable: false),
-                    SInv_title = table.Column<string>(type: "varchar(150)", maxLength: 150, nullable: false),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    SInv_ref = table.Column<string>(type: "varchar(40)", maxLength: 40, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    SInv_title = table.Column<string>(type: "varchar(300)", maxLength: 300, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
                     ZoneId = table.Column<int>(type: "int", nullable: false),
-                    Requestdt = table.Column<DateTime>(type: "datetime", nullable: false),
+                    Requestdt = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     CreateBy = table.Column<string>(type: "varchar(36)", maxLength: 36, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4")
                 },
                 constraints: table =>
                 {
@@ -774,36 +914,44 @@ namespace TeliconLatest.Migrations
                         principalTable: "users",
                         principalColumn: "UserId",
                         onDelete: ReferentialAction.Restrict);
-                });
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
                 name: "trn23100",
                 columns: table => new
                 {
                     Workid = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySQL:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    Wo_ref = table.Column<string>(type: "varchar(20)", maxLength: 20, nullable: false),
-                    Wo_title = table.Column<string>(type: "varchar(150)", maxLength: 150, nullable: false),
-                    Requestby = table.Column<string>(type: "varchar(150)", maxLength: 150, nullable: true),
-                    Requestdt = table.Column<DateTime>(type: "datetime", nullable: false),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Wo_ref = table.Column<string>(type: "varchar(40)", maxLength: 40, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Wo_title = table.Column<string>(type: "varchar(300)", maxLength: 300, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Requestby = table.Column<string>(type: "varchar(300)", maxLength: 300, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Requestdt = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     Wo_client = table.Column<int>(type: "int", nullable: false),
                     Wo_split = table.Column<double>(type: "double", nullable: false),
                     Wo_split2 = table.Column<double>(type: "double", nullable: false),
-                    Dispatchdt = table.Column<DateTime>(type: "datetime", nullable: false),
-                    Status = table.Column<string>(type: "varchar(1)", maxLength: 1, nullable: true),
+                    Dispatchdt = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    Status = table.Column<string>(type: "varchar(2)", maxLength: 2, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
                     Submitted = table.Column<bool>(type: "tinyint(1)", nullable: false),
-                    DateSubmitted = table.Column<DateTime>(type: "datetime", nullable: true),
+                    DateSubmitted = table.Column<DateTime>(type: "datetime(6)", nullable: true),
                     ClassId = table.Column<int>(type: "int", nullable: false),
                     SpliceDocs = table.Column<bool>(type: "tinyint(1)", nullable: false),
-                    CreateBy = table.Column<string>(type: "varchar(36)", maxLength: 36, nullable: true),
+                    CreateBy = table.Column<string>(type: "varchar(36)", maxLength: 36, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
                     LocationID = table.Column<int>(type: "int", nullable: true),
                     AreaID = table.Column<int>(type: "int", nullable: false),
-                    PaidDate = table.Column<DateTime>(type: "datetime", nullable: true),
-                    dateVerified = table.Column<DateTime>(type: "datetime", nullable: true),
-                    RollbackDate = table.Column<DateTime>(type: "datetime", nullable: true),
-                    PONum = table.Column<string>(type: "varchar(20)", maxLength: 20, nullable: true),
-                    tempValue = table.Column<string>(type: "varchar(1)", maxLength: 1, nullable: true),
-                    CompletionDt = table.Column<DateTime>(type: "datetime", nullable: true),
+                    PaidDate = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    dateVerified = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    RollbackDate = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    PONum = table.Column<string>(type: "varchar(40)", maxLength: 40, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    tempValue = table.Column<string>(type: "varchar(2)", maxLength: 2, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    CompletionDt = table.Column<DateTime>(type: "datetime(6)", nullable: true),
                     DepartmentID = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
@@ -833,14 +981,17 @@ namespace TeliconLatest.Migrations
                         principalTable: "users",
                         principalColumn: "UserId",
                         onDelete: ReferentialAction.Restrict);
-                });
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
                 name: "usersinroles",
                 columns: table => new
                 {
-                    UserId = table.Column<string>(type: "varchar(36)", nullable: false),
+                    UserId = table.Column<string>(type: "varchar(36)", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
                     RoleId = table.Column<string>(type: "varchar(36)", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4")
                 },
                 constraints: table =>
                 {
@@ -857,20 +1008,21 @@ namespace TeliconLatest.Migrations
                         principalTable: "users",
                         principalColumn: "UserId",
                         onDelete: ReferentialAction.Restrict);
-                });
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
                 name: "trn04100",
                 columns: table => new
                 {
                     DeductionConductorID = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySQL:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     ConductorID = table.Column<int>(type: "int", nullable: false),
                     DeductionID = table.Column<int>(type: "int", nullable: false),
                     Recurring = table.Column<bool>(type: "tinyint(1)", nullable: false),
                     Amount = table.Column<double>(type: "double", nullable: false),
-                    StartDate = table.Column<DateTime>(type: "datetime", nullable: false),
-                    EndDate = table.Column<DateTime>(type: "datetime", nullable: true),
+                    StartDate = table.Column<DateTime>(type: "datetime(6)", nullable: false),
+                    EndDate = table.Column<DateTime>(type: "datetime(6)", nullable: true),
                     HoldIt = table.Column<bool>(type: "tinyint(1)", nullable: false),
                     YTDAmount = table.Column<double>(type: "double", nullable: false)
                 },
@@ -889,17 +1041,19 @@ namespace TeliconLatest.Migrations
                         principalTable: "adm04100",
                         principalColumn: "DeductionID",
                         onDelete: ReferentialAction.Restrict);
-                });
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
                 name: "trn17110",
                 columns: table => new
                 {
                     RecId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySQL:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     QuotationId = table.Column<int>(type: "int", nullable: false),
-                    ActivityDesc = table.Column<string>(type: "text", nullable: true),
-                    ActQty = table.Column<decimal>(type: "decimal(18, 2)", nullable: false),
+                    ActivityDesc = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    ActQty = table.Column<decimal>(type: "decimal(65,30)", nullable: false),
                     ActivityRate = table.Column<double>(type: "double", nullable: true)
                 },
                 constraints: table =>
@@ -911,17 +1065,18 @@ namespace TeliconLatest.Migrations
                         principalTable: "trn17100",
                         principalColumn: "QuotationId",
                         onDelete: ReferentialAction.Restrict);
-                });
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
                 name: "trn19110",
                 columns: table => new
                 {
                     RecId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySQL:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     SInvoiceId = table.Column<int>(type: "int", nullable: false),
                     ActivityId = table.Column<int>(type: "int", nullable: false),
-                    ActQty = table.Column<decimal>(type: "decimal(18, 2)", nullable: false),
+                    ActQty = table.Column<decimal>(type: "decimal(65,30)", nullable: false),
                     ActivityRate = table.Column<double>(type: "double", nullable: true)
                 },
                 constraints: table =>
@@ -939,14 +1094,15 @@ namespace TeliconLatest.Migrations
                         principalTable: "trn19100",
                         principalColumn: "SInvoiceId",
                         onDelete: ReferentialAction.Restrict);
-                });
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
                 name: "adm03400",
                 columns: table => new
                 {
                     RecID = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySQL:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     WorkOrderId = table.Column<int>(type: "int", nullable: false),
                     ContractorID = table.Column<int>(type: "int", nullable: false),
                     CrewLead = table.Column<bool>(type: "tinyint(1)", nullable: false),
@@ -968,18 +1124,21 @@ namespace TeliconLatest.Migrations
                         principalTable: "trn23100",
                         principalColumn: "Workid",
                         onDelete: ReferentialAction.Restrict);
-                });
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
                 name: "trn13120",
                 columns: table => new
                 {
                     MergedOrderId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySQL:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     WorkOrderId = table.Column<int>(type: "int", nullable: false),
-                    MergerdTitle = table.Column<string>(type: "text", nullable: true),
-                    MergerdDate = table.Column<DateTime>(type: "datetime", nullable: true),
-                    MergedRefNum = table.Column<string>(type: "text", nullable: true)
+                    MergerdTitle = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    MergerdDate = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    MergedRefNum = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4")
                 },
                 constraints: table =>
                 {
@@ -990,24 +1149,27 @@ namespace TeliconLatest.Migrations
                         principalTable: "trn23100",
                         principalColumn: "Workid",
                         onDelete: ReferentialAction.Restrict);
-                });
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
                 name: "trn23110",
                 columns: table => new
                 {
                     RecID = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySQL:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     WorkOID = table.Column<int>(type: "int", nullable: false),
                     ActivityID = table.Column<int>(type: "int", nullable: false),
-                    ActQty = table.Column<decimal>(type: "decimal(18, 2)", nullable: false),
-                    OActQty = table.Column<decimal>(type: "decimal(18, 2)", nullable: false),
-                    Location = table.Column<string>(type: "varchar(100)", maxLength: 100, nullable: true),
-                    ActDate = table.Column<DateTime>(type: "datetime", nullable: false),
+                    ActQty = table.Column<decimal>(type: "decimal(65,30)", nullable: false),
+                    OActQty = table.Column<decimal>(type: "decimal(65,30)", nullable: false),
+                    Location = table.Column<string>(type: "varchar(100)", maxLength: 100, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    ActDate = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     InvFlag = table.Column<bool>(type: "tinyint(1)", nullable: false),
                     AddMaterial = table.Column<bool>(type: "tinyint(1)", nullable: false),
-                    ActPaid = table.Column<DateTime>(type: "datetime", nullable: true),
+                    ActPaid = table.Column<DateTime>(type: "datetime(6)", nullable: true),
                     AdtnlDetails = table.Column<string>(type: "varchar(400)", maxLength: 400, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4")
                 },
                 constraints: table =>
                 {
@@ -1024,14 +1186,15 @@ namespace TeliconLatest.Migrations
                         principalTable: "trn23100",
                         principalColumn: "Workid",
                         onDelete: ReferentialAction.Restrict);
-                });
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
                 name: "trn13110",
                 columns: table => new
                 {
                     MergedSubOrderId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySQL:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     MergedOrderId = table.Column<int>(type: "int", nullable: false),
                     WorkOrderId = table.Column<int>(type: "int", nullable: false)
                 },
@@ -1050,20 +1213,22 @@ namespace TeliconLatest.Migrations
                         principalTable: "trn23100",
                         principalColumn: "Workid",
                         onDelete: ReferentialAction.Restrict);
-                });
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
                 name: "trn09110",
                 columns: table => new
                 {
                     WoActID = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySQL:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     InvoiceNum = table.Column<int>(type: "int", nullable: false),
-                    InvoicedAmount = table.Column<decimal>(type: "decimal(18, 2)", nullable: false)
+                    InvoicedAmount = table.Column<decimal>(type: "decimal(65,30)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PRIMARY", x => new { x.WoActID, x.InvoiceNum });
+                    table.PrimaryKey("PRIMARY", x => new { x.WoActID, x.InvoiceNum })
+                        .Annotation("MySql:IndexPrefixLength", new[] { 0, 0 });
                     table.ForeignKey(
                         name: "FK_TRN09110_TRN09100",
                         column: x => x.InvoiceNum,
@@ -1076,14 +1241,15 @@ namespace TeliconLatest.Migrations
                         principalTable: "trn23110",
                         principalColumn: "RecID",
                         onDelete: ReferentialAction.Restrict);
-                });
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
                 name: "trn23120",
                 columns: table => new
                 {
                     WoMatRecID = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySQL:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     WoMatID = table.Column<int>(type: "int", nullable: false),
                     WoMatQty = table.Column<int>(type: "int", nullable: false),
                     WoActID = table.Column<int>(type: "int", nullable: false)
@@ -1097,7 +1263,8 @@ namespace TeliconLatest.Migrations
                         principalTable: "trn23110",
                         principalColumn: "RecID",
                         onDelete: ReferentialAction.Restrict);
-                });
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateIndex(
                 name: "IX_adm01100_DepartmentId",
@@ -1193,11 +1360,6 @@ namespace TeliconLatest.Migrations
                 name: "IX_trn04100_DeductionID",
                 table: "trn04100",
                 column: "DeductionID");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_trn09100_ADM02300BatchID",
-                table: "trn09100",
-                column: "ADM02300BatchID");
 
             migrationBuilder.CreateIndex(
                 name: "IX_trn09110_InvoiceNum",
@@ -1313,6 +1475,9 @@ namespace TeliconLatest.Migrations
                 name: "adm01300");
 
             migrationBuilder.DropTable(
+                name: "adm02300");
+
+            migrationBuilder.DropTable(
                 name: "adm03400");
 
             migrationBuilder.DropTable(
@@ -1404,9 +1569,6 @@ namespace TeliconLatest.Migrations
 
             migrationBuilder.DropTable(
                 name: "adm02200");
-
-            migrationBuilder.DropTable(
-                name: "adm02300");
 
             migrationBuilder.DropTable(
                 name: "adm01100");

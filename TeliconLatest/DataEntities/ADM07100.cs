@@ -9,7 +9,7 @@ namespace TeliconLatest.DataEntities
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int TaxId { get; set; }
-        [StringLength(30)]
+        [StringLength(60)]
         public string Type { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime? EndDate { get; set; }

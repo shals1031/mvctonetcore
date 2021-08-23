@@ -8,7 +8,7 @@ namespace TeliconLatest.DataEntities
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int remarkID { get; set; }
-        [StringLength(50)]
+        [StringLength(100)]
         public string remarkText { get; set; }
     }
 }

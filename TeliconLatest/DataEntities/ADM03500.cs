@@ -17,7 +17,7 @@ namespace TeliconLatest.DataEntities
         public int ClassId { get; set; }
         [Required]
         [Display(Name = "Classification")]
-        [StringLength(60)]
+        [StringLength(120)]
         public string ClassName { get; set; }
         [Required]
         [Display(Name = "Start Date")]

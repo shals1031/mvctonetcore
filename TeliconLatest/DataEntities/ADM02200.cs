@@ -15,7 +15,7 @@ namespace TeliconLatest.DataEntities
         public int RecID { get; set; }
         [Required]
         [Display(Name = "Bank")]
-        [StringLength(5)]
+        [StringLength(10)]
         public string BankId { get; set; }
         [Required]
         [Display(Name = "Branch Code")]

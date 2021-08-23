@@ -10,11 +10,11 @@ namespace TeliconLatest.DataEntities
         public int VehicleID { get; set; }
         [Required]
         [Display(Name = "Plate No")]
-        [StringLength(7)]
+        [StringLength(14)]
         public string PlateNo { get; set; }
         [Required]
         [Display(Name = "Fleet No")]
-        [StringLength(7)]
+        [StringLength(14)]
         public string FleetNo { get; set; }
         [Required]
         [Display(Name = "Owned By")]

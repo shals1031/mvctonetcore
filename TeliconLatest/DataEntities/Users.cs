@@ -20,7 +20,7 @@ namespace TeliconLatest.DataEntities
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [StringLength(36)]
         public string UserId { get; set; } = Guid.NewGuid().ToString();
-        [StringLength(50)]
+        [StringLength(100)]
         [Required]
         public string UserName { get; set; }
         public bool IsAnonymous { get; set; }

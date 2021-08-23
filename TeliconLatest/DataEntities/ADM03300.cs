@@ -23,7 +23,7 @@ namespace TeliconLatest.DataEntities
         public string EmployeeID { get; set; }
         [Required]
         [Display(Name = "First Name")]
-        [StringLength(30)]
+        [StringLength(60)]
         public string FirstName { get; set; }
         [Required]
         [Display(Name = "Last Name")]
@@ -75,10 +75,10 @@ namespace TeliconLatest.DataEntities
         [Required]
         [Display(Name = "Department")]
         public int? DepartmentID { get; set; }
-        [StringLength(7)]
+        [StringLength(14)]
         public string TechNo { get; set; }
         [Display(Name = "Plate No")]
-        [StringLength(7)]
+        [StringLength(14)]
         public string PlateNo { get; set; }
         public int? AreaID { get; set; }
         public int? LocationID { get; set; }

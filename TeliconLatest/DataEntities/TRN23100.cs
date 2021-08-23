@@ -19,15 +19,15 @@ namespace TeliconLatest.DataEntities
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Workid { get; set; }
         [Display(Name = "Reference #")]
-        [StringLength(20)]
+        [StringLength(40)]
         [Required]
         public string Wo_ref { get; set; }
         [Required]
-        [StringLength(150)]
+        [StringLength(300)]
         [Display(Name = "Title")]
         public string Wo_title { get; set; }
         [Display(Name = "Requested By")]
-        [StringLength(150)]
+        [StringLength(300)]
         public string Requestby { get; set; }
         [Required]
         [Display(Name = "Request Date")]
@@ -42,7 +42,7 @@ namespace TeliconLatest.DataEntities
         [DisplayFormat(DataFormatString = "{0:MM/dd/yyyy}", ApplyFormatInEditMode = true)]
         [Display(Name = "Dispatch Date")]
         public DateTime Dispatchdt { get; set; }
-        [StringLength(1)]
+        [StringLength(2)]
         public string Status { get; set; }
         public bool Submitted { get; set; }
         public DateTime? DateSubmitted { get; set; }
@@ -63,9 +63,9 @@ namespace TeliconLatest.DataEntities
         public DateTime? dateVerified { get; set; }
         public DateTime? RollbackDate { get; set; }
         [Display(Name = "PO #")]
-        [StringLength(20)]
+        [StringLength(40)]
         public string PONum { get; set; }
-        [StringLength(1)]
+        [StringLength(2)]
         public string tempValue { get; set; }
         [Display(Name = "Completion Date")]
         [DisplayFormat(DataFormatString = "{0:MM/dd/yyyy}", ApplyFormatInEditMode = true)]

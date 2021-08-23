@@ -15,7 +15,7 @@ namespace TeliconLatest.DataEntities
         public int DeductionID { get; set; }
         [Required]
         [Display(Name = "Deduction Name")]
-        [StringLength(35)]
+        [StringLength(70)]
         public string Name { get; set; }
 
         public virtual ICollection<TRN04100> TRN04100 { get; set; }

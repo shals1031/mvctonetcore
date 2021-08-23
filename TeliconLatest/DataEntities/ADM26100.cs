@@ -17,22 +17,22 @@ namespace TeliconLatest.DataEntities
         public int ZoneID { get; set; }
         [Required]
         [Display(Name = "Zone Name")]
-        [StringLength(75)]
+        [StringLength(150)]
         public string Name { get; set; }
         [Display(Name = "Supervisor")]
-        [StringLength(250)]
+        [StringLength(500)]
         public string SupervisorName { get; set; }
         [Display(Name = "Address")]
-        [StringLength(250)]
+        [StringLength(500)]
         public string Addr { get; set; }
         [Display(Name = "Email")]
-        [StringLength(150)]
+        [StringLength(300)]
         public string Email { get; set; }
         [Display(Name = "Phone")]
-        [StringLength(20)]
+        [StringLength(40)]
         public string Phone { get; set; }
         [Display(Name = "Place")]
-        [StringLength(100)]
+        [StringLength(200)]
         public string Place { get; set; }
 
         public virtual ICollection<ADM01400> ADM01400 { get; set; }

@@ -17,10 +17,10 @@ namespace TeliconLatest.DataEntities
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [StringLength(36)]
         public string RoleId { get; set; } = Guid.NewGuid().ToString();
-        [StringLength(256)]
+        [StringLength(512)]
         [Required]
         public string RoleName { get; set; }
-        [StringLength(256)]
+        [StringLength(512)]
         public string Description { get; set; }
 
         public virtual Applications Applications { get; set; }

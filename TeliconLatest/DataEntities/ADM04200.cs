@@ -17,7 +17,7 @@ namespace TeliconLatest.DataEntities
         public int DepartmentID { get; set; }
         [Required]
         [Display(Name = "Department Name")]
-        [StringLength(35)]
+        [StringLength(70)]
         public string Name { get; set; }
 
         public virtual ICollection<ADM01100> ADM01100 { get; set; }

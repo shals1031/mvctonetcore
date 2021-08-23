@@ -8,7 +8,7 @@ namespace TeliconLatest.DataEntities
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int locationID { get; set; }
-        [StringLength(35)]
+        [StringLength(70)]
         public string locationName { get; set; }
     }
 }

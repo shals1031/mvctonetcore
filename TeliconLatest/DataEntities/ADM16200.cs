@@ -11,7 +11,7 @@ namespace TeliconLatest.DataEntities
         public int POID { get; set; }
         [Required]
         [Display(Name = "PO Number")]
-        [StringLength(25)]
+        [StringLength(50)]
         public string PONUM { get; set; }
         [Required]
         [Display(Name = "PO Total")]
@@ -19,7 +19,7 @@ namespace TeliconLatest.DataEntities
         [Display(Name = "PO Balance")]
         public decimal? BALANCE { get; set; }
         [Display(Name = "Description")]
-        [StringLength(250)]
+        [StringLength(500)]
         public string Description { get; set; }
         [Display(Name = "Closed")]
         public bool IsClosed { get; set; }

@@ -16,28 +16,28 @@ namespace TeliconLatest.DataEntities
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int QuotationId { get; set; }
         [Display(Name = "Reference #")]
-        [StringLength(20)]
+        [StringLength(40)]
         [Required]
         public string Quot_ref { get; set; }
         [Required]
-        [StringLength(150)]
+        [StringLength(300)]
         [Display(Name = "Title")]
         public string Quot_title { get; set; }
         [Required]
-        [StringLength(50)]
+        [StringLength(100)]
         [Display(Name = "Requested By")]
         public string Requestby { get; set; }
         [Required]
         [Display(Name = "Request Date")]
         [DisplayFormat(DataFormatString = "{0:MM/dd/yyyy}", ApplyFormatInEditMode = true)]
         public DateTime Requestdt { get; set; }
-        [StringLength(75)]
+        [StringLength(150)]
         [Display(Name = "Street")]
         public string RequestStreet { get; set; }
-        [StringLength(75)]
+        [StringLength(150)]
         [Display(Name = "City")]
         public string RequestCity { get; set; }
-        [StringLength(75)]
+        [StringLength(150)]
         [Display(Name = "Country")]
         public string RequestCountry { get; set; }
         [StringLength(36)]

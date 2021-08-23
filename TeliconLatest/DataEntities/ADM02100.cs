@@ -12,11 +12,11 @@ namespace TeliconLatest.DataEntities
         [Key]
         [Required]
         [Display(Name = "Code")]
-        [StringLength(5)]
+        [StringLength(10)]
         public string BankId { get; set; }
         [Required]
         [Display(Name = "Name")]
-        [StringLength(50)]
+        [StringLength(100)]
         public string BankName { get; set; }
 
         public virtual ICollection<ADM02200> ADM02200 { get; set; }

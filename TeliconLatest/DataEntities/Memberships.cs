@@ -14,7 +14,7 @@ namespace TeliconLatest.DataEntities
         public string UserId { get; set; } = Guid.NewGuid().ToString();
         [StringLength(250)]
         public string Password { get; set; }
-        [StringLength(256)]
+        [StringLength(512)]
         public string Email { get; set; }
         public bool IsApproved { get; set; }
         public bool IsLockedOut { get; set; }
@@ -22,7 +22,7 @@ namespace TeliconLatest.DataEntities
         public DateTime LastLoginDate { get; set; }
         public DateTime LastPasswordChangedDate { get; set; }
         public DateTime LastLockoutDate { get; set; }
-        [StringLength(256)]
+        [StringLength(512)]
         public string Comment { get; set; }
 
         public virtual Applications Applications { get; set; }

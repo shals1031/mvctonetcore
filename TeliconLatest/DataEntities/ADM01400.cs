@@ -18,7 +18,7 @@ namespace TeliconLatest.DataEntities
         public int zoneID { get; set; }
         [Required]
         [Display(Name = "Area Name")]
-        [StringLength(150)]
+        [StringLength(300)]
         public string areaName { get; set; }
 
         public virtual ADM26100 ADM26100 { get; set; }

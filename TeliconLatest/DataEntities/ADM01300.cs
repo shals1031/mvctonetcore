@@ -8,17 +8,17 @@ namespace TeliconLatest.DataEntities
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int accountID { get; set; }
-        [StringLength(35)]
+        [StringLength(70)]
         public string accountName { get; set; }
-        [StringLength(35)]
+        [StringLength(70)]
         public string address1 { get; set; }
-        [StringLength(35)]
+        [StringLength(70)]
         public string address2 { get; set; }
-        [StringLength(35)]
+        [StringLength(70)]
         public string address3 { get; set; }
-        [StringLength(1)]
+        [StringLength(2)]
         public string accType { get; set; }
-        [StringLength(8)]
+        [StringLength(16)]
         public string accountNo { get; set; }
     }
 }

@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -12,16 +11,18 @@ namespace TeliconLatest.Controllers
     public class VehicleController : Controller
     {
         private readonly TeliconDbContext db;
+
         public VehicleController(TeliconDbContext db)
         {
             this.db = db;
         }
-        // GET: Vehicle
+
         //[TeliconAuthorize(TaskId = 11)]
         public ActionResult Index()
         {
             return View();
         }
+
         //[TeliconAuthorize(TaskId = 11)]
         public ActionResult Create()
         {
@@ -41,6 +42,7 @@ namespace TeliconLatest.Controllers
 
             return View("CreateOrUpdate", model);
         }
+
         //[TeliconAuthorize(TaskId = 11)]
         public ActionResult Edit(int id)
         {

@@ -662,8 +662,8 @@ namespace TeliconLatest.DataEntities
                     .HasConstraintName("FK_TRN23110_TRN23120");
             });
 
-            //modelBuilder.Entity<RevenueVsIncomeChartData>().HasNoKey();
-            //modelBuilder.Entity<TechnicianStatementDetail>().HasNoKey();
+            modelBuilder.Entity<RevenueVsIncomeChartData>().HasNoKey();
+            modelBuilder.Entity<TechnicianStatementDetail>().HasNoKey();
 
             OnModelCreatingPartial(modelBuilder);
         }

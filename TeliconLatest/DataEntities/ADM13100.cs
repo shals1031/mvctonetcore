@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -26,7 +25,7 @@ namespace TeliconLatest.DataEntities
         public string MaterialUnit { get; set; }
         [Required]
         [Display(Name = "Code")]
-        [Remote("MaterialCodeExists", "Admin", HttpMethod = "Post", ErrorMessage = "Material Code Already Exists", AdditionalFields = "initialID")]
+        //[Remote("MaterialCodeExists", "Admin", HttpMethod = "Post", ErrorMessage = "Material Code Already Exists", AdditionalFields = "initialID")]
         public string MaterialCode { get; set; }
         public decimal? MaxQty { get; set; }
 

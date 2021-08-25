@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
 using TeliconLatest.DataEntities;
@@ -10,14 +9,11 @@ namespace TeliconLatest.Controllers
     public class ZoneController : Controller
     {
         private readonly TeliconDbContext db;
-        private readonly IWebHostEnvironment _env;
-        public ZoneController(TeliconDbContext db, IWebHostEnvironment env)
+        public ZoneController(TeliconDbContext db)
         {
             this.db = db;
-            _env = env;
         }
 
-        // GET: Zone
         //[TeliconAuthorize(TaskId = 12)]
         public ActionResult Index()
         {
@@ -28,7 +24,6 @@ namespace TeliconLatest.Controllers
         public ActionResult Create()
         {
             var model = new ADM26100();
-            model.ZoneID = -1;
             return View("CreateOrUpdate", model);
         }
 
@@ -45,7 +40,7 @@ namespace TeliconLatest.Controllers
         {
             try
             {
-                if (model.ZoneID == -1)
+                if (model.ZoneID == 0)
                     db.ADM26100.Add(model);
                 else
                     db.Entry(model).State = EntityState.Modified;
@@ -62,7 +57,7 @@ namespace TeliconLatest.Controllers
                 return Json(new JsonReturnParams
                 {
                     Additional = e.StackTrace,
-                    Code = model.ZoneID == -1 ? "200" : "300",
+                    Code = model.ZoneID == 0 ? "200" : "300",
                     Msg = e.Message
                 });
             }

@@ -16,7 +16,7 @@ namespace TeliconLatest.Controllers
         {
             this.db = db;
         }
-        // GET: Period
+
         //[TeliconAuthorize(TaskId = 10)]
         public ActionResult Index()
         {
@@ -29,11 +29,13 @@ namespace TeliconLatest.Controllers
             ViewBag.PeriodYear = periodyear;
             return View();
         }
+
         //[TeliconAuthorize(TaskId = 10)]
         public ActionResult Create()
         {
             return View("CreateOrUpdate", new ADM16100());
         }
+
         //[TeliconAuthorize(TaskId = 10)]
         public ActionResult Edit(int id)
         {
@@ -47,7 +49,7 @@ namespace TeliconLatest.Controllers
         {
             try
             {
-                if (model.PeriodID == -1)
+                if (model.PeriodID == 0)
                     db.ADM16100.Add(model);
                 else
                     db.Entry(model).State = EntityState.Modified;

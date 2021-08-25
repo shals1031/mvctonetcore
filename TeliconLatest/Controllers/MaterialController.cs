@@ -15,8 +15,7 @@ namespace TeliconLatest.Controllers
         {
             this.db = db;
         }
-        //
-        // GET: /Material/
+
         //[TeliconAuthorize(TaskId = 6)]
         public ActionResult Index()
         {
@@ -29,6 +28,7 @@ namespace TeliconLatest.Controllers
             ViewBag.Status = statuses;
             return View();
         }
+
         //[TeliconAuthorize(TaskId = 6)]
         public ActionResult Create()
         {
@@ -39,6 +39,7 @@ namespace TeliconLatest.Controllers
             }).ToList();
             return View("CreateOrUpdate", new ADM13100());
         }
+
         //[TeliconAuthorize(TaskId = 6)]
         public ActionResult Edit(int id)
         {
@@ -49,6 +50,7 @@ namespace TeliconLatest.Controllers
             }).ToList();
             return View("CreateOrUpdate", db.ADM13100.Find(id));
         }
+
         [HttpPost]
         //[ValidateAntiForgeryToken]
         //[TeliconAuthorize(TaskId = 6, Mode = ActionMode.Write)]
@@ -78,6 +80,7 @@ namespace TeliconLatest.Controllers
                 });
             }
         }
+
         [HttpPost]
         //[TeliconAuthorize(TaskId = 6, Mode = ActionMode.Write)]
         public JsonResult Delete(int id)

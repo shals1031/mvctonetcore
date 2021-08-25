@@ -19,11 +19,11 @@
     $(document).ready(function () {
         dataTableOptions.ajax.url = "@Url.Action("Periods", "list")";
         dataTableOptions.columnDefs = [
-                { "targets": 0, "name": "week", "data": "week", "class": "dt-item-title" },
-                { "targets": 1, "name": "periodStart", "data": "periodStart" },
-                { "targets": 2, "name": "periodEnd", "data": "periodEnd" },
-                { "targets": 3, "name": "dueDate", "data": "dueDate" },
-                { "targets": 4, "name": "payDate", "data": "payDate" },
+                { "targets": 0, "name": "Week", "data": "Week", "class": "dt-item-title" },
+                { "targets": 1, "name": "PeriodStart", "data": "PeriodStart" },
+                { "targets": 2, "name": "PeriodEnd", "data": "PeriodEnd" },
+                { "targets": 3, "name": "DueDate", "data": "DueDate" },
+                { "targets": 4, "name": "PayDate", "data": "PayDate" },
                 {
                     "targets": 5, "class": "actions",
                     "orderable": false, "searchable": false, "data": null,
@@ -37,5 +37,5 @@
             .after('@Html.Raw(Html.DropDownList("status", (List<SelectListItem>)ViewBag.PeriodYear).ToHtmlString().Replace(Environment.NewLine, ""))');
 
     });
-</script>
+    </script>
 }

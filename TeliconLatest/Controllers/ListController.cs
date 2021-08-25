@@ -618,11 +618,11 @@ namespace TeliconLatest.Controllers
                 data = Extensions.OrderByDynamic(data, order.Split(" ")[0], order.Split(" ")[1] != "asc").Skip(model.start).Take(model.length).ToList().Select(x => new
                 {
                     DT_RowId = x.PeriodID,
-                    week = x.periodYear + " - " + x.Week,
-                    periodStart = string.Format("{0:dddd MMMM dd, yyyy}", x.PeriodStart),
-                    periodEnd = string.Format("{0:dddd MMMM dd, yyyy}", x.PeriodEnd),
-                    dueDate = string.Format("{0:dddd MMMM dd, yyyy}", x.DueDate),
-                    payDate = string.Format("{0:dddd MMMM dd, yyyy}", x.PayDate)
+                    Week = x.periodYear + " - " + x.Week,
+                    PeriodStart = string.Format("{0:dddd MMMM dd, yyyy}", x.PeriodStart),
+                    PeriodEnd = string.Format("{0:dddd MMMM dd, yyyy}", x.PeriodEnd),
+                    DueDate = string.Format("{0:dddd MMMM dd, yyyy}", x.DueDate),
+                    PayDate = string.Format("{0:dddd MMMM dd, yyyy}", x.PayDate)
                 }).AsQueryable().ToStringArray()
             });
         }
@@ -964,7 +964,7 @@ namespace TeliconLatest.Controllers
                 draw = model.draw,
                 recordsFiltered = tCount,
                 recordsTotal = db.TRN19100.Count(),
-                data =Extensions.OrderByDynamic(dataList.AsQueryable(), order.Split(" ")[0], order.Split(" ")[1] != "asc").Skip(model.start).Take(model.length).AsEnumerable().Select(x => new
+                data = Extensions.OrderByDynamic(dataList.AsQueryable(), order.Split(" ")[0], order.Split(" ")[1] != "asc").Skip(model.start).Take(model.length).AsEnumerable().Select(x => new
                 {
                     DT_RowId = x.SInvoiceId,
                     ReferenceNo = Customs.MakeGenericInvoiceNo(x.SInvoiceId),

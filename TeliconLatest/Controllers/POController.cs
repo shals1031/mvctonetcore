@@ -13,7 +13,7 @@ namespace TeliconLatest.Controllers
         {
             this.db = db;
         }
-        // GET: PO
+
         //[TeliconAuthorize(TaskId = 14)]
         public ActionResult Index()
         {

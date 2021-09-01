@@ -116,21 +116,21 @@ namespace TeliconLatest.Controllers
                     user.Password = Convert.ToBase64String(encbuff);
                     db.SaveChanges();
 
-                    #region Password Sending To User
+                    //#region Password Sending To User
 
-                    string fromEmail = "portal@telicongroup.com";
-                    string toEmail = user.Email;
-                    //Send email confirmation.
-                    string emailBody = Utilities.GetEmailTemplateValue("ForgotPassword/Body");
-                    string emailSubject = Utilities.GetEmailTemplateValue("ForgotPassword/Subject");
+                    //string fromEmail = "portal@telicongroup.com";
+                    //string toEmail = user.Email;
+                    ////Send email confirmation.
+                    //string emailBody = Utilities.GetEmailTemplateValue("ForgotPassword/Body");
+                    //string emailSubject = Utilities.GetEmailTemplateValue("ForgotPassword/Subject");
 
-                    //Replace data in mail body.
-                    emailBody = emailBody.Replace("@@@USERNAME", user.Email);
-                    emailBody = emailBody.Replace("@@@PASSWORD", "Password123.");
-                    Utilities utilities = new Utilities(_configuration);
-                    utilities.SendMail(fromEmail, toEmail, emailBody, emailSubject);
+                    ////Replace data in mail body.
+                    //emailBody = emailBody.Replace("@@@USERNAME", user.Email);
+                    //emailBody = emailBody.Replace("@@@PASSWORD", "Password123.");
+                    //Utilities utilities = new Utilities(_configuration);
+                    //utilities.SendMail(fromEmail, toEmail, emailBody, emailSubject);
 
-                    #endregion
+                    //#endregion
 
                     ViewBag.Success = true;
                     return View();

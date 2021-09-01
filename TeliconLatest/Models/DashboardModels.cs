@@ -26,7 +26,8 @@ namespace TeliconLatest.Models
     }
     public class RevenueVsIncomeChartData : RevenueVsIncome
     {
-        public string Period { get; set; }
+        public decimal Period { get; set; }
+        public string PeriodName { get; set; }
     }
     public class TechnicianStatementDetail
     {

@@ -1679,7 +1679,7 @@ namespace TeliconLatest.Controllers
             }
             catch (Exception e)
             {
-                throw e;
+                throw;
             }
         }
         public void SetupWorkOrder(int? classId, TRN23100 wo = null)

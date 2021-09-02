@@ -97,27 +97,31 @@ namespace TeliconLatest.Controllers
             {
                 if (model.RateID == 0)
                 {
-                    ADM01100 data = new ADM01100();
-                    data.ClientID = model.ClientID;
-                    data.DepartmentId = model.DepartmentID;
-                    data.RateClass = model.RateClass;
-                    data.RateDescr = model.RateDescr;
-                    data.RateUnit = model.RateUnit;
-                    data.StartDate = DateTime.Now;
-                    data.HasMaterials = model.HasMaterials;
-                    data.MaterialsRequired = model.MaterialsRequired;
-                    data.AltCode = model.AltCode;
-                    data.Active = model.Active;
+                    ADM01100 data = new ADM01100
+                    {
+                        ClientID = model.ClientID,
+                        DepartmentId = model.DepartmentID,
+                        RateClass = model.RateClass,
+                        RateDescr = model.RateDescr,
+                        RateUnit = model.RateUnit,
+                        StartDate = DateTime.Now,
+                        HasMaterials = model.HasMaterials,
+                        MaterialsRequired = model.MaterialsRequired,
+                        AltCode = model.AltCode,
+                        Active = model.Active
+                    };
                     db.ADM01100.Add(data);
                     db.SaveChanges();
 
                     #region save code in tblClientBill with checking the existance.
 
-                    ADM01150 rec = new ADM01150();
-                    rec.RateID = data.RateID;
-                    rec.Amount = model.ClientBillAmount;
-                    rec.StartDate = (model.CBStartDate == DateTime.MinValue) ? DateTime.Now : model.CBStartDate;
-                    rec.EndDate = (model.CBEndDate == DateTime.MinValue) ? DateTime.Now : model.CBEndDate;
+                    ADM01150 rec = new ADM01150
+                    {
+                        RateID = data.RateID,
+                        Amount = model.ClientBillAmount,
+                        StartDate = (model.CBStartDate == DateTime.MinValue) ? DateTime.Now : model.CBStartDate,
+                        EndDate = (model.CBEndDate == DateTime.MinValue) ? DateTime.Now : model.CBEndDate
+                    };
                     db.ADM01150.Add(rec);
                     db.SaveChanges();
 
@@ -125,11 +129,13 @@ namespace TeliconLatest.Controllers
 
                     #region save code in tblPaymentFrom with checking the existance.
 
-                    ADM01250 rec1 = new ADM01250();
-                    rec1.RateID = data.RateID;
-                    rec1.Amount = model.ClientBillAmount;
-                    rec1.StartDate = (model.CBStartDate == DateTime.MinValue) ? DateTime.Now : model.CBStartDate;
-                    rec1.EndDate = (model.CBEndDate == DateTime.MinValue) ? DateTime.Now : model.CBEndDate;
+                    ADM01250 rec1 = new ADM01250
+                    {
+                        RateID = data.RateID,
+                        Amount = model.ClientBillAmount,
+                        StartDate = (model.CBStartDate == DateTime.MinValue) ? DateTime.Now : model.CBStartDate,
+                        EndDate = (model.CBEndDate == DateTime.MinValue) ? DateTime.Now : model.CBEndDate
+                    };
                     db.ADM01250.Add(rec1);
                     db.SaveChanges();
 
@@ -139,8 +145,9 @@ namespace TeliconLatest.Controllers
                 {
                     var oldRate = db.ADM01100.AsNoTracking().Where(x => x.RateID == model.RateID).Select(x => new
                     {
-                        StartDate = x.StartDate
+                        x.StartDate
                     }).FirstOrDefault();
+
                     var OldDta = db.ADM01100.Where(x => x.RateID == model.RateID).FirstOrDefault();
                     OldDta.ClientID = model.ClientID;
                     OldDta.DepartmentId = model.DepartmentID;

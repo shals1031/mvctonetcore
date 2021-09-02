@@ -3,18 +3,19 @@
 @{
     ViewBag.Title = "Contractor";
     Layout = "~/Views/Shared/_FormLayout.cshtml";
+    bool fileExists = (bool)ViewBag.FileExists;
 }
 
 @using (Html.BeginForm("createorupdate", "contractor", FormMethod.Post, new { enctype = "multipart/form-data" }))
 {
-    @Html.AntiForgeryToken()
+    @*@Html.AntiForgeryToken()*@
     @Html.ValidationSummary(true)
     <div class="tel-form-top">
         <div class="pic-box">
             @{
                 var url = "~/images/technicians/" + Model.EmployeeID + ".jpg";
             }
-            <img src="@Url.Content((Model.ConID == 0 || !System.IO.File.Exists("") ? "~/images/icons/default-user.png" : url))" alt="contractor" />
+            <img src="@Url.Content((Model.ConID == 0 || !fileExists ? "~/images/icons/default-user.png" : url))" alt="contractor" />
             <button class="tel-img-uploader"><i class="fe-camera"></i></button>
             <input type="file" name="TelImg" />
         </div>

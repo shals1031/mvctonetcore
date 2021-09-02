@@ -51,7 +51,7 @@
 
   <ItemGroup>
     <PackageReference Include="EPPlus" Version="5.7.3" />
-    <PackageReference Include="iTextSharp" Version="5.5.13.2" />
+    <PackageReference Include="iTextSharp.LGPLv2.Core" Version="1.7.3" />
     <PackageReference Include="LinqKit.Core" Version="1.1.24" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="5.0.7" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="5.0.7">
@@ -59,6 +59,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="5.0.1" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.3" />
     <PackageReference Include="Simple.ImageResizer" Version="2.1.0" />
     <PackageReference Include="System.Linq.Dynamic.Core" Version="1.2.12" />
   </ItemGroup>

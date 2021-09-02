@@ -6,7 +6,7 @@
 }
 
 @using (Html.BeginForm("createorupdate", "user", FormMethod.Post)) {
-    @Html.AntiForgeryToken()
+    @*@Html.AntiForgeryToken()*@
     @Html.ValidationSummary(true)
 
     <table>

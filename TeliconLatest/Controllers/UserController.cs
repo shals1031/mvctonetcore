@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,11 +14,9 @@ namespace TeliconLatest.Controllers
     public class UserController : Controller
     {
         private readonly TeliconDbContext db;
-        private readonly IWebHostEnvironment _env;
-        public UserController(TeliconDbContext db, IWebHostEnvironment env)
+        public UserController(TeliconDbContext db)
         {
             this.db = db;
-            _env = env;
         }
         //
         // GET: /User/
@@ -52,31 +51,31 @@ namespace TeliconLatest.Controllers
                 Text = x.RoleName,
                 Value = x.RoleName
             }).ToList();
-            //var role = System.Web.Security.Roles.GetRolesForUser(id)[0];
-            //var user = Membership.GetUser(id);
-            //var tuser = new TeliconUser();
-            //if (user != null)
-            //{
-            //    tuser = new TeliconUser
-            //    {
-            //        Profile = role == "Technician" || role == "Supervisor"
-            //            ? db.ADM03300.Where(x => x.Email == id).Select(x => new ProfileInfo
-            //            {
-            //                FirstName = x.FirstName,
-            //                LastName = x.LastName,
-            //                AltPhone = x.Phone2,
-            //                Phone = x.Phone1
-            //            }).FirstOrDefault()
-            //            : AppProfile.GetProfile(id).ProfileInfo,
-            //        Role = role,
-            //        OldRole = role,
-            //        Email = user.Email,
-            //        UserName = id,
-            //        IsNew = false,
-            //        IsApproved = user.IsApproved,
-            //        OldUserName = id
-            //    };
-            //}
+            var role = db.UsersInRoles.Include(p => p.Roles).FirstOrDefault(t => t.UserId == id).Roles;
+            var user = db.Users.Include(p => p.Membership).Include(p => p.Profiles).FirstOrDefault(t => t.UserId == id);
+            var tuser = new TeliconUser();
+            if (user != null)
+            {
+                tuser = new TeliconUser
+                {
+                    Profile = role.RoleName == "Technician" || role.RoleName == "Supervisor"
+                        ? db.ADM03300.Where(x => x.Email == id).Select(x => new ProfileInfo
+                        {
+                            FirstName = x.FirstName,
+                            LastName = x.LastName,
+                            AltPhone = x.Phone2,
+                            Phone = x.Phone1
+                        }).FirstOrDefault()
+                        : Utilities.GetProfileInfoValue(user.Profiles != null ? user.Profiles.PropertyValueStrings : string.Empty),
+                    Role = role.RoleName,
+                    OldRole = role.RoleName,
+                    Email = user.Membership != null ? user.Membership.Email : string.Empty,
+                    UserName = id,
+                    IsNew = false,
+                    IsApproved = user.Membership != null && user.Membership.IsApproved,
+                    OldUserName = id
+                };
+            }
             return View("CreateOrUpdate");
         }
         [HttpPost]
@@ -88,38 +87,95 @@ namespace TeliconLatest.Controllers
             {
                 if (model.IsNew)
                 {
-                    //var user = Membership.CreateUser(model.UserName, "Password123.", model.Email);
-                    //user.IsApproved = model.IsApproved;
-                    //Membership.UpdateUser(user);
-                    //System.Web.Security.Roles.AddUserToRole(model.UserName, model.Role);
-                    //AppProfile profile = AppProfile.GetProfile(model.UserName);
-                    //profile.ProfileInfo.FirstName = model.Profile.FirstName;
-                    //profile.ProfileInfo.LastName = model.Profile.LastName;
-                    //profile.ProfileInfo.Phone = model.Profile.Phone;
-                    //profile.ProfileInfo.AltPhone = model.Profile.AltPhone;
-                    //profile.Save();
+                    byte[] encbuff = System.Text.Encoding.UTF8.GetBytes("Password123.");
+                    var user = new Users
+                    {
+                        ApplicationId = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Version).Value,
+                        IsAnonymous = false,
+                        UserName = model.UserName,
+                        Membership = new Memberships
+                        {
+                            ApplicationId = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Version).Value,
+                            Comment = string.Empty,
+                            CreateDate = DateTime.Now,
+                            Email = model.Email,
+                            IsApproved = model.IsApproved,
+                            IsLockedOut = false,
+                            LastLockoutDate = DateTime.Now,
+                            LastLoginDate = DateTime.Now,
+                            LastPasswordChangedDate = DateTime.Now,
+                            Password = Convert.ToBase64String(encbuff),
+                        },
+                    };
+                    db.Users.Add(user);
+                    db.SaveChanges();
+
+                    UsersInRoles usersInRoles = new UsersInRoles
+                    {
+                        RoleId = db.Roles.FirstOrDefault(x => x.RoleName == model.Role).RoleId,
+                        UserId = user.UserId
+                    };
+                    db.UsersInRoles.Add(usersInRoles);
+
+                    byte[] bytes = Array.Empty<byte>();
+                    ProfileInfo profileInfo = new ProfileInfo
+                    {
+                        AltPhone = model.Profile.AltPhone,
+                        FirstName = model.Profile.FirstName,
+                        LastName = model.Profile.LastName,
+                        Phone = model.Profile.Phone
+                    };
+                    Profiles profiles = new Profiles
+                    {
+                        UserId = user.UserId,
+                        LastUpdatedDate = DateTime.Now,
+                        PropertyNames = "ProfileInfo:0:233",
+                        PropertyValueStrings = Utilities.GetProfileInfoValue(profileInfo),
+                        PropertyValueBinary = bytes,
+                    };
+                    db.Profiles.Add(profiles);
+                    db.SaveChanges();
                 }
                 else
                 {
-                    //var user = Membership.GetUser(model.UserName);
-                    //if (user != null)
-                    //{
-                    //    System.Web.Security.Roles.RemoveUserFromRole(model.OldUserName, model.OldRole);
-                    //    var savedUser = db.Users.FirstOrDefault(x => x.UserName == model.OldUserName);
-                    //    if (savedUser != null)
-                    //        savedUser.UserName = model.UserName.ToLower();
-                    //    db.SaveChanges();
-                    //    user.Email = model.Email;
-                    //    user.IsApproved = model.IsApproved;
-                    //    Membership.UpdateUser(user);
-                    //    System.Web.Security.Roles.AddUserToRole(model.UserName, model.Role);
-                    //    AppProfile profile = AppProfile.GetProfile(model.UserName);
-                    //    profile.ProfileInfo.FirstName = model.Profile.FirstName;
-                    //    profile.ProfileInfo.LastName = model.Profile.LastName;
-                    //    profile.ProfileInfo.Phone = model.Profile.Phone;
-                    //    profile.ProfileInfo.AltPhone = model.Profile.AltPhone;
-                    //    profile.Save();
-                    //}
+                    var user = db.Users.Include(t => t.Membership).FirstOrDefault(t => t.UserName == model.UserName);
+                    if (user != null)
+                    {
+                        var user1 = db.Users.FirstOrDefault(t => t.UserName == model.OldUserName);
+                        if (db.UsersInRoles.Include(t => t.Roles).Any(p => p.Roles.RoleName == model.OldRole && p.UserId == user1.UserId))
+                        {
+                            db.UsersInRoles.RemoveRange(db.UsersInRoles.Include(t => t.Roles).Where(p => p.Roles.RoleName == model.OldRole && p.UserId == user1.UserId).ToList());
+                        }
+                        var savedUser = db.Users.FirstOrDefault(x => x.UserName == model.OldUserName);
+                        if (savedUser != null)
+                            savedUser.UserName = model.UserName.ToLower();
+                        db.SaveChanges();
+                        user.Membership.Email = model.Email;
+                        user.Membership.IsApproved = model.IsApproved;
+                        db.SaveChanges();
+
+                        UsersInRoles usersInRoles = new UsersInRoles
+                        {
+                            RoleId = db.Roles.FirstOrDefault(x => x.RoleName == model.Role).RoleId,
+                            UserId = user.UserId
+                        };
+                        db.UsersInRoles.Add(usersInRoles);
+
+                        Profiles profiles = db.Profiles.FirstOrDefault(t => t.UserId == user.UserId);
+                        if (profiles != null)
+                        {
+                            ProfileInfo profileInfo = new ProfileInfo
+                            {
+                                AltPhone = model.Profile.AltPhone,
+                                FirstName = model.Profile.FirstName,
+                                LastName = model.Profile.LastName,
+                                Phone = model.Profile.Phone
+                            };
+                            profiles.PropertyValueStrings = Utilities.GetProfileInfoValue(profileInfo);
+                        }
+
+                        db.SaveChanges();
+                    }
                 }
                 return Json(new JsonReturnParams
                 {
@@ -149,13 +205,49 @@ namespace TeliconLatest.Controllers
         {
             try
             {
-                //if (System.Web.Security.Roles.IsUserInRole(id, DataDictionaries.AllRoles["Technician"]))
-                //{
-                //    return new ContractorController().Delete(-1, id);
-                //}
-                //await Task.Run(() => {
-                //    Membership.DeleteUser(id);
-                //});
+                if (db.UsersInRoles.Include(t => t.Roles).Any(t => t.UserId == id && t.Roles.RoleName == "Technician"))
+                {
+                    int conId = 0;
+                    if (!string.IsNullOrEmpty(id))
+                        conId = db.ADM03300.FirstOrDefault(x => x.Email == id).ConID;
+                    if (db.ADM03400.Any(x => x.ContractorID == conId))
+                    {
+                        return Json(new JsonReturnParams
+                        {
+                            Additional = -1,
+                            Code = "100",
+                            Msg = ""
+                        });
+                    }
+                    else
+                    {
+                        ADM03300 user = db.ADM03300.Find(id);
+                        db.ADM03300.Remove(user);
+                        Memberships memberships = db.Memberships.FirstOrDefault(x => x.Email == user.Email);
+                        if (memberships != null)
+                        {
+                            db.Memberships.Remove(memberships);
+                            db.UsersInRoles.RemoveRange(db.UsersInRoles.Where(p => p.UserId == memberships.UserId).ToList());
+                            db.Profiles.Remove(db.Profiles.FirstOrDefault(t => t.UserId == memberships.UserId));
+                            db.Users.Remove(db.Users.FirstOrDefault(p => p.UserId == memberships.UserId));
+                            db.SaveChanges();
+                        }
+                        return Json(new JsonReturnParams
+                        {
+                            Additional = db.SaveChanges(),
+                            Code = "100",
+                            Msg = ""
+                        });
+                    }
+                }
+                await Task.Run(() =>
+                {
+                    db.Memberships.Remove(db.Memberships.FirstOrDefault(p => p.UserId == id));
+                    db.UsersInRoles.RemoveRange(db.UsersInRoles.Where(p => p.UserId == id).ToList());
+                    db.Profiles.Remove(db.Profiles.FirstOrDefault(t => t.UserId == id));
+                    db.Users.Remove(db.Users.FirstOrDefault(p => p.UserId == id));
+                    db.SaveChanges();
+                });
                 return Json(new JsonReturnParams
                 {
                     Additional = 1,
@@ -176,44 +268,46 @@ namespace TeliconLatest.Controllers
         [HttpPost]
         public JsonResult ResetPassword(string id)
         {
-            //var user = Membership.GetUser(id);
-            //if (user != null && !user.IsLockedOut)
-            //{
-            //    var pswd = user.ResetPassword();
-            //    user.ChangePassword(pswd, "Password123.");
-            //    Membership.UpdateUser(user);
+            Memberships user = db.Memberships.FirstOrDefault(x => x.UserId == id);
+            if (user != null && !user.IsLockedOut)
+            {
+                byte[] encbuff = System.Text.Encoding.UTF8.GetBytes("Password123.");
+                user.Password = Convert.ToBase64String(encbuff);
+                db.SaveChanges();
 
-            //    #region Password Sending To User 
+                #region Password Sending To User 
 
-            //    string fromEmail = "portal@telicongroup.com";
-            //    string toEmail = user.Email;
-            //    //Send email confirmation.
-            //    string emailBody = Utilities.GetEmailTemplateValue("ForgotPassword/Body");
-            //    string emailSubject = Utilities.GetEmailTemplateValue("ForgotPassword/Subject");
+                //string fromEmail = "portal@telicongroup.com";
+                //string toEmail = user.Email;
+                //Send email confirmation.
+                //string emailBody = Utilities.GetEmailTemplateValue("ForgotPassword/Body");
+                //string emailSubject = Utilities.GetEmailTemplateValue("ForgotPassword/Subject");
 
-            //    //Replace data in mail body.
-            //    emailBody = emailBody.Replace("@@@USERNAME", user.Email);
-            //    emailBody = emailBody.Replace("@@@PASSWORD", "Password123.");
+                //Replace data in mail body.
+                //emailBody = emailBody.Replace("@@@USERNAME", user.Email);
+                //emailBody = emailBody.Replace("@@@PASSWORD", "Password123.");
 
-            //    Utilities.SendMail(fromEmail, "vinit.jain@arkasoftwares.com", emailBody, emailSubject);
-            //    #endregion
+                //Utilities.SendMail(fromEmail, "vinit.jain@arkasoftwares.com", emailBody, emailSubject);
+                #endregion
 
-            //    return Json(pswd, JsonRequestBehavior.AllowGet);
-            //}
+                return Json("Password123.");
+            }
             return Json(new { msg = "User is locked out" });
         }
         [HttpPost]
         public async Task<JsonResult> UnlockAccount(string id)
         {
             var unlocked = false;
-            //await Task.Run(() =>
-            //{
-            //    var user = Membership.GetUser(id);
-            //    if (user != null)
-            //    {
-            //        unlocked = user.UnlockUser();
-            //    }
-            //});
+            await Task.Run(() =>
+            {
+                Memberships user = db.Memberships.FirstOrDefault(x => x.UserId == id);
+                if (user != null)
+                {
+                    user.IsLockedOut = false;
+                    db.SaveChanges();
+                    unlocked = true;
+                }
+            });
             return Json(unlocked);
         }
         [HttpPost]
@@ -222,15 +316,15 @@ namespace TeliconLatest.Controllers
             var ok = true;
             try
             {
-                //await Task.Run(() =>
-                //{
-                //    var user = Membership.GetUser(id);
-                //    if (user != null)
-                //    {
-                //        user.IsApproved = !user.IsApproved;
-                //        Membership.UpdateUser(user);
-                //    }
-                //});
+                await Task.Run(() =>
+                {
+                    Memberships user = db.Memberships.FirstOrDefault(x => x.UserId == id);
+                    if (user != null)
+                    {
+                        user.IsApproved = true;
+                        db.SaveChanges();
+                    }
+                });
             }
             catch
             {
@@ -240,9 +334,8 @@ namespace TeliconLatest.Controllers
         }
         public Dictionary<string, string> GetAllowedRoles()
         {
-            return DataDictionaries.AllRoles;
-                //System.Web.Security.Roles.IsUserInRole("AppAdmin") ? DataDictionaries.AllRoles :
-                //DataDictionaries.AllRoles.Where(x => x.Key != "AppAdmin").ToDictionary(x => x.Key, x => x.Value);
+            return User.IsInRole("AppAdmin") ? DataDictionaries.AllRoles :
+            DataDictionaries.AllRoles.Where(x => x.Key != "AppAdmin").ToDictionary(x => x.Key, x => x.Value);
         }
     }
 }

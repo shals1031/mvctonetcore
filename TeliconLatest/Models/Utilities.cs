@@ -96,6 +96,7 @@ namespace TeliconLatest.Models
         {
             try
             {
+                if (string.IsNullOrEmpty(xpath)) return new ProfileInfo();
                 using StringReader stringReader = new StringReader(xpath);
                 XmlSerializer serializer = new XmlSerializer(typeof(ProfileInfo));
                 return serializer.Deserialize(stringReader) as ProfileInfo;

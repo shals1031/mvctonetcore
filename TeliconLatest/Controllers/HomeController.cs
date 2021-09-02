@@ -56,7 +56,7 @@ namespace TeliconLatest.Controllers
             string query = string.Format("CALL WorkOrderSummary('" + type + "',{0})", year);
             List<RevenueVsIncomeChartData> data = db.Set<RevenueVsIncomeChartData>().FromSqlRaw(query).AsEnumerable().Select(x => new RevenueVsIncomeChartData
             {
-                Period = type != "m" ? Convert.ToString(x.Period) : new DateTimeFormatInfo().GetAbbreviatedMonthName(Convert.ToInt32(x.Period)),
+                PeriodName = type != "m" ? Convert.ToString(x.Period) : new DateTimeFormatInfo().GetAbbreviatedMonthName(Convert.ToInt32(x.Period)),
                 Payments = x.Payments,
                 Revenue = x.Revenue
             }).ToList();

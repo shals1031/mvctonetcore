@@ -25,9 +25,11 @@ namespace TeliconLatest.Controllers
         //[TeliconAuthorize(TaskId = 7)]
         public ActionResult Create()
         {
-            var model = new ADM03500();
-            model.StartDate = DateTime.Now;
-            model.EndDate = DateTime.Now;
+            ADM03500 model = new ADM03500
+            {
+                StartDate = DateTime.Now,
+                EndDate = DateTime.Now
+            };
             return View("CreateOrUpdate", model);
         }
         //[TeliconAuthorize(TaskId = 7)]

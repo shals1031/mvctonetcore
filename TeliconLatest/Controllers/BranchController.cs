@@ -25,7 +25,7 @@ namespace TeliconLatest.Controllers
         //[TeliconAuthorize(TaskId = 38)]
         public ActionResult Create()
         {
-            var model = new ADM02200();
+            ADM02200 model = new ADM02200();
             var bnks = db.ADM02100.ToList();
             var fstBnk = db.ADM02100.Find("99");
             bnks.Remove(bnks.Find(x => x.BankId == "99"));

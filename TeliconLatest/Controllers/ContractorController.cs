@@ -3,7 +3,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using Simple.ImageResizer;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -55,7 +57,7 @@ namespace TeliconLatest.Controllers
         public IActionResult Create()
         {
             SetupContractorDddl(null);
-            var model = new ADM03300();
+            ADM03300 model = new ADM03300();
             return View("CreateOrUpdate", model);
         }
         //[TeliconAuthorize(TaskId = 4)]
@@ -63,6 +65,9 @@ namespace TeliconLatest.Controllers
         {
             var model = db.ADM03300.Find(id);
             SetupContractorDddl(model);
+            ViewBag.FileExists = false;
+            if (System.IO.File.Exists(Path.Combine(_env.WebRootPath, "images", "technicians", model.EmployeeID + ".jpg")))
+                ViewBag.FileExists = true;
             return View("CreateOrUpdate", model);
         }
         [HttpPost]
@@ -93,14 +98,11 @@ namespace TeliconLatest.Controllers
                     if (formCollection.Files.Count > 0 && !string.IsNullOrEmpty(formCollection.Files[0].FileName))
                     {
                         var file = formCollection.Files[0];
-                        url = serverPath + model.EmployeeID + ".jpg";
-                        long length = file.Length;
-                        using var fileStream = file.OpenReadStream();
-                        byte[] fileData = new byte[length];
-                        fileStream.Read(fileData, 0, (int)file.Length);
-                        ImageResizer resizer = new ImageResizer(fileData);
-                        resizer.Resize(256, 256, ImageEncoding.Jpg100);
-                        resizer.SaveToFile(url);
+                        url = $"{serverPath}/{model.EmployeeID}.jpg";
+                        using Image image = Image.Load(file.OpenReadStream());
+                        image.Mutate(x => x
+                             .Resize(256, 256));
+                        image.Save(url); // Automatic encoder selected based on extension.
                     }
                     uploaded = true;
                     db.SaveChanges();
@@ -113,9 +115,9 @@ namespace TeliconLatest.Controllers
                     var oldID = oldEmp.EmployeeID;
                     if (oldID != model.EmployeeID)
                     {
-                        var oldFile = serverPath + oldID + ".jpg";
+                        string oldFile = $"{serverPath}/{oldID}.jpg";
                         if (System.IO.File.Exists(oldFile))
-                            System.IO.File.Move(oldFile, serverPath + model.EmployeeID + ".jpg");
+                            System.IO.File.Move(oldFile, $"{serverPath}/{model.EmployeeID}.jpg");
                     }
                     if (oldEmp.Email != model.Email)
                     {
@@ -160,25 +162,22 @@ namespace TeliconLatest.Controllers
                         IsAnonymous = false,
                         LastActivityDate = DateTime.Now,
                         UserName = model.Email,
+                        Membership = new Memberships
+                        {
+                            ApplicationId = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Version).Value,
+                            Email = model.Email,
+                            Comment = "",
+                            CreateDate = DateTime.Now,
+                            LastPasswordChangedDate = DateTime.Now,
+                            LastLoginDate = DateTime.Now,
+                            LastLockoutDate = DateTime.Now,
+                            IsLockedOut = false,
+                            IsApproved = true,
+                            Password = Convert.ToBase64String(encbuff)
+                        }
                     };
                     db.Users.Add(users);
                     db.SaveChanges();
-
-                    Memberships memberships1 = new Memberships
-                    {
-                        ApplicationId = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Version).Value,
-                        UserId = users.UserId,
-                        Email = model.Email,
-                        Comment = "",
-                        CreateDate = DateTime.Now,
-                        LastPasswordChangedDate = DateTime.Now,
-                        LastLoginDate = DateTime.Now,
-                        LastLockoutDate = DateTime.Now,
-                        IsLockedOut = false,
-                        IsApproved = true,
-                        Password = Convert.ToBase64String(encbuff)
-                    };
-                    db.Memberships.Add(memberships1);
 
                     UsersInRoles usersInRoles = new UsersInRoles
                     {
@@ -199,7 +198,7 @@ namespace TeliconLatest.Controllers
                     {
                         UserId = users.UserId,
                         LastUpdatedDate = DateTime.Now,
-                        PropertyNames = "ProfileInfo:0:233:",
+                        PropertyNames = "ProfileInfo:0:233",
                         PropertyValueStrings = Utilities.GetProfileInfoValue(profileInfo),
                         PropertyValueBinary = bytes,
                     };

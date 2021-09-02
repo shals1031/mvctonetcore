@@ -386,85 +386,87 @@ namespace TeliconLatest.Controllers
             return result;
         }
 
-        ////[Authorize(Roles = "AppAdmin, SuperAdmin")]
-        //[HttpPost]
-        //public JsonResult Users(DataTablesParam model)
-        //{
-        //    string order = Customs.GetSortString(model.order, model.columns);
-        //    var users = new List<ProfileFull>();
-        //    List<string> usernames = System.Web.Security.Roles.GetUsersInRole("Admin").ToList();
-        //    usernames.AddRange(System.Web.Security.Roles.GetUsersInRole("SuperAdmin").ToList());
-        //    if (System.Web.Security.Roles.IsUserInRole(User.Identity.Name, "AppAdmin"))
-        //        usernames.AddRange(System.Web.Security.Roles.GetUsersInRole("AppAdmin").ToList());
-        //    usernames.AddRange(db.ADM03300.Select(x => x.Email).ToList());
-        //    foreach (var username in usernames.Where(x => x != User.Identity.Name))
-        //    {
-        //        var user = Membership.GetUser(username);
-        //        if (user == null) continue;
-        //        if (System.Web.Security.Roles.IsUserInRole(username, "Technician") || System.Web.Security.Roles.IsUserInRole(username, "Supervisor"))
-        //        {
-        //            var u = db.ADM03300.FirstOrDefault(x => x.Email == username);
-        //            if (u != null)
-        //            {
-        //                users.Add(new ProfileFull
-        //                {
-        //                    AltPhone = u.Phone2,
-        //                    Email = user.Email,
-        //                    UserName = username,
-        //                    FirstName = u.FirstName,
-        //                    LastName = u.LastName,
-        //                    IsLocked = user.IsLockedOut,
-        //                    IsApproved = user.IsApproved,
-        //                    Phone = u.Phone1,
-        //                    Role = System.Web.Security.Roles.GetRolesForUser(username)[0]
-        //                });
-        //            }
-        //        }
-        //        else
-        //        {
-        //            var profile = AppProfile.GetProfile(username).ProfileInfo;
-        //            if (System.Web.Security.Roles.GetRolesForUser(username).Length > 0)
-        //            {
-        //                users.Add(new ProfileFull
-        //                {
-        //                    AltPhone = profile.AltPhone,
-        //                    Email = user.Email,
-        //                    UserName = username,
-        //                    FirstName = profile.FirstName,
-        //                    LastName = profile.LastName,
-        //                    IsApproved = user.IsApproved,
-        //                    IsLocked = user.IsLockedOut,
-        //                    Phone = profile.Phone,
-        //                    Role = System.Web.Security.Roles.GetRolesForUser(username)[0]
-        //                });
-        //            }
-        //        }
-        //    }
-        //    var data = users.AsEnumerable().AsQueryable().Search(model.columns.Where(x => x.searchable).ToList(), model.search, false);
-        //    if (model.additional != null && model.additional.ToString() != "a")
-        //        data = data.Where(x => x.Role == model.additional.ToString());
-        //    return Json(new DataTableReturn
-        //    {
-        //        draw = model.draw,
-        //        recordsFiltered = data.Count(),
-        //        recordsTotal = usernames.Count(x => x != User.Identity.Name),
-        //        data = data.OrderBy(order).Skip(model.start).Take(model.length).ToList().Select(x => new
-        //        {
-        //            DT_RowId = x.UserName,
-        //            x.FirstName,
-        //            x.LastName,
-        //            Phone = EmptyDataFiller(x.Phone),
-        //            Role = DataDictionaries.AllRoles[x.Role],
-        //            IsApproved = new HtmlString("<button class='approver td-toggler" + (x.IsApproved ? " on" : "") + "'><span></span></button>"),
-        //            IsLocked = new HtmlString("<button class='locker td-toggler" + (x.IsLocked ? " on" : "") + "'><span></span></button>"),
-        //            Additional = new HtmlString("<div class='additional'><table>" +
-        //                "<tr><td>Username</td><td>" + x.UserName + "</td></tr>" +
-        //                "<tr><td>Email</td><td>" + EmptyDataFiller(x.Email) + "</td></tr>" +
-        //                "<tr><td>Alternate Phone</td><td>" + EmptyDataFiller(x.AltPhone) + "</td></tr>" +
-        //            "</table></div>")
-        //        }).AsQueryable().ToStringArray()
-        //    });
-        //}
+        //[Authorize(Roles = "AppAdmin, SuperAdmin")]
+        [HttpPost]
+        public JsonResult Users(DataTablesParam model)
+        {
+            string order = Customs.GetSortString(model.order, model.columns);
+            var users = new List<ProfileFull>();
+            List<string> usernames = db.UsersInRoles.Where(p => p.Roles.RoleName == "Admin").Select(t => t.Users.UserName).ToList();
+            usernames.AddRange(db.UsersInRoles.Where(p => p.Roles.RoleName == "SuperAdmin").Select(t => t.Users.UserName).ToList());
+
+            if (User.IsInRole("AppAdmin"))
+                usernames.AddRange(db.UsersInRoles.Where(p => p.Roles.RoleName == "AppAdmin").Select(t => t.Users.UserName).ToList());
+
+            usernames.AddRange(db.ADM03300.Select(x => x.Email).ToList());
+            foreach (var username in usernames.Where(x => x != User.Identity.Name))
+            {
+                var user = db.Users.Include(p => p.Membership).Include(p => p.Profiles).FirstOrDefault(t => t.UserName == username);
+                if (user == null) continue;
+                if (db.UsersInRoles.Any(t => t.Roles.RoleName == "Technician" && t.UserId == user.UserId) || db.UsersInRoles.Any(t => t.Roles.RoleName == "Supervisor" && t.UserId == user.UserId))
+                {
+                    var u = db.ADM03300.FirstOrDefault(x => x.Email == username);
+                    if (u != null)
+                    {
+                        users.Add(new ProfileFull
+                        {
+                            AltPhone = u.Phone2,
+                            Email = user.Membership != null ? user.Membership.Email : string.Empty,
+                            UserName = username,
+                            FirstName = u.FirstName,
+                            LastName = u.LastName,
+                            IsLocked = user.Membership != null && user.Membership.IsLockedOut,
+                            IsApproved = user.Membership != null && user.Membership.IsApproved,
+                            Phone = u.Phone1,
+                            Role = db.UsersInRoles.Include(p => p.Roles).FirstOrDefault(x => x.UserId == user.UserId).Roles.RoleName
+                        });
+                    }
+                }
+                else
+                {
+                    ProfileInfo profile = Utilities.GetProfileInfoValue(user.Profiles != null ? user.Profiles.PropertyValueStrings : string.Empty);
+                    if (db.UsersInRoles.Where(x => x.UserId == user.UserId).Any())
+                    {
+                        users.Add(new ProfileFull
+                        {
+                            AltPhone = profile.AltPhone,
+                            Email = user.Membership != null ? user.Membership.Email : string.Empty,
+                            UserName = username,
+                            FirstName = profile.FirstName,
+                            LastName = profile.LastName,
+                            IsApproved = user.Membership != null && user.Membership.IsApproved,
+                            IsLocked = user.Membership != null && user.Membership.IsLockedOut,
+                            Phone = profile.Phone,
+                            Role = db.UsersInRoles.Include(p => p.Roles).FirstOrDefault(x => x.UserId == user.UserId).Roles.RoleName
+                        });
+                    }
+                }
+            }
+            var data = users.AsEnumerable().AsQueryable().Search(model.columns.Where(x => x.searchable).ToList(), model.search, false);
+            if (model.additional != null && model.additional.ToString() != "a")
+                data = data.Where(x => x.Role == model.additional.ToString());
+            return Json(new DataTableReturn
+            {
+                draw = model.draw,
+                recordsFiltered = data.Count(),
+                recordsTotal = usernames.Count(x => x != User.Identity.Name),
+                data = Extensions.OrderByDynamic(data, order.Split(" ")[0], order.Split(" ")[1] != "asc").Skip(model.start).Take(model.length).ToList().Select(x => new
+                {
+                    DT_RowId = x.UserName,
+                    x.FirstName,
+                    x.LastName,
+                    Phone = EmptyDataFiller(x.Phone),
+                    Role = DataDictionaries.AllRoles[x.Role],
+                    IsApproved = new HtmlString("<button class='approver td-toggler" + (x.IsApproved ? " on" : "") + "'><span></span></button>"),
+                    IsLocked = new HtmlString("<button class='locker td-toggler" + (x.IsLocked ? " on" : "") + "'><span></span></button>"),
+                    Additional = new HtmlString("<div class='additional'><table>" +
+                         "<tr><td>Username</td><td>" + x.UserName + "</td></tr>" +
+                         "<tr><td>Email</td><td>" + EmptyDataFiller(x.Email) + "</td></tr>" +
+                         "<tr><td>Alternate Phone</td><td>" + EmptyDataFiller(x.AltPhone) + "</td></tr>" +
+                     "</table></div>")
+                }).AsQueryable().ToStringArray()
+            });
+        }
 
         [HttpPost]
         public JsonResult Materials(DataTablesParam model)

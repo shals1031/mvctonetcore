@@ -162,7 +162,7 @@ namespace TeliconLatest.DataEntities
                     .HasName("PRIMARY");
 
                 entity.ToTable("adm01100");
-                                
+
                 entity.HasOne(d => d.ADM04200)
                     .WithMany(p => p.ADM01100)
                     .HasForeignKey(d => d.DepartmentId)
@@ -181,7 +181,7 @@ namespace TeliconLatest.DataEntities
                     .HasName("PRIMARY");
 
                 entity.ToTable("adm01110");
-                                
+
                 entity.HasOne(d => d.ADM01100)
                     .WithMany(p => p.ADM01110)
                     .HasForeignKey(d => d.ActivID)
@@ -258,7 +258,7 @@ namespace TeliconLatest.DataEntities
                 entity.HasKey(e => e.BankId)
                     .HasName("PRIMARY");
 
-                entity.ToTable("adm02100");            
+                entity.ToTable("adm02100");
             });
 
             modelBuilder.Entity<ADM02200>(entity =>
@@ -297,7 +297,7 @@ namespace TeliconLatest.DataEntities
                     .HasName("PRIMARY");
 
                 entity.ToTable("adm03300");
-                
+
                 entity.HasOne(d => d.ADM02200)
                     .WithMany(p => p.ADM03300)
                     .HasForeignKey(d => d.Branch)
@@ -350,7 +350,7 @@ namespace TeliconLatest.DataEntities
                 entity.HasKey(e => e.DepartmentID)
                     .HasName("PRIMARY");
 
-                entity.ToTable("adm04200");                
+                entity.ToTable("adm04200");
             });
 
             modelBuilder.Entity<ADM04210>(entity =>
@@ -664,6 +664,8 @@ namespace TeliconLatest.DataEntities
 
             modelBuilder.Entity<RevenueVsIncomeChartData>().HasNoKey();
             modelBuilder.Entity<TechnicianStatementDetail>().HasNoKey();
+            modelBuilder.Entity<ContractorsStatement>().HasNoKey();
+            modelBuilder.Entity<ContractorsStatementYTD>().HasNoKey();
 
             OnModelCreatingPartial(modelBuilder);
         }

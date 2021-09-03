@@ -221,6 +221,16 @@ namespace TeliconLatest.Models
         public DateTime PeriodEnd { get; set; }
     }
 
+    public class ContractorsStatementYTD
+    {
+        public int ContractorID { get; set; }
+        public DateTime PaidDate { get; set; }
+        public int Workid { get; set; }
+        public int ActivityID { get; set; }
+        public double PenalizeAmount { get; set; }
+        public double Total { get; set; }
+    }
+
     public class RoleTaskList
     {
         public int TaskId { get; set; }

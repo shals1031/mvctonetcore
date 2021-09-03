@@ -22,7 +22,7 @@
             </td>
             <td>
                 <input type="text" asp-for="PODate" value="@(Model.PODate.HasValue ? Model.PODate.Value.ToString("MM/dd/yyyy") : "")" asp-format="{0:MM/dd/yyyy}" class="date-box" readonly="readonly" />
-                <span asp-validation-for="PODate"></span>                
+                <span asp-validation-for="PODate"></span>
             </td>
         </tr>
         <tr><td colspan="2">@Html.LabelFor(x => x.Description)</td></tr>
@@ -38,14 +38,14 @@
         </tr>
         <tr>
             <td>
-                @Html.TextBoxFor(x => x.TOTAL)
+                @Html.TextBoxFor(x => x.TOTAL, string.Format("{0:0.00}", Model.TOTAL))
                 @Html.ValidationMessageFor(x => x.TOTAL)
             </td>
             <td>
-                @Html.TextBoxFor(x => x.BALANCE, new { @readonly = "readonly" })
+                @Html.TextBoxFor(x => x.BALANCE, string.Format("{0:0.00}", Model.BALANCE), new { @readonly = "readonly" })
                 @Html.ValidationMessageFor(x => x.BALANCE)
             </td>
-        </tr>        
+        </tr>
         <tr>
             <td colspan="2">@Html.LabelFor(x => x.IsClosed)</td>
         </tr>

@@ -63,6 +63,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="DBChanges\SP\" />
     <Folder Include="wwwroot\SignImages\" />
   </ItemGroup>
 

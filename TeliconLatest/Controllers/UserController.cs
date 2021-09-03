@@ -51,8 +51,9 @@ namespace TeliconLatest.Controllers
                 Text = x.RoleName,
                 Value = x.RoleName
             }).ToList();
-            var role = db.UsersInRoles.Include(p => p.Roles).FirstOrDefault(t => t.UserId == id).Roles;
-            var user = db.Users.Include(p => p.Membership).Include(p => p.Profiles).FirstOrDefault(t => t.UserId == id);
+
+            var user = db.Users.Include(p => p.Membership).Include(p => p.Profiles).FirstOrDefault(t => t.UserName == id);
+            var role = db.UsersInRoles.Include(p => p.Roles).FirstOrDefault(t => t.UserId == user.UserId).Roles;
             var tuser = new TeliconUser();
             if (user != null)
             {
@@ -76,7 +77,7 @@ namespace TeliconLatest.Controllers
                     OldUserName = id
                 };
             }
-            return View("CreateOrUpdate");
+            return View("CreateOrUpdate", tuser);
         }
         [HttpPost]
         //[ValidateAntiForgeryToken]
@@ -318,10 +319,10 @@ namespace TeliconLatest.Controllers
             {
                 await Task.Run(() =>
                 {
-                    Memberships user = db.Memberships.FirstOrDefault(x => x.UserId == id);
+                    Memberships user = db.Memberships.FirstOrDefault(x => x.Email == id);
                     if (user != null)
                     {
-                        user.IsApproved = true;
+                        user.IsApproved = !user.IsApproved;
                         db.SaveChanges();
                     }
                 });

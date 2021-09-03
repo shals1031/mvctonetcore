@@ -19,7 +19,7 @@
     $(document).ready(function () {
         dataTableOptions.ajax.url = "@Url.Action("Periods", "list")";
         dataTableOptions.columnDefs = [
-                { "targets": 0, "name": "Week", "data": "Week", "class": "dt-item-title" },
+                { "targets": 0, "name": "Week", "data": "Week", "class": "dt-item-title", "searchable":false },
                 { "targets": 1, "name": "PeriodStart", "data": "PeriodStart" },
                 { "targets": 2, "name": "PeriodEnd", "data": "PeriodEnd" },
                 { "targets": 3, "name": "DueDate", "data": "DueDate" },

@@ -15,10 +15,9 @@ namespace TeliconLatest.DataEntities
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int MergedOrderId { get; set; }
         public int WorkOrderId { get; set; }
+        public string MergedRefNum { get; set; }
         public string MergerdTitle { get; set; }
         public DateTime? MergerdDate { get; set; }
-        public string MergedRefNum { get; set; }
-
         public virtual TRN23100 TRN23100 { get; set; }
         public virtual ICollection<TRN13110> TRN13110 { get; set; }
     }

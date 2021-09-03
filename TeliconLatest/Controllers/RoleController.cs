@@ -31,7 +31,8 @@ namespace TeliconLatest.Controllers
         //[TeliconAuthorize(TaskId = 1)]
         public ActionResult Edit(string id)
         {
-            var data = db.Roles.Where(r => r.RoleName.Equals(id, StringComparison.CurrentCultureIgnoreCase)).FirstOrDefault();
+            List<Roles> roles = db.Roles.ToList();
+            Roles data = roles.FirstOrDefault(r => r.RoleName == id);
             return View("CreateOrUpdate", data);
         }
         [HttpPost]

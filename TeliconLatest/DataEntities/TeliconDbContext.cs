@@ -666,6 +666,16 @@ namespace TeliconLatest.DataEntities
             modelBuilder.Entity<TechnicianStatementDetail>().HasNoKey();
             modelBuilder.Entity<ContractorsStatement>().HasNoKey();
             modelBuilder.Entity<ContractorsStatementYTD>().HasNoKey();
+            modelBuilder.Entity<PaymentDetailStatement>().HasNoKey();
+            modelBuilder.Entity<CategoryInvoiceStatement>().HasNoKey();
+            modelBuilder.Entity<CategoryInvoiceStatementInvoiceSummary>().HasNoKey();
+            modelBuilder.Entity<DispatchWOStatementReport>().HasNoKey();
+            modelBuilder.Entity<ContractorBankPaymentsReport>().HasNoKey();
+            modelBuilder.Entity<POTracking>().HasNoKey();
+            modelBuilder.Entity<POSummary>().HasNoKey();
+            modelBuilder.Entity<MaterialUsage>().HasNoKey();
+            modelBuilder.Entity<MaterialUsageDetail>().HasNoKey();
+            modelBuilder.Entity<InvoiceSummaryData>().HasNoKey();
 
             OnModelCreatingPartial(modelBuilder);
         }

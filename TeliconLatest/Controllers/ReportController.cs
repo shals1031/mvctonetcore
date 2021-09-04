@@ -1,4 +1,8 @@
-﻿using LinqKit;
+﻿using iTextSharp.text;
+using iTextSharp.text.pdf;
+using LinqKit;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -7,9 +11,11 @@ using OfficeOpenXml.Style;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
+using System.Text;
 using TeliconLatest.DataEntities;
 using TeliconLatest.Models;
 using TeliconLatest.Reusables;
@@ -19,10 +25,12 @@ namespace TeliconLatest.Controllers
     public class ReportController : Controller
     {
         private readonly TeliconDbContext db;
+        private readonly IWebHostEnvironment _env;
 
-        public ReportController(TeliconDbContext db)
+        public ReportController(TeliconDbContext db, IWebHostEnvironment env)
         {
             this.db = db;
+            _env = env;
         }
 
         #region Contractor Statements
@@ -203,9 +211,9 @@ namespace TeliconLatest.Controllers
 
             if (pck.Workbook.Worksheets.Count() > 0)
             {
-                pck.SaveAs(Response.Body);
                 Response.ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
                 Response.Headers.Add("content-disposition", "attachment;  filename=" + docName + ".xlsx");
+                pck.SaveAs(Response.Body);
             }
         }
 
@@ -1068,11 +1076,10 @@ namespace TeliconLatest.Controllers
         }
         #endregion
 
-        /* #region Payment Detail Report
-        [TeliconAuthorize(TaskId = 24)]
+        #region Payment Detail Report
+        //[TeliconAuthorize(TaskId = 24)]
         public ActionResult PaymentDetails()
         {
-            var db = new TeliconEntities();
             var minYear = db.TRN23100.Min(x => x.Requestdt).Year;
             var maxYear = db.TRN23100.Max(x => x.Requestdt).Year;
             var yearsForSelection = new List<SelectListItem>();
@@ -1083,16 +1090,17 @@ namespace TeliconLatest.Controllers
             ViewBag.Years = yearsForSelection;
             return View();
         }
+
         [HttpPost]
         public ActionResult GeneratePaymentDetailStatements(string sortBy, string direction, DateTime? dateFrom, DateTime? dateTo)
         {
             var data = PaymentDetailStatementsData(sortBy, direction, dateFrom, dateTo);
             return PartialView("Partials/PaymentDetailStatementsPartial", data);
         }
+
         [HttpPost]
         public void PaymentDetailsToExcel(PaymentDetailFilter model)
         {
-            var db = new TeliconEntities();
             string docName = "PaymentDetails";
             ExcelPackage pck = new ExcelPackage();
 
@@ -1232,15 +1240,14 @@ namespace TeliconLatest.Controllers
 
             if (pck.Workbook.Worksheets.Count() > 0)
             {
-                pck.SaveAs(Response.OutputStream);
                 Response.ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-                Response.AddHeader("content-disposition", "attachment;  filename=" + docName + ".xlsx");
+                Response.Headers.Add("content-disposition", "attachment;  filename=" + docName + ".xlsx");
+                pck.SaveAs(Response.Body);
             }
         }
 
         public List<PaymentDetailReport> PaymentDetailStatementsData(string sortBy, string direction, DateTime? dateFrom, DateTime? dateTo)
         {
-            var db = new TeliconEntities();
             DateTime? start = null;
             DateTime? end = null;
             if (dateFrom.HasValue && dateTo.HasValue)
@@ -1253,7 +1260,7 @@ namespace TeliconLatest.Controllers
             {
                 ViewBag.DateFrom = dateFrom;
                 ViewBag.DateTo = dateTo;
-                var statements = db.PaymentDetailStatement(start, end).OrderBy(sortBy + " " + direction).ToList();
+                var statements = db.Set<PaymentDetailStatement>().FromSqlRaw("CALL PaymentDetailStatement('" + start.Value.ToString("yyyy-MM-dd") + "','" + end.Value.ToString("yyyy-MM-dd") + "')").ToList();
                 data = statements.Select(x => new PaymentDetailReport
                 {
                     Num = !string.IsNullOrEmpty(Convert.ToString(x.RN)) ? Convert.ToString(x.RN) : "-",
@@ -1275,10 +1282,9 @@ namespace TeliconLatest.Controllers
         #endregion
 
         #region Invoice by Category Report
-        [TeliconAuthorize(TaskId = 25)]
+        //[TeliconAuthorize(TaskId = 25)]
         public ActionResult CategoryInvoice()
         {
-            var db = new TeliconEntities();
             var CategorySelection = new List<SelectListItem>();
             var data = db.ADM03500.OrderBy(x => x.ClassId).ToList();
             CategorySelection.Add(new SelectListItem { Text = "All", Value = "0" });
@@ -1289,12 +1295,14 @@ namespace TeliconLatest.Controllers
             ViewBag.CategorySelection = CategorySelection;
             return View();
         }
+
         [HttpPost]
         public ActionResult GenerateCategoryInvoiceStatements(string sortBy, string direction, DateTime? dateFrom, DateTime? dateTo, string CategorySelection)
         {
             var data = CategoryInvoiceStatementsData(sortBy, direction, dateFrom, dateTo, CategorySelection);
             return PartialView("Partials/CategoryInvoiceStatementsPartial", data);
         }
+
         [HttpPost]
         public ActionResult CategoryInvoiceStatementInvoiceSummary(DateTime fromDate, DateTime toDate, int classId)
         {
@@ -1305,10 +1313,10 @@ namespace TeliconLatest.Controllers
             };
             return View(summary);
         }
+
         [HttpPost]
         public void CategoryInvoiceStatementsToExcel(CategoryInvoiceStatmentFilter model)
         {
-            var db = new TeliconEntities();
             string docName = "CategoryInvoiceStatements";
             ExcelPackage pck = new ExcelPackage();
 
@@ -1443,15 +1451,15 @@ namespace TeliconLatest.Controllers
 
             if (pck.Workbook.Worksheets.Count() > 0)
             {
-                pck.SaveAs(Response.OutputStream);
                 Response.ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-                Response.AddHeader("content-disposition", "attachment;  filename=" + docName + ".xlsx");
+                Response.Headers.Add("content-disposition", "attachment;  filename=" + docName + ".xlsx");
+                pck.SaveAs(Response.Body);
             }
         }
+
         [HttpPost]
         public void CategoryInvoiceStatementInvoiceSummaryToExcel(CategorInvoiceStatmentInvoiceSummaryFilter model)
         {
-            var db = new TeliconEntities();
             string docName = "CategoryInvoiceStatementInvoiceSummary";
             ExcelPackage pck = new ExcelPackage();
 
@@ -1602,15 +1610,14 @@ namespace TeliconLatest.Controllers
 
             if (pck.Workbook.Worksheets.Count() > 0)
             {
-                pck.SaveAs(Response.OutputStream);
                 Response.ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-                Response.AddHeader("content-disposition", "attachment;  filename=" + docName + ".xlsx");
+                Response.Headers.Add("content-disposition", "attachment;  filename=" + docName + ".xlsx");
+                pck.SaveAs(Response.Body);
             }
         }
 
         public List<CategoryInvoiceReport> CategoryInvoiceStatementsData(string sortBy, string direction, DateTime? dateFrom, DateTime? dateTo, string CategorySelection)
         {
-            var db = new TeliconEntities();
             DateTime? start = null;
             DateTime? end = null;
             if (dateFrom.HasValue && dateTo.HasValue)
@@ -1624,16 +1631,10 @@ namespace TeliconLatest.Controllers
                 ViewBag.DateFrom = dateFrom;
                 ViewBag.DateTo = dateTo;
 
-                var statements = db.CategoryInvoiceStatement(start, end).OrderBy(x => x.ClassID).ToList();
-
-                //if (CategorySelection != "0")
-                //{
-                //    int ID = Convert.ToInt32(CategorySelection);
-                //    statements = statements.Where(x => x.ClassID == ID).OrderBy(sortBy + " " + direction).ToList();
-                //}
+                var statements = db.Set<CategoryInvoiceStatement>().FromSqlRaw("CALL CategoryInvoiceStatement('" + start.Value.ToString("yyyy-MM-dd") + "','" + end.Value.ToString("yyyy-MM-dd") + "')").ToList();
                 data = statements.Select(x => new CategoryInvoiceReport
                 {
-                    Total = !string.IsNullOrEmpty(Convert.ToString(x.TotalAmount)) ? Convert.ToDecimal(x.TotalAmount) : 0,
+                    Total = !string.IsNullOrEmpty(Convert.ToString(x.TotalAmount.Value)) ? Convert.ToDecimal(x.TotalAmount.Value) : 0,
                     Category = !string.IsNullOrEmpty(Convert.ToString(x.Category)) ? Convert.ToString(x.Category) : "-",
                     CategoryID = x.ClassID
                 }).ToList();
@@ -1643,15 +1644,12 @@ namespace TeliconLatest.Controllers
 
         public List<SummaryPrintOut> CategoryInvoiceStatementInvoiceSummaryData(DateTime fromDate, DateTime toDate, int classId)
         {
-            var db = new TeliconEntities();
-            var profile = Telicon.Models.AppProfile.GetProfile().ProfileInfo;
-            var user = profile.FirstName + " " + profile.LastName;
             var classStr = db.ADM03500.FirstOrDefault(x => x.ClassId == classId).ClassName;
             ViewBag.ClassName = classStr;
             ViewBag.ClassId = classId;
             ViewBag.DateFrom = fromDate;
             ViewBag.DateTo = toDate;
-            var data = db.CategoryInvoiceStatementInvoiceSummary(fromDate, toDate, classId);
+            var data = db.Set<CategoryInvoiceStatementInvoiceSummary>().FromSqlRaw("CALL CategoryInvoiceStatementInvoiceSummary('" + fromDate.ToString("yyyy-MM-dd") + "','" + toDate.ToString("yyyy-MM-dd") + "'," + classId + ")").ToList();
             var printData = data.Select(x => new SummaryPrintOut
             {
                 InvoiceID = Customs.MakeGenericInvoiceNo(x.InvoiceNum),
@@ -1668,7 +1666,7 @@ namespace TeliconLatest.Controllers
         #endregion
 
         #region Dispatched WO Report
-        [TeliconAuthorize(TaskId = 26)]
+        //[TeliconAuthorize(TaskId = 26)]
         public ActionResult DispatchedWO()
         {
             return View();
@@ -1682,7 +1680,6 @@ namespace TeliconLatest.Controllers
         [HttpPost]
         public void DispatchedWOStatementsToExcel(DispatchedWOStatmentFilter model)
         {
-            var db = new TeliconEntities();
             string docName = "DispatchedWOStatements";
             ExcelPackage pck = new ExcelPackage();
 
@@ -1812,15 +1809,14 @@ namespace TeliconLatest.Controllers
 
             if (pck.Workbook.Worksheets.Count() > 0)
             {
-                pck.SaveAs(Response.OutputStream);
                 Response.ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-                Response.AddHeader("content-disposition", "attachment;  filename=" + docName + ".xlsx");
+                Response.Headers.Add("content-disposition", "attachment;  filename=" + docName + ".xlsx");
+                pck.SaveAs(Response.Body);
             }
         }
 
         public List<DispatchWOModel> DispatchedWOStatementsData(string sortBy, string direction, DateTime? dateFrom, DateTime? dateTo)
         {
-            var db = new TeliconEntities();
             DateTime? start = null;
             DateTime? end = null;
             if (dateFrom.HasValue && dateTo.HasValue)
@@ -1833,8 +1829,7 @@ namespace TeliconLatest.Controllers
             {
                 ViewBag.DateFrom = dateFrom;
                 ViewBag.DateTo = dateTo;
-                //var statements = db.DispatchWOStatementReport(start, end).OrderBy(sortBy + " " + direction).ToList();
-                var statements = db.DispatchWOStatementReport(start, end).ToList();
+                var statements = db.Set<DispatchWOStatementReport>().FromSqlRaw("CALL DispatchWOStatementReport('" + start.Value.ToString("yyyy-MM-dd") + "','" + end.Value.ToString("yyyy-MM-dd") + "')").ToList();
                 data = statements.Select(x => new DispatchWOModel
                 {
                     Wo_ref = !string.IsNullOrEmpty(Convert.ToString(x.Wo_ref)) ? Convert.ToString(x.Wo_ref) : "-",
@@ -1849,15 +1844,14 @@ namespace TeliconLatest.Controllers
 
         #endregion
 
-        [Authorize(Roles = "AppAdmin, SuperAdmin, Admin, Supervisor, Technician")]
+        //[Authorize(Roles = "AppAdmin, SuperAdmin, Admin, Supervisor, Technician")]
         public ActionResult PeriodDetail(ActivitySummaryFilter model)
         {
-            TeliconEntities db = new TeliconEntities();
             int year = model.year;
             int period = model.period ?? 0;
             var p = Customs.GetPeriods(year, year).FirstOrDefault(x => x.PeriodNo == period);
             ViewBag.Period = p;
-            var gRecs = db.TechnicianStatementDetail(model.conId, p.PayDate, p.PayDate).GroupBy(x => x.ActivityID).ToList();
+            var gRecs = db.Set<TechnicianStatementDetail>().FromSqlRaw("CALL TechnicianStatementDetail(" + model.conId + ",'" + p.PayDate.ToString("yyyy-MM-dd") + ",'" + p.PayDate.ToString("yyyy-MM-dd") + "')").GroupBy(x => x.ActivityID).ToList();
             List<PeriodDetail> dbData = new List<PeriodDetail>();
             foreach (var rec in gRecs)
             {
@@ -1881,10 +1875,10 @@ namespace TeliconLatest.Controllers
         }
 
         #region ContractorPaymentsBankFile
-        [TeliconAuthorize(TaskId = 28)]
+
+        //[TeliconAuthorize(TaskId = 28)]
         public ActionResult ContractorPaymentsBankFile()
         {
-            var db = new TeliconEntities();
             var minYear = db.TRN23100.Min(x => x.Requestdt).Year;
             var maxYear = db.TRN23100.Max(x => x.Requestdt).Year;
             var yearsForSelection = new List<SelectListItem>();
@@ -1908,10 +1902,10 @@ namespace TeliconLatest.Controllers
             ViewBag.PeriodList = periodList;
             return View();
         }
+
         [HttpPost]
         public void GenerateBankFileCSV(TempR model)
         {
-            var db = new TeliconEntities();
             Period pStart = null;
             DateTime? start = null;
             DateTime? end = null;
@@ -1929,8 +1923,8 @@ namespace TeliconLatest.Controllers
             var data = new List<ContractorBankPayments>();
             if (start.HasValue && end.HasValue)
             {
-                var statements = db.ContractorBankPayments(start, end).ToList();
-                data = statements.Join(db.ADM03300, x => x.ContractorID, y => y.ConID, (x, y) => new ContractorBankPayments
+                var statements = db.Set<ContractorBankPaymentsReport>().FromSqlRaw("CALL ContractorBankPayments('" + start.Value.ToString("yyyy-MM-dd") + "','" + end.Value.ToString("yyyy-MM-dd") + "')").ToList();
+                data = statements.Join(db.ADM03300.Include(z => z.ADM02200).ThenInclude(y => y.ADM02100), x => x.ContractorID, y => y.ConID, (x, y) => new ContractorBankPayments
                 {
                     Amount = x.PenalizeTotal.Value,
                     Currency = "JMD",
@@ -1950,9 +1944,10 @@ namespace TeliconLatest.Controllers
 
                 sw.WriteLine("\"H\",\"" + start.Value.ToString("yyyyMMdd") + "\",\"990751027606\",\"JMD\",\"" + data.Count + "\",\"" + string.Format("{0:0.00}", data.Sum(x => Math.Truncate(x.Amount * 100) / 100)) + "\", Telicon" + start.Value.ToString("yyyyMMdd") + "");
 
-                Response.ClearContent();
-                Response.AddHeader("content-disposition", "attachment; filename=Telicon Payroll Global Access.csv");
+                Response.Clear();
+                Response.Headers.Add("content-disposition", "attachment; filename=Telicon Payroll Global Access.csv");
                 Response.ContentType = "text/csv";
+
                 int n = 1;
                 var FGBData = data.FindAll(x => x.BankId == "99");
                 foreach (var line in FGBData)
@@ -2009,18 +2004,32 @@ namespace TeliconLatest.Controllers
                     n++;
                 }
 
-                Response.Write(sw.ToString());
-                Response.End();
+                Response.StatusCode = StatusCodes.Status200OK;
+                Response.WriteAsync(sw.ToString()).Wait();
+            }
+
+            else
+            {
+                StringWriter sw = new StringWriter();
+
+                sw.WriteLine("\"H\",\"" + start.Value.ToString("yyyyMMdd") + "\",\"990751027606\",\"JMD\",\"" + data.Count + "\",\"" + string.Format("{0:0.00}", data.Sum(x => Math.Truncate(x.Amount * 100) / 100)) + "\", Telicon" + start.Value.ToString("yyyyMMdd") + "");
+
+                Response.Clear();
+                Response.Headers.Add("content-disposition", "attachment; filename=Telicon Payroll Global Access.csv");
+                Response.ContentType = "text/csv";
+
+                Response.StatusCode = StatusCodes.Status200OK;
+                Response.WriteAsync(sw.ToString()).Wait();
             }
         }
 
         #endregion
 
         #region Contractor Pay Slip
-        [TeliconAuthorize(TaskId = 29)]
+
+        //[TeliconAuthorize(TaskId = 29)]
         public ActionResult ContractorPaySlip()
         {
-            var db = new TeliconEntities();
             var minYear = db.TRN23100.Min(x => x.Requestdt).Year;
             var maxYear = db.TRN23100.Max(x => x.Requestdt).Year;
             var yearsForSelection = new List<SelectListItem>();
@@ -2050,15 +2059,12 @@ namespace TeliconLatest.Controllers
         [HttpPost]
         public FileResult GenerateConractorPaySlip(TempR model)
         {
-            var db = new TeliconEntities();
             int year = model.periodStartYear;
             int period = model.periodStart;
             var p = Customs.GetPeriods(year, year).FirstOrDefault(x => x.PeriodNo == period);
 
-            //var TRecords = db.TechnicianPaySlipDetail(p.PayDate, p.PayDate).ToList();
-
-            var statements = db.ContractorsStatement(p.PayDate, p.PayDate).ToList();
-            var TRecords = statements.Join(db.ADM03300, x => x.ContractorID, y => y.ConID, (x, y) => new ContractorPaySlipReport
+            var statements = db.Set<ContractorsStatement>().FromSqlRaw("CALL ContractorsStatement('" + p.PayDate.ToString("yyyy-MM-dd") + "','" + p.PayDate.ToString("yyyy-MM-dd") + "')").ToList();
+            var TRecords = statements.Join(db.ADM03300.Include(z => z.ADM04200), x => x.ContractorID, y => y.ConID, (x, y) => new ContractorPaySlipReport
             {
                 EmployeeID = y.EmployeeID,
                 FirstName = y.FirstName,
@@ -2084,15 +2090,10 @@ namespace TeliconLatest.Controllers
             DateTime dTime = DateTime.Now;
             //file name to be created 
             string strPDFFileName = string.Format("ContractorPaySlips_" + p.PayDate.ToString("yyyyMMdd") + ".pdf");
-            //file will created in this path
-            string strAttachment = Server.MapPath("~/Downloadss/" + strPDFFileName);
 
-            //for (int p = 0; p < 3; p++)
-            //{
             Document doc = new Document();
             doc.SetPageSize(PageSize.A4);
             doc.SetMargins(0f, 0f, 0f, 0f);
-            //doc.SetMargins(0f, 0f, 0f, 0f);
             PdfWriter writer = PdfWriter.GetInstance(doc, workStream);
             writer.CloseStream = false;
 
@@ -2101,13 +2102,12 @@ namespace TeliconLatest.Controllers
             if (TRecords != null && TRecords.Count > 0)
             {
                 List<int> conIds = TRecords.Select(x => x.ConId).ToList();
-                //Create Pay slip border
                 int c = 2;
                 int i = 0;
                 foreach (var conId in conIds)
                 {
                     var rows = TRecords.FindAll(x => x.ConId == conId);
-                    var deductions = db.TRN04100.Where(x => x.ConductorID == conId && x.StartDate <= p.PayDate && x.EndDate >= p.PayDate).ToList();
+                    var deductions = db.TRN04100.Include(z => z.ADM04100).Where(x => x.ConductorID == conId && x.StartDate <= p.PayDate && x.EndDate >= p.PayDate).ToList();
                     var deductData = deductions.Select(x => new ContractorDeductionReport
                     {
                         DeductionName = x.ADM04100.Name,
@@ -2116,7 +2116,8 @@ namespace TeliconLatest.Controllers
                         Amount = x.Amount
                     }).ToList();
 
-                    var img = iTextSharp.text.Image.GetInstance(new Uri(Server.MapPath("~/images/print-logo.png")));
+                    var path = Path.Combine(_env.WebRootPath, "Images", "print-logo.png");
+                    var img = iTextSharp.text.Image.GetInstance(new Uri(path));
                     img.ScaleAbsolute(104, 56);
                     img.SetAbsolutePosition(11, ((c * (doc.PageSize.Height / 3)) + 5) + (doc.PageSize.Height / 3) - 70);
                     doc.Add(img);
@@ -2168,8 +2169,6 @@ namespace TeliconLatest.Controllers
                                                     //Add Title to the PDF file at the top
                                                     //tableLayout.
 
-            //List<Employee> employees = _context.employees.ToList<Employee>();
-
             tableLayout.AddCell(new PdfPCell(new Phrase("Cont :", FontFactory.GetFont("Ebrima", 9, iTextSharp.text.Font.BOLD))) { HorizontalAlignment = Element.ALIGN_LEFT, BackgroundColor = new iTextSharp.text.BaseColor(255, 255, 255), Border = 0 });
             tableLayout.AddCell(new PdfPCell(new Phrase(detail.FirstName + " " + detail.LastName, FontFactory.GetFont("Ebrima", 9, iTextSharp.text.Font.NORMAL))) { HorizontalAlignment = Element.ALIGN_LEFT, BackgroundColor = new iTextSharp.text.BaseColor(255, 255, 255), Border = 0 });
             tableLayout.AddCell(new PdfPCell(new Phrase("Cont. No :", FontFactory.GetFont("Ebrima", 9, iTextSharp.text.Font.BOLD))) { HorizontalAlignment = Element.ALIGN_LEFT, BackgroundColor = new iTextSharp.text.BaseColor(255, 255, 255), Border = 0 });
@@ -2208,10 +2207,8 @@ namespace TeliconLatest.Controllers
             };  //Header Widths
             tableLayout.SetWidths(headers);        //Set the pdf headers
             tableLayout.WidthPercentage = 96.5f;       //Set the PDF File witdh percentage
-            //tableLayout.HeaderRows = 1;
             //Add Title to the PDF file at the top
 
-            //List<Employee> employees = _context.employees.ToList<Employee>();
 
             var boldText = iTextSharp.text.Font.BOLD;
             var normalText = iTextSharp.text.Font.NORMAL;
@@ -2337,13 +2334,13 @@ namespace TeliconLatest.Controllers
         private static void AddCellToHeader(PdfPTable tableLayout, string cellText)
         {
 
-            tableLayout.AddCell(new PdfPCell(new Phrase(cellText, new iTextSharp.text.Font(iTextSharp.text.Font.FontFamily.HELVETICA, 8, 1, iTextSharp.text.BaseColor.YELLOW))) { HorizontalAlignment = Element.ALIGN_LEFT, Padding = 5, BackgroundColor = new iTextSharp.text.BaseColor(128, 0, 0) });
+            tableLayout.AddCell(new PdfPCell(new Phrase(cellText, new iTextSharp.text.Font(iTextSharp.text.Font.HELVETICA, 8, 1, iTextSharp.text.BaseColor.Yellow))) { HorizontalAlignment = Element.ALIGN_LEFT, Padding = 5, BackgroundColor = new iTextSharp.text.BaseColor(128, 0, 0) });
         }
 
         // Method to add single cell to the body
         private static void AddCellToBody(PdfPTable tableLayout, string cellText)
         {
-            tableLayout.AddCell(new PdfPCell(new Phrase(cellText, new iTextSharp.text.Font(iTextSharp.text.Font.FontFamily.HELVETICA, 8, 1, iTextSharp.text.BaseColor.BLACK))) { HorizontalAlignment = Element.ALIGN_LEFT, Padding = 5, BackgroundColor = new iTextSharp.text.BaseColor(255, 255, 255) });
+            tableLayout.AddCell(new PdfPCell(new Phrase(cellText, new iTextSharp.text.Font(iTextSharp.text.Font.HELVETICA, 8, 1, iTextSharp.text.BaseColor.Black))) { HorizontalAlignment = Element.ALIGN_LEFT, Padding = 5, BackgroundColor = new iTextSharp.text.BaseColor(255, 255, 255) });
         }
 
         #endregion
@@ -2352,10 +2349,10 @@ namespace TeliconLatest.Controllers
         #endregion
 
         #region PO Tracking
-        [TeliconAuthorize(TaskId = 30)]
+
+        //[TeliconAuthorize(TaskId = 30)]
         public ActionResult POTracking()
         {
-            var db = new TeliconEntities();
             var minYear = db.TRN23100.Min(x => x.Requestdt).Year;
             var maxYear = db.TRN23100.Max(x => x.Requestdt).Year;
             var yearsForSelection = new List<SelectListItem>();
@@ -2387,7 +2384,6 @@ namespace TeliconLatest.Controllers
         [HttpPost]
         public void POTrackingToExcel(POTrackingFilter model)
         {
-            var db = new TeliconEntities();
             string docName = "POTracking";
             ExcelPackage pck = new ExcelPackage();
 
@@ -2419,92 +2415,6 @@ namespace TeliconLatest.Controllers
                 ws.Column(4).Width = 20;
                 ws.Column(5).Width = 13;
                 int y = 1;
-                #region Header
-                ////string logoSearchPath = "/images/print-logo.png";
-                ////if (Directory.Exists(Server.MapPath("/work")))
-                ////    logoSearchPath = "/work/images/print-logo.png";
-                ////string logoPath = Server.MapPath(logoSearchPath);
-                ////FileInfo fi = new FileInfo(logoPath);
-                ////var image = ws.Drawings.AddPicture("print-logo.png", fi);
-                ////image.SetPosition(0, 0);
-                ////image.SetSize(205, 111);
-
-                //#region Telicon Address
-                //ws.Cells["C1"].Value = "P.O. BOX 3069";
-                //ws.Cells["C1"].Style.Font.Bold = true;
-                //ws.Cells["C1"].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
-                //ws.Cells["C2"].Value = "Kingston 8";
-                //ws.Cells["C2"].Style.Font.Bold = true;
-                //ws.Cells["C2"].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
-                //ws.Cells["C3"].Value = "Tel: 618-3628";
-                //ws.Cells["C3"].Style.Font.Bold = true;
-                //ws.Cells["C3"].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
-                //ws.Cells["C4"].Value = "Email: admin@telicongroup.com";
-                //ws.Cells["C4"].Style.Font.Bold = true;
-                //ws.Cells["C4"].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
-                //#endregion
-
-                //if (invoice.Client.InvoiceNo > 0)
-                //{
-                //    ws.Cells["D1"].Value = "Invoice #:";
-                //    ws.Cells["E1"].Value = Customs.MakeGenericInvoiceNo(invoice.Client.InvoiceNo);
-                //    ws.Cells["D1"].Style.Font.Bold = true;
-                //    ws.Cells["E1"].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
-
-                //    ws.Cells["D2"].Value = "GCT #:";
-                //    ws.Cells["E2"].Value = invoice.Client.GCTNo;
-                //    ws.Cells["D2"].Style.Font.Bold = true;
-                //    ws.Cells[1, 3, 12, 4].Style.Font.Name = "Inherit";
-                //}
-
-                //#region Client Details
-                //ws.Cells["A8"].Value = "Co. Name:";
-                //ws.Cells["A8"].Style.Font.Bold = true;
-                //ws.Cells[8, 2, 8, 3].Merge = true;
-                //ws.Cells["B8"].Value = invoice.Client.ClientName;
-
-                //ws.Cells["A9"].Value = "Attn.:";
-                //ws.Cells["A9"].Style.Font.Bold = true;
-                //ws.Cells[9, 2, 9, 3].Merge = true;
-                //ws.Cells["B9"].Value = invoice.Client.Attention;
-
-                //ws.Cells["A10"].Value = "Address:";
-                //ws.Cells["A10"].Style.Font.Bold = true;
-                //ws.Cells[10, 2, 10, 3].Merge = true;
-                //ws.Cells["B10"].Value = invoice.Client.Address;
-
-                //ws.Cells["A11"].Value = "Phone:";
-                //ws.Cells["A11"].Style.Font.Bold = true;
-                //ws.Cells[11, 2, 11, 3].Merge = true;
-                //ws.Cells["B11"].Value = invoice.Client.Phone;
-
-                //ws.Cells["A12"].Value = "Email:";
-                //ws.Cells["A12"].Style.Font.Bold = true;
-                //ws.Cells[12, 2, 12, 3].Merge = true;
-                //ws.Cells["B12"].Value = invoice.Client.Email;
-
-                //ws.Cells[8, 1, 12, 1].Style.Font.Name = "Inherit";
-                //#endregion
-
-                //ws.Cells["D8"].Value = "Date:";
-                //ws.Cells["D8"].Style.Font.Bold = true;
-                //ws.Cells["E8"].Value = string.Format("{0:dd/MM/yyyy}", invoice.Client.Date);
-
-                //ws.Cells["D9"].Value = "Prepared By:";
-                //ws.Cells["D9"].Style.Font.Bold = true;
-                //ws.Cells["E9"].Value = invoice.Client.User;
-
-                //ws.Cells["D10"].Value = "Currency:";
-                //ws.Cells["D10"].Style.Font.Bold = true;
-                //ws.Cells["E10"].Value = invoice.Client.Currency;
-
-                //if (invoice.Client.InvoiceNo > 0)
-                //{
-                //    ws.Cells["D11"].Value = "Ticket #:";
-                //    ws.Cells["D11"].Style.Font.Bold = true;
-                //    ws.Cells["E11"].Value = invoice.Client.ReferenceNo;
-                //}
-                #endregion
 
                 #region Title
                 ws.Cells[y, 1, y, 5].Merge = true;
@@ -2653,18 +2563,17 @@ namespace TeliconLatest.Controllers
 
             if (pck.Workbook.Worksheets.Count() > 0)
             {
-                pck.SaveAs(Response.OutputStream);
                 Response.ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-                Response.AddHeader("content-disposition", "attachment;  filename=" + docName + ".xlsx");
+                Response.Headers.Add("content-disposition", "attachment;  filename=" + docName + ".xlsx");
+                pck.SaveAs(Response.Body);
             }
         }
 
-        public List<POTracking_Result> POTrackingData(POTrackingFilter model)
+        public List<POTracking> POTrackingData(POTrackingFilter model)
         {
-            var db = new TeliconEntities();
             ViewBag.DateFrom = model.dateFrom;
             ViewBag.DateTo = model.dateTo;
-            var data = db.POTracking(model.pONum, model.dateFrom, model.dateTo).ToList();
+            var data = db.Set<POTracking>().FromSqlRaw("CALL POTracking('" + model.pONum + "','" + model.dateFrom.Value.ToString("yyyy-MM-dd") + "','" + model.dateTo.Value.ToString("yyyy-MM-dd") + "')").ToList();
             var po = db.ADM16200.Where(x => x.PONUM == model.pONum).FirstOrDefault();
             ViewBag.POAmount = po != null ? po.TOTAL : 0;
             ViewBag.Description = po != null ? po.Description : "";
@@ -2674,10 +2583,10 @@ namespace TeliconLatest.Controllers
         #endregion
 
         #region PO Summary
-        [TeliconAuthorize(TaskId = 31)]
+
+        //[TeliconAuthorize(TaskId = 31)]
         public ActionResult POSummary()
         {
-            var db = new TeliconEntities();
             var minYear = db.TRN23100.Min(x => x.Requestdt).Year;
             var maxYear = db.TRN23100.Max(x => x.Requestdt).Year;
             var yearsForSelection = new List<SelectListItem>();
@@ -2709,7 +2618,6 @@ namespace TeliconLatest.Controllers
         [HttpPost]
         public void POSummaryToExcel(POSummaryFilter model)
         {
-            var db = new TeliconEntities();
             string docName = "POSummary";
             ExcelPackage pck = new ExcelPackage();
 
@@ -2722,7 +2630,6 @@ namespace TeliconLatest.Controllers
 
                 #region View and Print Seetings
 
-                //ws.View.PageLayoutView = true;
                 ws.PrinterSettings.ShowGridLines = false;
 
                 ws.PrinterSettings.PaperSize = ePaperSize.A4;
@@ -2739,92 +2646,6 @@ namespace TeliconLatest.Controllers
                 ws.Column(2).Width = 25;
                 ws.Column(3).Width = 25;
                 int y = 1; int cc = 3;
-                #region Header
-                ////string logoSearchPath = "/images/print-logo.png";
-                ////if (Directory.Exists(Server.MapPath("/work")))
-                ////    logoSearchPath = "/work/images/print-logo.png";
-                ////string logoPath = Server.MapPath(logoSearchPath);
-                ////FileInfo fi = new FileInfo(logoPath);
-                ////var image = ws.Drawings.AddPicture("print-logo.png", fi);
-                ////image.SetPosition(0, 0);
-                ////image.SetSize(205, 111);
-
-                //#region Telicon Address
-                //ws.Cells["C1"].Value = "P.O. BOX 3069";
-                //ws.Cells["C1"].Style.Font.Bold = true;
-                //ws.Cells["C1"].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
-                //ws.Cells["C2"].Value = "Kingston 8";
-                //ws.Cells["C2"].Style.Font.Bold = true;
-                //ws.Cells["C2"].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
-                //ws.Cells["C3"].Value = "Tel: 618-3628";
-                //ws.Cells["C3"].Style.Font.Bold = true;
-                //ws.Cells["C3"].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
-                //ws.Cells["C4"].Value = "Email: admin@telicongroup.com";
-                //ws.Cells["C4"].Style.Font.Bold = true;
-                //ws.Cells["C4"].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
-                //#endregion
-
-                //if (invoice.Client.InvoiceNo > 0)
-                //{
-                //    ws.Cells["D1"].Value = "Invoice #:";
-                //    ws.Cells["E1"].Value = Customs.MakeGenericInvoiceNo(invoice.Client.InvoiceNo);
-                //    ws.Cells["D1"].Style.Font.Bold = true;
-                //    ws.Cells["E1"].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
-
-                //    ws.Cells["D2"].Value = "GCT #:";
-                //    ws.Cells["E2"].Value = invoice.Client.GCTNo;
-                //    ws.Cells["D2"].Style.Font.Bold = true;
-                //    ws.Cells[1, 3, 12, 4].Style.Font.Name = "Inherit";
-                //}
-
-                //#region Client Details
-                //ws.Cells["A8"].Value = "Co. Name:";
-                //ws.Cells["A8"].Style.Font.Bold = true;
-                //ws.Cells[8, 2, 8, 3].Merge = true;
-                //ws.Cells["B8"].Value = invoice.Client.ClientName;
-
-                //ws.Cells["A9"].Value = "Attn.:";
-                //ws.Cells["A9"].Style.Font.Bold = true;
-                //ws.Cells[9, 2, 9, 3].Merge = true;
-                //ws.Cells["B9"].Value = invoice.Client.Attention;
-
-                //ws.Cells["A10"].Value = "Address:";
-                //ws.Cells["A10"].Style.Font.Bold = true;
-                //ws.Cells[10, 2, 10, 3].Merge = true;
-                //ws.Cells["B10"].Value = invoice.Client.Address;
-
-                //ws.Cells["A11"].Value = "Phone:";
-                //ws.Cells["A11"].Style.Font.Bold = true;
-                //ws.Cells[11, 2, 11, 3].Merge = true;
-                //ws.Cells["B11"].Value = invoice.Client.Phone;
-
-                //ws.Cells["A12"].Value = "Email:";
-                //ws.Cells["A12"].Style.Font.Bold = true;
-                //ws.Cells[12, 2, 12, 3].Merge = true;
-                //ws.Cells["B12"].Value = invoice.Client.Email;
-
-                //ws.Cells[8, 1, 12, 1].Style.Font.Name = "Inherit";
-                //#endregion
-
-                //ws.Cells["D8"].Value = "Date:";
-                //ws.Cells["D8"].Style.Font.Bold = true;
-                //ws.Cells["E8"].Value = string.Format("{0:dd/MM/yyyy}", invoice.Client.Date);
-
-                //ws.Cells["D9"].Value = "Prepared By:";
-                //ws.Cells["D9"].Style.Font.Bold = true;
-                //ws.Cells["E9"].Value = invoice.Client.User;
-
-                //ws.Cells["D10"].Value = "Currency:";
-                //ws.Cells["D10"].Style.Font.Bold = true;
-                //ws.Cells["E10"].Value = invoice.Client.Currency;
-
-                //if (invoice.Client.InvoiceNo > 0)
-                //{
-                //    ws.Cells["D11"].Value = "Ticket #:";
-                //    ws.Cells["D11"].Style.Font.Bold = true;
-                //    ws.Cells["E11"].Value = invoice.Client.ReferenceNo;
-                //}
-                #endregion
 
                 #region Title
                 ws.Cells[y, 1, y, cc].Merge = true;
@@ -2909,15 +2730,14 @@ namespace TeliconLatest.Controllers
 
             if (pck.Workbook.Worksheets.Count() > 0)
             {
-                pck.SaveAs(Response.OutputStream);
                 Response.ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-                Response.AddHeader("content-disposition", "attachment;  filename=" + docName + ".xlsx");
+                Response.Headers.Add("content-disposition", "attachment;  filename=" + docName + ".xlsx");
+                pck.SaveAs(Response.Body);
             }
         }
 
-        public List<POSummary_Result> POSummaryData(POSummaryFilter model)
+        public List<POSummary> POSummaryData(POSummaryFilter model)
         {
-            var db = new TeliconEntities();
             Period pEnd = null;
             Period pStart = null;
             DateTime? start = null;
@@ -2939,7 +2759,7 @@ namespace TeliconLatest.Controllers
             ViewBag.pDateTo = pEnd.DateTo;
             ViewBag.YearFrom = pStart.PeriodYear;
             ViewBag.YearTo = pStart.PeriodYear;
-            var data = db.POSummary(pStart.PeriodYear, start, end).ToList();
+            var data = db.Set<POSummary>().FromSqlRaw("CALL POSummary(" + pStart.PeriodYear + ",'" + start.Value.ToString("yyyy-MM-dd") + "','" + end.Value.ToString("yyyy-MM-dd") + "')").ToList();
             data.ForEach(x => x.PONum = (x.PONum == null ? "TEMPPO" : x.PONum));
             return data;
         }
@@ -2953,7 +2773,6 @@ namespace TeliconLatest.Controllers
         [HttpPost]
         public void POSummaryDetailsToExcel(POSummaryDetaisFilter model)
         {
-            var db = new TeliconEntities();
             string docName = "POSummaryDetails";
             ExcelPackage pck = new ExcelPackage();
 
@@ -2984,92 +2803,6 @@ namespace TeliconLatest.Controllers
                 ws.Column(3).Width = 50;
                 ws.Column(4).Width = 13;
                 int y = 1; int cc = 4;
-                #region Header
-                ////string logoSearchPath = "/images/print-logo.png";
-                ////if (Directory.Exists(Server.MapPath("/work")))
-                ////    logoSearchPath = "/work/images/print-logo.png";
-                ////string logoPath = Server.MapPath(logoSearchPath);
-                ////FileInfo fi = new FileInfo(logoPath);
-                ////var image = ws.Drawings.AddPicture("print-logo.png", fi);
-                ////image.SetPosition(0, 0);
-                ////image.SetSize(205, 111);
-
-                //#region Telicon Address
-                //ws.Cells["C1"].Value = "P.O. BOX 3069";
-                //ws.Cells["C1"].Style.Font.Bold = true;
-                //ws.Cells["C1"].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
-                //ws.Cells["C2"].Value = "Kingston 8";
-                //ws.Cells["C2"].Style.Font.Bold = true;
-                //ws.Cells["C2"].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
-                //ws.Cells["C3"].Value = "Tel: 618-3628";
-                //ws.Cells["C3"].Style.Font.Bold = true;
-                //ws.Cells["C3"].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
-                //ws.Cells["C4"].Value = "Email: admin@telicongroup.com";
-                //ws.Cells["C4"].Style.Font.Bold = true;
-                //ws.Cells["C4"].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
-                //#endregion
-
-                //if (invoice.Client.InvoiceNo > 0)
-                //{
-                //    ws.Cells["D1"].Value = "Invoice #:";
-                //    ws.Cells["E1"].Value = Customs.MakeGenericInvoiceNo(invoice.Client.InvoiceNo);
-                //    ws.Cells["D1"].Style.Font.Bold = true;
-                //    ws.Cells["E1"].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
-
-                //    ws.Cells["D2"].Value = "GCT #:";
-                //    ws.Cells["E2"].Value = invoice.Client.GCTNo;
-                //    ws.Cells["D2"].Style.Font.Bold = true;
-                //    ws.Cells[1, 3, 12, 4].Style.Font.Name = "Inherit";
-                //}
-
-                //#region Client Details
-                //ws.Cells["A8"].Value = "Co. Name:";
-                //ws.Cells["A8"].Style.Font.Bold = true;
-                //ws.Cells[8, 2, 8, 3].Merge = true;
-                //ws.Cells["B8"].Value = invoice.Client.ClientName;
-
-                //ws.Cells["A9"].Value = "Attn.:";
-                //ws.Cells["A9"].Style.Font.Bold = true;
-                //ws.Cells[9, 2, 9, 3].Merge = true;
-                //ws.Cells["B9"].Value = invoice.Client.Attention;
-
-                //ws.Cells["A10"].Value = "Address:";
-                //ws.Cells["A10"].Style.Font.Bold = true;
-                //ws.Cells[10, 2, 10, 3].Merge = true;
-                //ws.Cells["B10"].Value = invoice.Client.Address;
-
-                //ws.Cells["A11"].Value = "Phone:";
-                //ws.Cells["A11"].Style.Font.Bold = true;
-                //ws.Cells[11, 2, 11, 3].Merge = true;
-                //ws.Cells["B11"].Value = invoice.Client.Phone;
-
-                //ws.Cells["A12"].Value = "Email:";
-                //ws.Cells["A12"].Style.Font.Bold = true;
-                //ws.Cells[12, 2, 12, 3].Merge = true;
-                //ws.Cells["B12"].Value = invoice.Client.Email;
-
-                //ws.Cells[8, 1, 12, 1].Style.Font.Name = "Inherit";
-                //#endregion
-
-                //ws.Cells["D8"].Value = "Date:";
-                //ws.Cells["D8"].Style.Font.Bold = true;
-                //ws.Cells["E8"].Value = string.Format("{0:dd/MM/yyyy}", invoice.Client.Date);
-
-                //ws.Cells["D9"].Value = "Prepared By:";
-                //ws.Cells["D9"].Style.Font.Bold = true;
-                //ws.Cells["E9"].Value = invoice.Client.User;
-
-                //ws.Cells["D10"].Value = "Currency:";
-                //ws.Cells["D10"].Style.Font.Bold = true;
-                //ws.Cells["E10"].Value = invoice.Client.Currency;
-
-                //if (invoice.Client.InvoiceNo > 0)
-                //{
-                //    ws.Cells["D11"].Value = "Ticket #:";
-                //    ws.Cells["D11"].Style.Font.Bold = true;
-                //    ws.Cells["E11"].Value = invoice.Client.ReferenceNo;
-                //}
-                #endregion
 
                 #region Title
                 ws.Cells[y, 1, y, cc].Merge = true;
@@ -3219,22 +2952,21 @@ namespace TeliconLatest.Controllers
 
             if (pck.Workbook.Worksheets.Count() > 0)
             {
-                pck.SaveAs(Response.OutputStream);
                 Response.ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-                Response.AddHeader("content-disposition", "attachment;  filename=" + docName + ".xlsx");
+                Response.Headers.Add("content-disposition", "attachment;  filename=" + docName + ".xlsx");
+                pck.SaveAs(Response.Body);
             }
         }
 
-        public List<POSummary_Result> POSummaryDetailsData(int? yearFrom, int? yearTo, DateTime? dateFrom, DateTime? dateTo, string poNum)
+        public List<POSummary> POSummaryDetailsData(int? yearFrom, int? yearTo, DateTime? dateFrom, DateTime? dateTo, string poNum)
         {
-            var db = new TeliconEntities();
             ViewBag.DateFrom = dateFrom;
             ViewBag.DateTo = dateTo;
             ViewBag.YearFrom = yearFrom;
             ViewBag.YearTo = yearTo;
             ViewBag.PONum = poNum;
 
-            var data = db.POSummary(yearFrom, dateFrom, dateTo).ToList();
+            var data = db.Set<POSummary>().FromSqlRaw("CALL POSummary(" + yearFrom.Value + ",'" + dateFrom.Value.ToString("yyyy-MM-dd") + "','" + dateTo.Value.ToString("yyyy-MM-dd") + "')").ToList();
             data.ForEach(x => x.PONum = (string.IsNullOrEmpty(x.PONum) ? "TEMPPO" : x.PONum));
             var fData = data.Where(x => x.PONum.Trim() == poNum).ToList();
             fData = fData.Select(x => { x.InvoiceNum = Customs.MakeGenericInvoiceNo(x.InvoiceNum); return x; }).ToList();
@@ -3244,25 +2976,407 @@ namespace TeliconLatest.Controllers
         #endregion
 
         #region Material Usage  
-        [TeliconAuthorize(TaskId = 32)]
+
+        //[TeliconAuthorize(TaskId = 32)]
         public ActionResult MaterialUsage()
         {
             return View();
         }
+
         [HttpPost]
         public ActionResult GenerateMaterialUsage(DateTime dateFrom, DateTime dateTo)
         {
             var printData = MaterialUsageData(dateFrom, dateTo);
             return PartialView("Partials/MaterialUsagePartial", printData);
         }
+
         [HttpPost]
         public void MaterialUsageToExcel(MaterialUsageFilter model)
         {
-            var db = new TeliconEntities();
             string docName = "MaterialUsage";
             ExcelPackage pck = new ExcelPackage();
 
             var data = MaterialUsageData(model.dateFrom, model.dateTo);
+
+            if (data != null)
+            {
+                #region Work Sheet
+                var ws = pck.Workbook.Worksheets.Add("MaterialUsage");
+
+                #region View and Print Seetings
+
+                ws.PrinterSettings.ShowGridLines = false;
+
+                ws.PrinterSettings.PaperSize = ePaperSize.A4;
+                ws.PrinterSettings.TopMargin = 0.75M;
+                ws.PrinterSettings.RightMargin = 0.25M;
+                ws.PrinterSettings.BottomMargin = 0.75M;
+                ws.PrinterSettings.LeftMargin = 0.25M;
+                ws.PrinterSettings.HeaderMargin = 0.0M;
+                ws.PrinterSettings.FooterMargin = 0.0M;
+
+                #endregion
+
+                ws.Column(1).Width = 25;
+                ws.Column(2).Width = 25;
+                ws.Column(3).Width = 25;
+                int y = 1; int cc = 3;
+
+                #region Title
+                ws.Cells[y, 1, y, cc].Merge = true;
+                ws.Cells["A" + y].Value = "Material Usage Report";
+                ws.Cells["A" + y].Style.Font.Bold = true;
+                ws.Cells["A" + y].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                ws.Cells["A" + y].Style.Font.Name = "Arial";
+                ws.Cells["A" + y].Style.Font.Size = 12;
+                y++;
+                if (ViewBag.DateFrom != null && ViewBag.DateTo != null)
+                {
+                    ws.Cells[y, 1, y, cc].Merge = true;
+                    ws.Cells["A" + y].Value = "Period Starting " + string.Format("{0:dddd MMMM dd, yyyy}", ViewBag.DateFrom) + " to " + string.Format("{0:dddd MMMM dd, yyyy}", ViewBag.DateTo);
+                    ws.Cells["A" + y].Style.Font.Bold = true;
+                    ws.Cells["A" + y].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                    ws.Cells["A" + y].Style.Font.Name = "Arial";
+                    ws.Cells["A" + y].Style.Font.Size = 10;
+                    y++;
+                }
+                ws.Cells[y, 1, y, cc].Merge = true;
+                y++;
+                #endregion
+
+                #region Table Headers
+                ws.Cells["A" + y].Value = "Nos.";
+                ws.Cells["A" + y].Style.Border.BorderAround(ExcelBorderStyle.Medium, Color.FromArgb(230, 230, 230));
+                ws.Cells["B" + y].Value = "Description";
+                ws.Cells["B" + y].Style.Border.BorderAround(ExcelBorderStyle.Medium, Color.FromArgb(230, 230, 230));
+                ws.Cells["C" + y].Value = "Qty";
+                ws.Cells["C" + y].Style.Border.BorderAround(ExcelBorderStyle.Medium, Color.FromArgb(230, 230, 230));
+
+                ws.Cells[y, 1, y, cc].Style.Font.Bold = true;
+                ws.Cells[y, 1, y, cc].Style.Font.Name = "Inherit";
+                ws.Cells[y, 1, y, cc].Style.Font.Size = 11;
+                ws.Cells[y, 1, y, cc].Style.Border.Bottom.Style = ExcelBorderStyle.Thick;
+                ws.Cells[y, 1, y, cc].Style.Border.Bottom.Color.SetColor(Color.DodgerBlue);
+                ws.Cells[y, 1, y, cc].Style.Fill.PatternType = ExcelFillStyle.Solid;
+                ws.Cells[y, 1, y, cc].Style.Fill.BackgroundColor.SetColor(Color.FromArgb(244, 244, 244));
+                ws.Cells[y, 1, y, cc].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                ws.Cells[y, 1, y, cc].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
+                ws.Row(y).Height = 20;
+                #endregion
+                y++;
+
+                int i = 1;
+                foreach (var matId in data.Select(x => x.WoMatID).Distinct())
+                {
+                    var rows = data.Where(x => x.WoMatID == matId).ToList();
+
+                    #region Rows
+                    ws.Cells["A" + y].Value = i;
+                    ws.Cells["B" + y].Value = rows[0].MaterialName;
+                    ws.Cells["C" + y].Value = rows.Sum(x => x.WoMatQty);
+
+                    #region Row Styles
+                    ws.Cells[y, 3, y, cc].Style.Font.Color.SetColor(Color.FromArgb(0, 153, 0));
+
+                    ws.Cells["A" + y].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                    ws.Cells["B" + y].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                    ws.Cells["C" + y].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
+
+                    ws.Cells["A" + y].Style.Border.BorderAround(ExcelBorderStyle.Medium, Color.FromArgb(230, 230, 230));
+                    ws.Cells["B" + y].Style.Border.BorderAround(ExcelBorderStyle.Medium, Color.FromArgb(230, 230, 230));
+                    ws.Cells["C" + y].Style.Border.BorderAround(ExcelBorderStyle.Medium, Color.FromArgb(230, 230, 230));
+                    ws.Cells[y, 1, y, cc].Style.WrapText = true;
+                    ws.Cells[y, 1, y, cc].Style.VerticalAlignment = ExcelVerticalAlignment.Top;
+                    ws.Cells[y, 1, y, cc].Style.Font.Size = 11;
+                    if (i % 2 != 0)
+                    {
+                        ws.Cells[y, 1, y, cc].Style.Fill.PatternType = ExcelFillStyle.Solid;
+                        ws.Cells[y, 1, y, cc].Style.Fill.BackgroundColor.SetColor(Color.FromArgb(244, 244, 244));
+                    }
+                    #endregion
+
+                    #endregion
+                    i++;
+                    y++;
+                }
+
+                #endregion
+            }
+
+            if (pck.Workbook.Worksheets.Count() > 0)
+            {
+                Response.ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+                Response.Headers.Add("content-disposition", "attachment;  filename=" + docName + ".xlsx");
+                pck.SaveAs(Response.Body);
+            }
+        }
+
+        public List<MaterialUsage> MaterialUsageData(DateTime? dateFrom, DateTime? dateTo)
+        {
+            DateTime? start = null;
+            DateTime? end = null;
+            if (dateFrom.HasValue && dateTo.HasValue)
+            {
+                start = dateFrom.Value;
+                end = dateTo.Value;
+            }
+            var data = new List<MaterialUsage>();
+            if (start.HasValue && end.HasValue)
+            {
+                ViewBag.DateFrom = dateFrom;
+                ViewBag.DateTo = dateTo;
+
+                data = db.Set<MaterialUsage>().FromSqlRaw("CALL MaterialUsage('" + start.Value.ToString("yyyy-MM-dd") + "','" + end.Value.ToString("yyyy-MM-dd") + "')").ToList();
+            }
+            return data;
+        }
+
+        [HttpPost]
+        public ActionResult MaterialUsageDetail(DateTime? dateFrom, DateTime? dateTo, int matId)
+        {
+            var data = MaterialUsageDetailsData(dateFrom, dateTo, matId);
+            return View(data);
+        }
+
+        [HttpPost]
+        public void MaterialUsageDetailsToExcel(MaterialUsageDetailFilter model)
+        {
+            string docName = "MaterialUsageDetails";
+            ExcelPackage pck = new ExcelPackage();
+
+            var data = MaterialUsageDetailsData(model.dateFrom, model.dateTo, model.matId);
+
+            if (data != null)
+            {
+                #region Work Sheet
+                var ws = pck.Workbook.Worksheets.Add("MaterialUsageDetails");
+
+                #region View and Print Seetings
+
+                ws.PrinterSettings.ShowGridLines = false;
+
+                ws.PrinterSettings.PaperSize = ePaperSize.A4;
+                ws.PrinterSettings.TopMargin = 0.75M;
+                ws.PrinterSettings.RightMargin = 0.25M;
+                ws.PrinterSettings.BottomMargin = 0.75M;
+                ws.PrinterSettings.LeftMargin = 0.25M;
+                ws.PrinterSettings.HeaderMargin = 0.0M;
+                ws.PrinterSettings.FooterMargin = 0.0M;
+
+                #endregion
+
+                ws.Column(1).Width = 12;
+                ws.Column(2).Width = 12;
+                ws.Column(3).Width = 50;
+                ws.Column(4).Width = 13;
+                int y = 1; int cc = 3;
+
+                #region Title
+                ws.Cells[y, 1, y, cc].Merge = true;
+                ws.Cells["A" + y].Value = "Material Usage Detail Report";
+                ws.Cells["A" + y].Style.Font.Bold = true;
+                ws.Cells["A" + y].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                ws.Cells["A" + y].Style.Font.Name = "Arial";
+                ws.Cells["A" + y].Style.Font.Size = 12;
+                y++;
+                if (ViewBag.DateFrom != null && ViewBag.DateTo != null)
+                {
+                    ws.Cells[y, 1, y, cc].Merge = true;
+                    ws.Cells["A" + y].Value = "Period Starting " + string.Format("{0:dddd MMMM dd, yyyy}", ViewBag.DateFrom) + " to " + string.Format("{0:dddd MMMM dd, yyyy}", ViewBag.DateTo);
+                    ws.Cells["A" + y].Style.Font.Bold = true;
+                    ws.Cells["A" + y].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                    ws.Cells["A" + y].Style.Font.Name = "Arial";
+                    ws.Cells["A" + y].Style.Font.Size = 10;
+                    y++;
+                }
+                ws.Cells[y, 1, y, cc].Merge = true;
+                y++;
+                #endregion
+
+                #region Table Headers
+                ws.Cells["A" + y].Value = "Nos.";
+                ws.Cells["A" + y].Style.Border.BorderAround(ExcelBorderStyle.Medium, Color.FromArgb(230, 230, 230));
+                ws.Cells["B" + y].Value = "Activity";
+                ws.Cells["B" + y].Style.Border.BorderAround(ExcelBorderStyle.Medium, Color.FromArgb(230, 230, 230));
+                ws.Cells["C" + y].Value = "Qty";
+                ws.Cells["C" + y].Style.Border.BorderAround(ExcelBorderStyle.Medium, Color.FromArgb(230, 230, 230));
+
+                ws.Cells[y, 1, y, cc].Style.Font.Bold = true;
+                ws.Cells[y, 1, y, cc].Style.Font.Name = "Inherit";
+                ws.Cells[y, 1, y, cc].Style.Font.Size = 11;
+                ws.Cells[y, 1, y, cc].Style.Border.Bottom.Style = ExcelBorderStyle.Thick;
+                ws.Cells[y, 1, y, cc].Style.Border.Bottom.Color.SetColor(Color.DodgerBlue);
+                ws.Cells[y, 1, y, cc].Style.Fill.PatternType = ExcelFillStyle.Solid;
+                ws.Cells[y, 1, y, cc].Style.Fill.BackgroundColor.SetColor(Color.FromArgb(244, 244, 244));
+                ws.Cells[y, 1, y, cc].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                ws.Cells[y, 1, y, cc].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
+                ws.Row(y).Height = 20;
+                #endregion
+                y++;
+
+                int i = 1;
+                foreach (var refNo in data.Select(x => x.Wo_ref).Distinct())
+                {
+
+                    var rows = data.Where(x => x.Wo_ref == refNo).ToList();
+
+                    ws.Cells["A" + y].Value = refNo;
+                    ws.Cells[y, 2, y, cc].Merge = true;
+                    ws.Cells["B" + y].Value = rows[0].Wo_title;
+
+                    #region Row Styles
+                    ws.Cells[y, 1, y, cc].Style.Font.Color.SetColor(Color.FromArgb(21, 98, 175));
+
+                    ws.Cells["A" + y].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                    ws.Cells["B" + y].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
+
+                    ws.Cells["A" + y].Style.Border.BorderAround(ExcelBorderStyle.Medium, Color.FromArgb(230, 230, 230));
+                    ws.Cells["B" + y].Style.Border.BorderAround(ExcelBorderStyle.Medium, Color.FromArgb(230, 230, 230));
+                    ws.Cells["C" + y].Style.Border.BorderAround(ExcelBorderStyle.Medium, Color.FromArgb(230, 230, 230));
+                    ws.Cells[y, 1, y, cc].Style.WrapText = true;
+                    ws.Cells[y, 1, y, cc].Style.VerticalAlignment = ExcelVerticalAlignment.Top;
+                    ws.Cells[y, 1, y, cc].Style.Font.Bold = true;
+                    ws.Cells[y, 1, y, cc].Style.Font.Size = 11;
+                    if (i % 2 != 0)
+                    {
+                        ws.Cells[y, 1, y, cc].Style.Fill.PatternType = ExcelFillStyle.Solid;
+                        ws.Cells[y, 1, y, cc].Style.Fill.BackgroundColor.SetColor(Color.FromArgb(244, 244, 244));
+                    }
+                    #endregion
+                    i++;
+                    y++;
+                    int n = 1;
+
+                    foreach (var row in rows)
+                    {
+                        #region Rows
+                        ws.Cells["A" + y].Value = n;
+                        ws.Cells["B" + y].Value = row.RateDescr;
+                        ws.Cells["C" + y].Value = row.WoMatQty;
+
+                        #region Row Styles
+                        ws.Cells[y, 3, y, cc].Style.Font.Color.SetColor(Color.FromArgb(0, 153, 0));
+
+                        ws.Cells["A" + y].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                        ws.Cells["B" + y].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
+                        ws.Cells["C" + y].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+
+                        ws.Cells["A" + y].Style.Border.BorderAround(ExcelBorderStyle.Medium, Color.FromArgb(230, 230, 230));
+                        ws.Cells["B" + y].Style.Border.BorderAround(ExcelBorderStyle.Medium, Color.FromArgb(230, 230, 230));
+                        ws.Cells["C" + y].Style.Border.BorderAround(ExcelBorderStyle.Medium, Color.FromArgb(230, 230, 230));
+                        ws.Cells[y, 1, y, cc].Style.WrapText = true;
+                        ws.Cells[y, 1, y, cc].Style.VerticalAlignment = ExcelVerticalAlignment.Top;
+                        ws.Cells[y, 1, y, cc].Style.Font.Size = 11;
+                        if (i % 2 != 0)
+                        {
+                            ws.Cells[y, 1, y, cc].Style.Fill.PatternType = ExcelFillStyle.Solid;
+                            ws.Cells[y, 1, y, cc].Style.Fill.BackgroundColor.SetColor(Color.FromArgb(244, 244, 244));
+                        }
+                        #endregion
+
+                        #endregion
+                        i++;
+                        y++;
+                        n++;
+                    }
+
+                    ws.Cells[y, 1, y, 2].Merge = true;
+                    ws.Cells["A" + y].Value = "Total:";
+                    ws.Cells["C" + y].Value = rows.Sum(x => x.WoMatQty);
+
+                    #region Row Styles
+                    ws.Cells[y, 3, y, cc].Style.Font.Color.SetColor(Color.FromArgb(0, 153, 0));
+
+                    ws.Cells["A" + y].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
+                    ws.Cells["B" + y].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                    ws.Cells["C" + y].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
+                    ws.Cells["D" + y].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
+
+                    ws.Cells["A" + y].Style.Border.BorderAround(ExcelBorderStyle.Medium, Color.FromArgb(230, 230, 230));
+                    ws.Cells["B" + y].Style.Border.BorderAround(ExcelBorderStyle.Medium, Color.FromArgb(230, 230, 230));
+                    ws.Cells["C" + y].Style.Border.BorderAround(ExcelBorderStyle.Medium, Color.FromArgb(230, 230, 230));
+                    ws.Cells["D" + y].Style.Border.BorderAround(ExcelBorderStyle.Medium, Color.FromArgb(230, 230, 230));
+                    ws.Cells[y, 1, y, cc].Style.WrapText = true;
+                    ws.Cells[y, 1, y, cc].Style.VerticalAlignment = ExcelVerticalAlignment.Top;
+                    ws.Cells[y, 1, y, cc].Style.Font.Bold = true;
+                    ws.Cells[y, 1, y, cc].Style.Font.Size = 11;
+                    if (i % 2 != 0)
+                    {
+                        ws.Cells[y, 1, y, cc].Style.Fill.PatternType = ExcelFillStyle.Solid;
+                        ws.Cells[y, 1, y, cc].Style.Fill.BackgroundColor.SetColor(Color.FromArgb(244, 244, 244));
+                    }
+                    #endregion
+                    i++;
+                    y++;
+
+                }
+
+                #endregion
+            }
+
+            if (pck.Workbook.Worksheets.Count() > 0)
+            {
+                Response.ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+                Response.Headers.Add("content-disposition", "attachment;  filename=" + docName + ".xlsx");
+                pck.SaveAs(Response.Body);
+            }
+        }
+
+        public List<MaterialUsageDetail> MaterialUsageDetailsData(DateTime? dateFrom, DateTime? dateTo, int matId)
+        {
+            ViewBag.DateFrom = dateFrom;
+            ViewBag.DateTo = dateTo;
+            ViewBag.MatId = matId;
+
+            var data = db.Set<MaterialUsageDetail>().FromSqlRaw("CALL MaterialUsageDetail(" + matId + ",'" + dateFrom.Value.ToString("yyyy-MM-dd") + "','" + dateTo.Value.ToString("yyyy-MM-dd") + "')").ToList();
+            return data;
+        }
+
+        #endregion
+
+        #region Invoice Summary Report
+
+        //[TeliconAuthorize(TaskId = 39)]
+        public ActionResult InvoiceSummary()
+        {
+            var minYear = db.TRN23100.Min(x => x.Requestdt).Year;
+            var maxYear = db.TRN23100.Max(x => x.Requestdt).Year;
+            var yearsForSelection = new List<SelectListItem>();
+            for (int year = minYear; year <= maxYear; year++)
+            {
+                yearsForSelection.Add(new SelectListItem { Text = year.ToString(), Value = year.ToString(), Selected = year == maxYear });
+            }
+            ViewBag.Years = yearsForSelection;
+            var periodList = new List<SelectListItem>();
+            var periods = Customs.GetPeriods(DateTime.Now.Year - 1, DateTime.Now.Year + 1);
+            int currentWeek = 1;
+            Period period = null;
+            if (periods.Count > 0)
+                period = periods.Find(x => x.DateFrom <= DateTime.Now && x.DateTo >= DateTime.Now);
+            if (period != null)
+                currentWeek = period.PeriodNo;
+            for (int x = 1; x <= 27; x++)
+            {
+                periodList.Add(new SelectListItem { Value = x.ToString(), Text = "Period " + x, Selected = x == currentWeek });
+            }
+            ViewBag.PeriodList = periodList;
+            return View();
+        }
+
+        [HttpPost]
+        public ActionResult GenerateInvoiceSummary(InvoiceSummaryFilter model)
+        {
+            var printData = InvoiceSummaryData(model);
+            return PartialView("Partials/InvoiceSummaryPartial", printData);
+        }
+
+        [HttpPost]
+        public void InvoiceSummaryToExcel(InvoiceSummaryFilter model)
+        {
+            string docName = "MaterialUsage";
+            ExcelPackage pck = new ExcelPackage();
+
+            var data = MaterialUsageData(model.DateFrom, model.DateTo);
 
             if (data != null)
             {
@@ -3372,403 +3486,14 @@ namespace TeliconLatest.Controllers
 
             if (pck.Workbook.Worksheets.Count() > 0)
             {
-                pck.SaveAs(Response.OutputStream);
                 Response.ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-                Response.AddHeader("content-disposition", "attachment;  filename=" + docName + ".xlsx");
-            }
-        }
-
-        public List<MaterialUsage_Result> MaterialUsageData(DateTime? dateFrom, DateTime? dateTo)
-        {
-            var db = new TeliconEntities();
-            DateTime? start = null;
-            DateTime? end = null;
-            if (dateFrom.HasValue && dateTo.HasValue)
-            {
-                start = dateFrom.Value;
-                end = dateTo.Value;
-            }
-            var data = new List<MaterialUsage_Result>();
-            if (start.HasValue && end.HasValue)
-            {
-                ViewBag.DateFrom = dateFrom;
-                ViewBag.DateTo = dateTo;
-
-                data = db.MaterialUsage(start, end).ToList();
-            }
-            return data;
-        }
-
-
-        [HttpPost]
-        public ActionResult MaterialUsageDetail(DateTime? dateFrom, DateTime? dateTo, int matId)
-        {
-            var data = MaterialUsageDetailsData(dateFrom, dateTo, matId);
-            return View(data);
-        }
-        [HttpPost]
-        public void MaterialUsageDetailsToExcel(MaterialUsageDetailFilter model)
-        {
-            var db = new TeliconEntities();
-            string docName = "MaterialUsageDetails";
-            ExcelPackage pck = new ExcelPackage();
-
-            var data = MaterialUsageDetailsData(model.dateFrom, model.dateTo, model.matId);
-
-            if (data != null)
-            {
-                #region Work Sheet
-                var ws = pck.Workbook.Worksheets.Add("MaterialUsageDetails");
-
-                #region View and Print Seetings
-
-                //ws.View.PageLayoutView = true;
-                ws.PrinterSettings.ShowGridLines = false;
-
-                ws.PrinterSettings.PaperSize = ePaperSize.A4;
-                ws.PrinterSettings.TopMargin = 0.75M;
-                ws.PrinterSettings.RightMargin = 0.25M;
-                ws.PrinterSettings.BottomMargin = 0.75M;
-                ws.PrinterSettings.LeftMargin = 0.25M;
-                ws.PrinterSettings.HeaderMargin = 0.0M;
-                ws.PrinterSettings.FooterMargin = 0.0M;
-
-                #endregion
-
-                ws.Column(1).Width = 12;
-                ws.Column(2).Width = 12;
-                ws.Column(3).Width = 50;
-                ws.Column(4).Width = 13;
-                int y = 1; int cc = 3;
-
-                #region Title
-                ws.Cells[y, 1, y, cc].Merge = true;
-                ws.Cells["A" + y].Value = "Material Usage Detail Report";
-                ws.Cells["A" + y].Style.Font.Bold = true;
-                ws.Cells["A" + y].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
-                ws.Cells["A" + y].Style.Font.Name = "Arial";
-                ws.Cells["A" + y].Style.Font.Size = 12;
-                y++;
-                if (ViewBag.DateFrom != null && ViewBag.DateTo != null)
-                {
-                    ws.Cells[y, 1, y, cc].Merge = true;
-                    ws.Cells["A" + y].Value = "Period Starting " + string.Format("{0:dddd MMMM dd, yyyy}", ViewBag.DateFrom) + " to " + string.Format("{0:dddd MMMM dd, yyyy}", ViewBag.DateTo);
-                    ws.Cells["A" + y].Style.Font.Bold = true;
-                    ws.Cells["A" + y].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
-                    ws.Cells["A" + y].Style.Font.Name = "Arial";
-                    ws.Cells["A" + y].Style.Font.Size = 10;
-                    y++;
-                }
-                ws.Cells[y, 1, y, cc].Merge = true;
-                y++;
-                #endregion
-
-                #region Table Headers
-                ws.Cells["A" + y].Value = "Nos.";
-                ws.Cells["A" + y].Style.Border.BorderAround(ExcelBorderStyle.Medium, Color.FromArgb(230, 230, 230));
-                ws.Cells["B" + y].Value = "Activity";
-                ws.Cells["B" + y].Style.Border.BorderAround(ExcelBorderStyle.Medium, Color.FromArgb(230, 230, 230));
-                ws.Cells["C" + y].Value = "Qty";
-                ws.Cells["C" + y].Style.Border.BorderAround(ExcelBorderStyle.Medium, Color.FromArgb(230, 230, 230));
-
-                ws.Cells[y, 1, y, cc].Style.Font.Bold = true;
-                ws.Cells[y, 1, y, cc].Style.Font.Name = "Inherit";
-                ws.Cells[y, 1, y, cc].Style.Font.Size = 11;
-                ws.Cells[y, 1, y, cc].Style.Border.Bottom.Style = ExcelBorderStyle.Thick;
-                ws.Cells[y, 1, y, cc].Style.Border.Bottom.Color.SetColor(Color.DodgerBlue);
-                ws.Cells[y, 1, y, cc].Style.Fill.PatternType = ExcelFillStyle.Solid;
-                ws.Cells[y, 1, y, cc].Style.Fill.BackgroundColor.SetColor(Color.FromArgb(244, 244, 244));
-                ws.Cells[y, 1, y, cc].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
-                ws.Cells[y, 1, y, cc].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
-                ws.Row(y).Height = 20;
-                #endregion
-                y++;
-
-                int i = 1;
-                foreach (var refNo in data.Select(x => x.Wo_ref).Distinct())
-                {
-
-                    var rows = data.Where(x => x.Wo_ref == refNo).ToList();
-
-                    ws.Cells["A" + y].Value = refNo;
-                    ws.Cells[y, 2, y, cc].Merge = true;
-                    ws.Cells["B" + y].Value = rows[0].Wo_title;
-
-                    #region Row Styles
-                    ws.Cells[y, 1, y, cc].Style.Font.Color.SetColor(Color.FromArgb(21, 98, 175));
-
-                    ws.Cells["A" + y].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
-                    ws.Cells["B" + y].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
-
-                    ws.Cells["A" + y].Style.Border.BorderAround(ExcelBorderStyle.Medium, Color.FromArgb(230, 230, 230));
-                    ws.Cells["B" + y].Style.Border.BorderAround(ExcelBorderStyle.Medium, Color.FromArgb(230, 230, 230));
-                    ws.Cells["C" + y].Style.Border.BorderAround(ExcelBorderStyle.Medium, Color.FromArgb(230, 230, 230));
-                    ws.Cells[y, 1, y, cc].Style.WrapText = true;
-                    ws.Cells[y, 1, y, cc].Style.VerticalAlignment = ExcelVerticalAlignment.Top;
-                    ws.Cells[y, 1, y, cc].Style.Font.Bold = true;
-                    ws.Cells[y, 1, y, cc].Style.Font.Size = 11;
-                    if (i % 2 != 0)
-                    {
-                        ws.Cells[y, 1, y, cc].Style.Fill.PatternType = ExcelFillStyle.Solid;
-                        ws.Cells[y, 1, y, cc].Style.Fill.BackgroundColor.SetColor(Color.FromArgb(244, 244, 244));
-                    }
-                    #endregion
-                    i++;
-                    y++;
-                    int n = 1;
-
-                    foreach (var row in rows)
-                    {
-                        #region Rows
-                        ws.Cells["A" + y].Value = n;
-                        ws.Cells["B" + y].Value = row.RateDescr;
-                        ws.Cells["C" + y].Value = row.WoMatQty;
-
-                        #region Row Styles
-                        ws.Cells[y, 4, y, cc].Style.Font.Color.SetColor(Color.FromArgb(0, 153, 0));
-
-                        ws.Cells["A" + y].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
-                        ws.Cells["B" + y].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
-                        ws.Cells["C" + y].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
-
-                        ws.Cells["A" + y].Style.Border.BorderAround(ExcelBorderStyle.Medium, Color.FromArgb(230, 230, 230));
-                        ws.Cells["B" + y].Style.Border.BorderAround(ExcelBorderStyle.Medium, Color.FromArgb(230, 230, 230));
-                        ws.Cells["C" + y].Style.Border.BorderAround(ExcelBorderStyle.Medium, Color.FromArgb(230, 230, 230));
-                        ws.Cells[y, 1, y, cc].Style.WrapText = true;
-                        ws.Cells[y, 1, y, cc].Style.VerticalAlignment = ExcelVerticalAlignment.Top;
-                        ws.Cells[y, 1, y, cc].Style.Font.Size = 11;
-                        if (i % 2 != 0)
-                        {
-                            ws.Cells[y, 1, y, cc].Style.Fill.PatternType = ExcelFillStyle.Solid;
-                            ws.Cells[y, 1, y, cc].Style.Fill.BackgroundColor.SetColor(Color.FromArgb(244, 244, 244));
-                        }
-                        #endregion
-
-                        #endregion
-                        i++;
-                        y++;
-                        n++;
-                    }
-
-                    ws.Cells[y, 1, y, 2].Merge = true;
-                    ws.Cells["A" + y].Value = "Total:";
-                    ws.Cells["C" + y].Value = rows.Sum(x => x.WoMatQty);
-
-                    #region Row Styles
-                    ws.Cells[y, 4, y, cc].Style.Font.Color.SetColor(Color.FromArgb(0, 153, 0));
-
-                    ws.Cells["A" + y].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
-                    ws.Cells["B" + y].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
-                    ws.Cells["C" + y].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
-                    ws.Cells["D" + y].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
-
-                    ws.Cells["A" + y].Style.Border.BorderAround(ExcelBorderStyle.Medium, Color.FromArgb(230, 230, 230));
-                    ws.Cells["B" + y].Style.Border.BorderAround(ExcelBorderStyle.Medium, Color.FromArgb(230, 230, 230));
-                    ws.Cells["C" + y].Style.Border.BorderAround(ExcelBorderStyle.Medium, Color.FromArgb(230, 230, 230));
-                    ws.Cells["D" + y].Style.Border.BorderAround(ExcelBorderStyle.Medium, Color.FromArgb(230, 230, 230));
-                    ws.Cells[y, 1, y, cc].Style.WrapText = true;
-                    ws.Cells[y, 1, y, cc].Style.VerticalAlignment = ExcelVerticalAlignment.Top;
-                    ws.Cells[y, 1, y, cc].Style.Font.Bold = true;
-                    ws.Cells[y, 1, y, cc].Style.Font.Size = 11;
-                    if (i % 2 != 0)
-                    {
-                        ws.Cells[y, 1, y, cc].Style.Fill.PatternType = ExcelFillStyle.Solid;
-                        ws.Cells[y, 1, y, cc].Style.Fill.BackgroundColor.SetColor(Color.FromArgb(244, 244, 244));
-                    }
-                    #endregion
-                    i++;
-                    y++;
-
-                }
-
-                #endregion
-            }
-
-            if (pck.Workbook.Worksheets.Count() > 0)
-            {
-                pck.SaveAs(Response.OutputStream);
-                Response.ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-                Response.AddHeader("content-disposition", "attachment;  filename=" + docName + ".xlsx");
-            }
-        }
-
-        public List<MaterialUsageDetail_Result> MaterialUsageDetailsData(DateTime? dateFrom, DateTime? dateTo, int matId)
-        {
-            var db = new TeliconEntities();
-            ViewBag.DateFrom = dateFrom;
-            ViewBag.DateTo = dateTo;
-            ViewBag.MatId = matId;
-
-            var data = db.MaterialUsageDetail(matId, dateFrom, dateTo).ToList();
-            return data;
-        }
-
-
-        #endregion
-
-        #region Invoice Summary Report
-
-        [TeliconAuthorize(TaskId = 39)]
-        public ActionResult InvoiceSummary()
-        {
-            var db = new TeliconEntities();
-            var minYear = db.TRN23100.Min(x => x.Requestdt).Year;
-            var maxYear = db.TRN23100.Max(x => x.Requestdt).Year;
-            var yearsForSelection = new List<SelectListItem>();
-            for (int year = minYear; year <= maxYear; year++)
-            {
-                yearsForSelection.Add(new SelectListItem { Text = year.ToString(), Value = year.ToString(), Selected = year == maxYear });
-            }
-            ViewBag.Years = yearsForSelection;
-            var periodList = new List<SelectListItem>();
-            var periods = Customs.GetPeriods(DateTime.Now.Year - 1, DateTime.Now.Year + 1);
-            int currentWeek = 1;
-            Period period = null;
-            if (periods.Count > 0)
-                period = periods.Find(x => x.DateFrom <= DateTime.Now && x.DateTo >= DateTime.Now);
-            if (period != null)
-                currentWeek = period.PeriodNo;
-            for (int x = 1; x <= 27; x++)
-            {
-                periodList.Add(new SelectListItem { Value = x.ToString(), Text = "Period " + x, Selected = x == currentWeek });
-            }
-            ViewBag.PeriodList = periodList;
-            return View();
-        }
-
-        [HttpPost]
-        public ActionResult GenerateInvoiceSummary(InvoiceSummaryFilter model)
-        {
-            var printData = InvoiceSummaryData(model);
-            return PartialView("Partials/InvoiceSummaryPartial", printData);
-        }
-
-        [HttpPost]
-        public void InvoiceSummaryToExcel(InvoiceSummaryFilter model)
-        {
-            var db = new TeliconEntities();
-            string docName = "MaterialUsage";
-            ExcelPackage pck = new ExcelPackage();
-
-            //var data = MaterialUsageData(model.dateFrom, model.dateTo);
-
-            //if (data != null)
-            //{
-            //    #region Work Sheet
-            //    var ws = pck.Workbook.Worksheets.Add("MaterialUsage");
-
-            //    #region View and Print Seetings
-
-            //    //ws.View.PageLayoutView = true;
-            //    ws.PrinterSettings.ShowGridLines = false;
-
-            //    ws.PrinterSettings.PaperSize = ePaperSize.A4;
-            //    ws.PrinterSettings.TopMargin = 0.75M;
-            //    ws.PrinterSettings.RightMargin = 0.25M;
-            //    ws.PrinterSettings.BottomMargin = 0.75M;
-            //    ws.PrinterSettings.LeftMargin = 0.25M;
-            //    ws.PrinterSettings.HeaderMargin = 0.0M;
-            //    ws.PrinterSettings.FooterMargin = 0.0M;
-
-            //    #endregion
-
-            //    ws.Column(1).Width = 25;
-            //    ws.Column(2).Width = 25;
-            //    ws.Column(3).Width = 25;
-            //    int y = 1; int cc = 3;
-
-            //    #region Title
-            //    ws.Cells[y, 1, y, cc].Merge = true;
-            //    ws.Cells["A" + y].Value = "Material Usage Report";
-            //    ws.Cells["A" + y].Style.Font.Bold = true;
-            //    ws.Cells["A" + y].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
-            //    ws.Cells["A" + y].Style.Font.Name = "Arial";
-            //    ws.Cells["A" + y].Style.Font.Size = 12;
-            //    y++;
-            //    if (ViewBag.DateFrom != null && ViewBag.DateTo != null)
-            //    {
-            //        ws.Cells[y, 1, y, cc].Merge = true;
-            //        ws.Cells["A" + y].Value = "Period Starting " + string.Format("{0:dddd MMMM dd, yyyy}", ViewBag.DateFrom) + " to " + string.Format("{0:dddd MMMM dd, yyyy}", ViewBag.DateTo);
-            //        ws.Cells["A" + y].Style.Font.Bold = true;
-            //        ws.Cells["A" + y].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
-            //        ws.Cells["A" + y].Style.Font.Name = "Arial";
-            //        ws.Cells["A" + y].Style.Font.Size = 10;
-            //        y++;
-            //    }
-            //    ws.Cells[y, 1, y, cc].Merge = true;
-            //    y++;
-            //    #endregion
-
-            //    #region Table Headers
-            //    ws.Cells["A" + y].Value = "Nos.";
-            //    ws.Cells["A" + y].Style.Border.BorderAround(ExcelBorderStyle.Medium, Color.FromArgb(230, 230, 230));
-            //    ws.Cells["B" + y].Value = "Description";
-            //    ws.Cells["B" + y].Style.Border.BorderAround(ExcelBorderStyle.Medium, Color.FromArgb(230, 230, 230));
-            //    ws.Cells["C" + y].Value = "Qty";
-            //    ws.Cells["C" + y].Style.Border.BorderAround(ExcelBorderStyle.Medium, Color.FromArgb(230, 230, 230));
-
-            //    ws.Cells[y, 1, y, cc].Style.Font.Bold = true;
-            //    ws.Cells[y, 1, y, cc].Style.Font.Name = "Inherit";
-            //    ws.Cells[y, 1, y, cc].Style.Font.Size = 11;
-            //    ws.Cells[y, 1, y, cc].Style.Border.Bottom.Style = ExcelBorderStyle.Thick;
-            //    ws.Cells[y, 1, y, cc].Style.Border.Bottom.Color.SetColor(Color.DodgerBlue);
-            //    ws.Cells[y, 1, y, cc].Style.Fill.PatternType = ExcelFillStyle.Solid;
-            //    ws.Cells[y, 1, y, cc].Style.Fill.BackgroundColor.SetColor(Color.FromArgb(244, 244, 244));
-            //    ws.Cells[y, 1, y, cc].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
-            //    ws.Cells[y, 1, y, cc].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
-            //    ws.Row(y).Height = 20;
-            //    #endregion
-            //    y++;
-
-            //    int i = 1;
-            //    foreach (var matId in data.Select(x => x.WoMatID).Distinct())
-            //    {
-            //        var rows = data.Where(x => x.WoMatID == matId).ToList();
-
-            //        #region Rows
-            //        ws.Cells["A" + y].Value = i;
-            //        ws.Cells["B" + y].Value = rows[0].MaterialName;
-            //        ws.Cells["C" + y].Value = rows.Sum(x => x.WoMatQty);
-
-            //        #region Row Styles
-            //        ws.Cells[y, 3, y, cc].Style.Font.Color.SetColor(Color.FromArgb(0, 153, 0));
-
-            //        ws.Cells["A" + y].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
-            //        ws.Cells["B" + y].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
-            //        ws.Cells["C" + y].Style.HorizontalAlignment = ExcelHorizontalAlignment.Right;
-
-            //        ws.Cells["A" + y].Style.Border.BorderAround(ExcelBorderStyle.Medium, Color.FromArgb(230, 230, 230));
-            //        ws.Cells["B" + y].Style.Border.BorderAround(ExcelBorderStyle.Medium, Color.FromArgb(230, 230, 230));
-            //        ws.Cells["C" + y].Style.Border.BorderAround(ExcelBorderStyle.Medium, Color.FromArgb(230, 230, 230));
-            //        ws.Cells[y, 1, y, cc].Style.WrapText = true;
-            //        ws.Cells[y, 1, y, cc].Style.VerticalAlignment = ExcelVerticalAlignment.Top;
-            //        ws.Cells[y, 1, y, cc].Style.Font.Size = 11;
-            //        if (i % 2 != 0)
-            //        {
-            //            ws.Cells[y, 1, y, cc].Style.Fill.PatternType = ExcelFillStyle.Solid;
-            //            ws.Cells[y, 1, y, cc].Style.Fill.BackgroundColor.SetColor(Color.FromArgb(244, 244, 244));
-            //        }
-            //        #endregion
-
-            //        #endregion
-            //        i++;
-            //        y++;
-            //    }
-
-            //    #endregion
-            //}
-
-            if (pck.Workbook.Worksheets.Count() > 0)
-            {
-                pck.SaveAs(Response.OutputStream);
-                Response.ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-                Response.AddHeader("content-disposition", "attachment;  filename=" + docName + ".xlsx");
+                Response.Headers.Add("content-disposition", "attachment;  filename=" + docName + ".xlsx");
+                pck.SaveAs(Response.Body);
             }
         }
 
         public List<InvoiceSummaryData> InvoiceSummaryData(InvoiceSummaryFilter model)
         {
-            var db = new TeliconEntities();
             var data = new List<InvoiceSummaryData>();
 
             var wos = db.TRN23100.Where(x => x.PaidDate >= model.DateFrom && x.PaidDate <= model.DateTo).OrderBy(x => x.Wo_ref).ToList();
@@ -3776,8 +3501,6 @@ namespace TeliconLatest.Controllers
             foreach (var wo in wos)
             {
                 var header = new InvoiceSummaryData();
-                //header.InvoiceID = inv.InvoiceNum;
-                //header.InvoiceNo = Customs.MakeGenericInvoiceNo(inv.InvoiceNum);
                 header.WOID = wo.Workid;
                 header.RefNo = wo.Wo_ref;
                 header.Title = wo.Wo_title;
@@ -3819,10 +3542,10 @@ namespace TeliconLatest.Controllers
         #endregion
 
         #region Annual Payroll
-        [TeliconAuthorize(TaskId = 40)]
+
+        //[TeliconAuthorize(TaskId = 40)]
         public ActionResult AnnualPayroll()
         {
-            var db = new TeliconEntities();
             var minYear = db.TRN23100.Min(x => x.Requestdt).Year;
             var maxYear = db.TRN23100.Max(x => x.Requestdt).Year;
             var yearsForSelection = new List<SelectListItem>();
@@ -3840,15 +3563,12 @@ namespace TeliconLatest.Controllers
         [HttpPost]
         public FileResult GenerateAnnualPayroll(TempR model)
         {
-            var db = new TeliconEntities();
             int year = model.periodStartYear;
             int period = model.periodStart;
             var p = Customs.GetPeriods(year, year);
 
-            //var TRecords = db.TechnicianPaySlipDetail(p.PayDate, p.PayDate).ToList();
-
-            var statements = db.ContractorsStatement(p[0].DateFrom, p[p.Count - 1].DateTo).ToList();
-            var TRecords = statements.Join(db.ADM03300, x => x.ContractorID, y => y.ConID, (x, y) => new ContractorPaySlipReport
+            var statements = db.Set<ContractorsStatement>().FromSqlRaw("CALL ContractorsStatement('" + p[0].DateFrom.ToString("yyyy-MM-dd") + "','" + p[p.Count - 1].DateTo.ToString("yyyy-MM-dd") + "')").ToList();
+            var TRecords = statements.Join(db.ADM03300.Include(z => z.ADM04200), x => x.ContractorID, y => y.ConID, (x, y) => new ContractorPaySlipReport
             {
                 EmployeeID = y.EmployeeID,
                 FirstName = y.FirstName,
@@ -3874,11 +3594,7 @@ namespace TeliconLatest.Controllers
             DateTime dTime = DateTime.Now;
             //file name to be created 
             string strPDFFileName = string.Format("ContractorPaySlips_" + DateTime.Now.ToString("yyyyMMdd") + ".pdf");
-            //file will created in this path
-            string strAttachment = Server.MapPath("~/Downloadss/" + strPDFFileName);
 
-            //for (int p = 0; p < 3; p++)
-            //{
             Document doc = new Document();
             doc.SetPageSize(PageSize.A4);
             doc.SetMargins(0f, 0f, 0f, 0f);
@@ -3937,16 +3653,6 @@ namespace TeliconLatest.Controllers
 
                     doc.Add(new Paragraph(new Chunk(" ", FontFactory.GetFont("Ebrima", 36f, iTextSharp.text.Font.BOLD))) { Alignment = Element.ALIGN_CENTER });
                     doc.Add(new Paragraph(new Chunk("................................................ EMPLOYER" + year, FontFactory.GetFont("Ebrima", 11f, iTextSharp.text.Font.BOLD))) { Alignment = Element.ALIGN_RIGHT });
-
-                    //if ((i + 1) % 3 != 0)
-                    //    doc.Add(new Paragraph(new Chunk(" ", FontFactory.GetFont("Ebrima", 9f, iTextSharp.text.Font.BOLD))) { Alignment = Element.ALIGN_CENTER });
-                    //else
-                    //    doc.Add(new Paragraph(new Chunk(" ", FontFactory.GetFont("Ebrima", 4f, iTextSharp.text.Font.BOLD))) { Alignment = Element.ALIGN_CENTER });
-                    //if (i % 3 == 2)
-                    //    c = 2;
-                    //else
-                    //    c--;
-                    //i++;
                 }
             }
             else
@@ -3972,21 +3678,12 @@ namespace TeliconLatest.Controllers
                                                     //Add Title to the PDF file at the top
                                                     //tableLayout.
 
-            //List<Employee> employees = _context.employees.ToList<Employee>();
-
             tableLayout.AddCell(new PdfPCell(new Phrase("Cont :", FontFactory.GetFont("Ebrima", 9, iTextSharp.text.Font.BOLD))) { HorizontalAlignment = Element.ALIGN_LEFT, BackgroundColor = new iTextSharp.text.BaseColor(255, 255, 255), Border = 0 });
             tableLayout.AddCell(new PdfPCell(new Phrase(detail.FirstName + " " + detail.LastName, FontFactory.GetFont("Ebrima", 9, iTextSharp.text.Font.NORMAL))) { HorizontalAlignment = Element.ALIGN_LEFT, BackgroundColor = new iTextSharp.text.BaseColor(255, 255, 255), Border = 0 });
             tableLayout.AddCell(new PdfPCell(new Phrase("Cont. No :", FontFactory.GetFont("Ebrima", 9, iTextSharp.text.Font.BOLD))) { HorizontalAlignment = Element.ALIGN_LEFT, BackgroundColor = new iTextSharp.text.BaseColor(255, 255, 255), Border = 0 });
             tableLayout.AddCell(new PdfPCell(new Phrase(detail.ContNo, FontFactory.GetFont("Ebrima", 9, iTextSharp.text.Font.NORMAL))) { HorizontalAlignment = Element.ALIGN_LEFT, BackgroundColor = new iTextSharp.text.BaseColor(255, 255, 255), Border = 0 });
             tableLayout.AddCell(new PdfPCell(new Phrase("DOE :", FontFactory.GetFont("Ebrima", 9, iTextSharp.text.Font.BOLD))) { HorizontalAlignment = Element.ALIGN_LEFT, BackgroundColor = new iTextSharp.text.BaseColor(255, 255, 255), Border = 0 });
             tableLayout.AddCell(new PdfPCell(new Phrase(detail.EngagementDt.HasValue ? detail.EngagementDt.Value.ToString("dd MMM yyyy") : "", FontFactory.GetFont("Ebrima", 9, iTextSharp.text.Font.NORMAL))) { HorizontalAlignment = Element.ALIGN_LEFT, BackgroundColor = new iTextSharp.text.BaseColor(255, 255, 255), Border = 0 });
-
-            //tableLayout.AddCell(new PdfPCell(new Phrase("Period :", FontFactory.GetFont("Ebrima", 9, iTextSharp.text.Font.BOLD))) { HorizontalAlignment = Element.ALIGN_LEFT, BackgroundColor = new iTextSharp.text.BaseColor(255, 255, 255), Border = 0 });
-            //tableLayout.AddCell(new PdfPCell(new Phrase(pStart.ToString("dd MMM yyyy") + " - " + pEnd.ToString("dd MMM yyyy"), FontFactory.GetFont("Ebrima", 9, iTextSharp.text.Font.NORMAL))) { HorizontalAlignment = Element.ALIGN_LEFT, BackgroundColor = new iTextSharp.text.BaseColor(255, 255, 255), Border = 0 });
-            //tableLayout.AddCell(new PdfPCell(new Phrase("Method :", FontFactory.GetFont("Ebrima", 9, iTextSharp.text.Font.BOLD))) { HorizontalAlignment = Element.ALIGN_LEFT, BackgroundColor = new iTextSharp.text.BaseColor(255, 255, 255), Border = 0 });
-            //tableLayout.AddCell(new PdfPCell(new Phrase("LDG", FontFactory.GetFont("Ebrima", 9, iTextSharp.text.Font.NORMAL))) { HorizontalAlignment = Element.ALIGN_LEFT, BackgroundColor = new iTextSharp.text.BaseColor(255, 255, 255), Border = 0 });
-            //tableLayout.AddCell(new PdfPCell(new Phrase("Date :", FontFactory.GetFont("Ebrima", 9, iTextSharp.text.Font.BOLD))) { HorizontalAlignment = Element.ALIGN_LEFT, BackgroundColor = new iTextSharp.text.BaseColor(255, 255, 255), Border = 0 });
-            //tableLayout.AddCell(new PdfPCell(new Phrase(detail.PayDate.ToString("dd MMM yyyy"), FontFactory.GetFont("Ebrima", 9, iTextSharp.text.Font.NORMAL))) { HorizontalAlignment = Element.ALIGN_LEFT, BackgroundColor = new iTextSharp.text.BaseColor(255, 255, 255), Border = 0 });
 
             tableLayout.AddCell(new PdfPCell(new Phrase("Cost :", FontFactory.GetFont("Ebrima", 9, iTextSharp.text.Font.BOLD))) { HorizontalAlignment = Element.ALIGN_LEFT, BackgroundColor = new iTextSharp.text.BaseColor(255, 255, 255), Border = 0 });
             tableLayout.AddCell(new PdfPCell(new Phrase("AMBER/FIBER/INTALLATION", FontFactory.GetFont("Ebrima", 9, iTextSharp.text.Font.NORMAL))) { HorizontalAlignment = Element.ALIGN_LEFT, BackgroundColor = new iTextSharp.text.BaseColor(255, 255, 255), Border = 0 });
@@ -4012,79 +3709,19 @@ namespace TeliconLatest.Controllers
             //tableLayout.HeaderRows = 1;
             //Add Title to the PDF file at the top
 
-            //List<Employee> employees = _context.employees.ToList<Employee>();
-
             var boldText = iTextSharp.text.Font.BOLD;
             var normalText = iTextSharp.text.Font.NORMAL;
 
-            //tableLayout.AddCell(new PdfPCell(new Phrase("EARNINGS", FontFactory.GetFont("Ebrima", 9, boldText))) { Colspan = 4, PaddingTop = 3, PaddingBottom = 3, HorizontalAlignment = Element.ALIGN_CENTER, VerticalAlignment = Element.ALIGN_TOP });
-            //tableLayout.AddCell(new PdfPCell(new Phrase("DEDUCTIONS", FontFactory.GetFont("Ebrima", 9, boldText))) { Colspan = 3, PaddingTop = 3, PaddingBottom = 3, HorizontalAlignment = Element.ALIGN_CENTER, VerticalAlignment = Element.ALIGN_MIDDLE });
-
-
             ////Add header
-            //AddCell(tableLayout, "Description", boldText, 9, Element.ALIGN_LEFT, 0, 0, 1, 0, 5, 0, 2, 2);
             AddCell(tableLayout, " ", boldText, 9, Element.ALIGN_LEFT, 0, 0, 0, 0, 2, 2);
-            //AddCell(tableLayout, "Rate", Font.BOLD, 9, Element.ALIGN_RIGHT, 0, 0, 1, 0, 2, 2);
             AddCell(tableLayout, "PREVIOUS EMPLOYMENT", boldText, 9, Element.ALIGN_RIGHT, 0, 0, 0, 5, 2, 2);
             AddCell(tableLayout, "THIS EMPLOYMENT", boldText, 9, Element.ALIGN_RIGHT, 0, 0, 0, 0, 0, 5, 2, 2);
             AddCell(tableLayout, "TOTAL", boldText, 9, Element.ALIGN_RIGHT, 0, 0, 0, 0, 0, 5, 2, 2); ;
 
-            ////Add body
-            //int d = 0;
-            //double totalDeductions = 0;
-            //for (int i = 0; i <= 11; i++)
-            //{
-            //    ContractorPaySlipReport row = null;
-            //    if (rows.Count > i)
-            //        row = rows[i];
-            //    int botBrdr = 0;
-            //    if (i == 11)
-            //        botBrdr = 1;
-
-            //    AddCell(tableLayout, row != null ? "TAXABLE PAY" : " ", boldText, 9, Element.ALIGN_LEFT, 0, 0, 0, 0, 5, 0, 2, 2);
-            //    //AddCell(tableLayout, " ", boldText, 9, Element.ALIGN_RIGHT, 0, 0, botBrdr, 0, 2, 2);
-            //    //AddCell(tableLayout, "aaaa ", Font.BOLD, 9, Element.ALIGN_RIGHT, 0, 0, botBrdr, 0, 2, 2);
-            //    AddCell(tableLayout, row != null ? string.Format("{0:C}", row.Total) : " ", normalText, 9, Element.ALIGN_RIGHT, 0, 0, 0, 0, 0, 5, 2, 2);
-            //    AddCell(tableLayout, row != null ? string.Format("{0:C}", row.Total) : " ", normalText, 9, Element.ALIGN_RIGHT, 0, 0, 0, 0, 0, 5, 2, 2);
-            //    AddCell(tableLayout, row != null ? string.Format("{0:C}", row.Total) : " ", normalText, 9, Element.ALIGN_RIGHT, 0, 0, 0, 0, 0, 5, 2, 2);
-            //    //if (row != null && row.Total - row.PenalizeTotal > 0)
-            //    //{
-            //    //    AddCell(tableLayout, "Late submit panalty", boldText, 9, Element.ALIGN_LEFT, 0, 0, botBrdr, 0, 5, 0, 2, 2);
-            //    //    AddCell(tableLayout, string.Format("{0:C}", row.Total - row.PenalizeTotal), normalText, 9, Element.ALIGN_RIGHT, 0, 0, botBrdr, 0, 2, 2);
-            //    //    AddCell(tableLayout, string.Format("{0:C}", row.Total - row.PenalizeTotal), boldText, 9, Element.ALIGN_RIGHT, 0, 0, botBrdr, 0, 0, 5, 2, 2);
-            //    //    totalDeductions = row.Total - row.PenalizeTotal;
-            //    //}
-            //    //else
-            //    //{
-            //    //    ContractorDeductionReport deduction = null;
-            //    //    if (deductions != null && deductions.Count > d)
-            //    //        deduction = deductions[d];
-            //    //    AddCell(tableLayout, deduction != null ? deduction.DeductionName : " ", boldText, 9, Element.ALIGN_LEFT, 0, 0, botBrdr, 0, 5, 0, 2, 2);
-            //    //    AddCell(tableLayout, deduction != null ? string.Format("{0:C}", deduction.Amount) : " ", normalText, 9, Element.ALIGN_RIGHT, 0, 0, botBrdr, 0, 2, 2);
-            //    //    AddCell(tableLayout, deduction != null ? string.Format("{0:C}", deduction.Amount) : " ", boldText, 9, Element.ALIGN_RIGHT, 0, 0, botBrdr, 0, 0, 5, 2, 2);
-            //    //    if (deduction != null)
-            //    //        totalDeductions += deduction.Amount;
-            //    //    d++;
-            //    //}
-            //}
-
             AddCell(tableLayout, "TAXABLE PAY", normalText, 9, Element.ALIGN_LEFT, 0, 0, 0, 0, 5, 0, 2, 2);
-            //AddCell(tableLayout, " ", boldText, 9, Element.ALIGN_RIGHT, 0, 0, 1, 0, 2, 2);
-            //AddCell(tableLayout, " ", Font.BOLD, 9, Element.ALIGN_RIGHT, 0, 0, 1, 0, 2, 2);
             AddCell(tableLayout, string.Format("{0:C}", 0), normalText, 9, Element.ALIGN_RIGHT, 0, 0, 0, 0, 0, 5, 2, 2);
             AddCell(tableLayout, string.Format("{0:C}", rows.Sum(x => x.PenalizeTotal)), normalText, 9, Element.ALIGN_RIGHT, 0, 0, 0, 0, 0, 5, 2, 2);
-            //AddCell(tableLayout, "Deductions :", boldText, 9, Element.ALIGN_LEFT, 0, 0, 1, 0, 5, 0, 2, 2);
-            //AddCell(tableLayout, string.Format("{0:C}", totalDeductions), normalText, 9, Element.ALIGN_RIGHT, 0, 0, 1, 0, 2, 2);
             AddCell(tableLayout, string.Format("{0:C}", rows.Sum(x => x.PenalizeTotal)), normalText, 9, Element.ALIGN_RIGHT, 0, 0, 0, 0, 0, 5, 2, 2);
-
-            //AddCell(tableLayout, " ", boldText, 9, Element.ALIGN_LEFT, 0, 0, 0, 0, 2, 2);
-            //AddCell(tableLayout, " ", boldText, 9, Element.ALIGN_RIGHT, 0, 0, 0, 0, 2, 2);
-            ////AddCell(tableLayout, " ", Font.BOLD, 9, Element.ALIGN_RIGHT, 0, 0, 0, 0, 2, 2);
-            //AddCell(tableLayout, " ", boldText, 9, Element.ALIGN_RIGHT, 0, 0, 0, 0, 2, 2);
-            //AddCell(tableLayout, " ", boldText, 9, Element.ALIGN_LEFT, 0, 1, 0, 0, 2, 2);
-            //AddCell(tableLayout, "Net Pay :", boldText, 9, Element.ALIGN_LEFT, 0, 0, 1, 0, 5, 0, 2, 2);
-            //AddCell(tableLayout, string.Format("{0:C}", rows.Sum(x => x.Total) - totalDeductions), normalText, 9, Element.ALIGN_RIGHT, 0, 0, 1, 0, 2, 2);
-            //AddCell(tableLayout, string.Format("{0:C}", rows.Sum(x => x.Total) - totalDeductions), normalText, 9, Element.ALIGN_RIGHT, 0, 0, 1, 0, 0, 5, 2, 2);
 
             return tableLayout;
         }
@@ -4092,6 +3729,6 @@ namespace TeliconLatest.Controllers
         #endregion
 
 
-        #endregion*/
+        #endregion
     }
 }

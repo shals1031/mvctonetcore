@@ -19,11 +19,11 @@
             deleteUrl = "@Url.Action("deleteBatch", "invoice")";
             dataTableOptions.ajax.url = "@Url.Action("batches","list")";
             dataTableOptions.columnDefs = [
-                    { "targets": 0, "name": "BatchID", "data": "BatchNo" },
-                    { "targets": 1, "name": "Range", "data": "BatchRange", "orderable": false, "searchable": false },
-                    { "targets": 2, "name": "BatchDate", "data": "Date", },
-                    { "targets": 3, "name": "Count", "data": "InvoiceCount", },
-                    { "targets": 4, "name": "Total", "data": "Total" },
+                { "targets": 0, "name": "BatchID", "data": "BatchNo", "searchable": false },
+                { "targets": 1, "name": "Range", "data": "BatchRange", "orderable": false, "searchable": false },
+                { "targets": 2, "name": "BatchDate", "data": "Date", "searchable": false },
+                { "targets": 3, "name": "Count", "data": "InvoiceCount", "searchable": false},
+                { "targets": 4, "name": "Total", "data": "Total", "searchable": false },
                     {
                         "targets": 5, "class": "actions", "orderable": false, "searchable": false, "data": null,
                         "defaultContent":

@@ -167,7 +167,8 @@ namespace TeliconLatest.Reusables
         {
             var chars = source.ToCharArray();
             StringBuilder str = new StringBuilder();
-            for(int x = 0; x < chars.Length; x++){
+            for (int x = 0; x < chars.Length; x++)
+            {
                 string character = chars[x].ToString();
                 char ch = chars[x];
                 if (!string.IsNullOrEmpty(character) && chars.Length >= 3 && ch != '.' && ch != ' ')
@@ -175,12 +176,12 @@ namespace TeliconLatest.Reusables
                     if (x == 0 ||
                         (x > 0 && Char.IsLetter(ch) && (x + 2 <= chars.Length &&
                         ((chars[x + 1] == '.' && Char.IsLetter(chars[x + 2]))) ||
-                        chars[x - 1] == '.' || (chars[x - 1] == ' ' && UppCaseFirstLetterAfterSpace) || 
+                        chars[x - 1] == '.' || (chars[x - 1] == ' ' && UppCaseFirstLetterAfterSpace) ||
                         (x > 1 && source.Substring(x - 2, 2) == ". "))))
                     {
                         str.Append(character.ToUpper());
                         continue;
-                    }   
+                    }
                 }
                 str.Append(character);
             }

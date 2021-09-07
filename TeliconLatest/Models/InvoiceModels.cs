@@ -139,4 +139,26 @@ namespace TeliconLatest.Models
         public string LocDescr { get; set; }
         public decimal Qty { get; set; }
     }
+
+    public class InvoiceList
+    {
+        public int InvoiceNum { get; set; }
+        public string InvoiceTitle { get; set; }
+        public string Status { get; set; }
+        public bool IsNewFormat { get; set; }
+        public int InvNewNum { get; set; }
+        public int? BatchId { get; set; }
+        public DateTime InvoiceDate { get; set; }
+        public double? SubTotal { get; set; }
+        public double? GCT { get; set; }
+        public double? Total { get; set; }
+    }
+
+    public class BatchList
+    {
+        public int BatchID { get; set; }
+        public DateTime BatchDate { get; set; }
+        public int? Count { get; set; }
+        public double? Total { get; set; }
+    }
 }

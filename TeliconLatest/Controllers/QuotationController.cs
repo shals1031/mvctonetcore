@@ -324,9 +324,8 @@ namespace TeliconLatest.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> QuotationToExcel(QuotationFilter model)
+        public void QuotationToExcel(QuotationFilter model)
         {
-            await Task.Yield();
             var stream = new MemoryStream();
             ExcelPackage pck = new ExcelPackage(stream);
             string fileName = "Quotation";
@@ -364,8 +363,9 @@ namespace TeliconLatest.Controllers
                 string logoSearchPath = "/images/print-logo.png";
                 if (Directory.Exists(Path.Combine(_env.WebRootPath, "work")))
                     logoSearchPath = "/work/images/print-logo.png";
-                string logoPath = Path.Combine(_env.WebRootPath, logoSearchPath);
-                FileInfo fi = new FileInfo(logoPath);
+                else
+                    logoSearchPath = Path.Combine(_env.WebRootPath, "Images", "print-logo.png");
+                FileInfo fi = new FileInfo(logoSearchPath);
                 var image = ws.Drawings.AddPicture("print-logo.png", fi);
                 image.SetPosition(0, 0);
                 image.SetSize(205, 111);
@@ -522,7 +522,7 @@ namespace TeliconLatest.Controllers
 
 
                 var total = quot.Activities.Sum(x => x.ActivityCost * Convert.ToDouble(x.ActivityQty));
-                
+
                 #region Total
                 ws.Cells[y, 1, y, 4].Merge = true;
                 ws.Cells["A" + y].Value = "Total:";
@@ -545,11 +545,10 @@ namespace TeliconLatest.Controllers
             }
             if (pck.Workbook.Worksheets.Count() > 0)
             {
-                pck.Save();
-                //Response.ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-                //Response.AddHeader("content-disposition", "attachment;  filename=" + fileName + ".xlsx");
+                Response.ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+                Response.Headers.Add("content-disposition", "attachment;  filename=" + fileName + ".xlsx");
+                pck.SaveAs(Response.Body);
             }
-            return File(stream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName + ".xlsx");
         }
 
         public Quotation QuotationData(int id)

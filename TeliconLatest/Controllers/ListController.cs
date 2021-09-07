@@ -780,102 +780,103 @@ namespace TeliconLatest.Controllers
         #endregion
 
         #region InvoiceList
-        //[HttpPost]
-        //public JsonResult Invoices(DataTablesParam model)
-        //{
-        //    string order = Customs.GetSortString(model.order, model.columns);
-        //    var data = db.InvoiceList.Where(x => x.Status != "r" && !x.IsNewFormat).Search(model.columns.Where(x => x.searchable).ToList(), model.search);
-        //    if (!model.year.HasValue)
-        //        model.year = db.TRN23100.Max(x => x.Requestdt).Year;
-        //    if (model.year != 0)
-        //        data = data.Where(x => x.InvoiceDate.Year == model.year);
-        //    if (model.additional != null && model.additional.ToString() != "a")
-        //        data = model.additional.ToString() == "b" ? data.Where(x => x.BatchId.HasValue) : data.Where(x => x.Status == model.additional.ToString() && !x.BatchId.HasValue);
-        //    var list = data.ToList();
-        //    int tCount = list.Count();
-        //    if (tCount < model.length)
-        //        model.length = tCount;
-        //    var dataList = data.ToList();
-        //    return Json(new DataTableReturn
-        //    {
-        //        draw = model.draw,
-        //        recordsFiltered = tCount,
-        //        recordsTotal = db.InvoiceList.Count(),
-        //        data = dataList.OrderBy(order).Skip(model.start).Take(model.length).AsEnumerable().Select(x => new
-        //        {
-        //            DT_RowId = x.InvoiceNum,
-        //            InvoiceNo = Customs.MakeGenericInvoiceNo(x.InvoiceNum),
-        //            Title = x.InvoiceTitle.ToUpper(),
-        //            //Contractor = x.Contractor,//new HtmlString("<i title='" + DataDictionaries.InvoiceStatuses[x.BatchId.HasValue ? "b" : x.Status] + "' class='fe-flag-filled " + DataDictionaries.InvoiceStatuses[x.BatchId.HasValue ? "b" : x.Status].ToLower() + "'></i>"),
-        //            Date = string.Format("{0:dd/MM/yyyy}", x.InvoiceDate),
-        //            GCT = string.Format("{0:C}", x.GCT),
-        //            SubTotal = string.Format("{0:C}", x.SubTotal),
-        //            Total = string.Format("{0:C}", x.Total)
-        //        }).AsQueryable().ToStringArray()
-        //    });
+
+        [HttpPost]
+        public JsonResult Invoices(DataTablesParam model)
+        {
+            string order = Customs.GetSortString(model.order, model.columns);
+            var data = db.Set<InvoiceList>().FromSqlRaw("select * from invoicelist").Search(model.columns.Where(x => x.searchable).ToList(), model.search);
+            if (!model.year.HasValue)
+                model.year = db.TRN23100.Max(x => x.Requestdt).Year;
+            if (model.year != 0)
+                data = data.Where(x => x.InvoiceDate.Year == model.year);
+            if (model.additional != null && model.additional.ToString() != "a")
+                data = model.additional.ToString() == "b" ? data.Where(x => x.BatchId.HasValue) : data.Where(x => x.Status == model.additional.ToString() && !x.BatchId.HasValue);
+            var list = data.ToList();
+            int tCount = list.Count();
+            if (tCount < model.length)
+                model.length = tCount;
+            var dataList = data.ToList();
+            return Json(new DataTableReturn
+            {
+                draw = model.draw,
+                recordsFiltered = tCount,
+                recordsTotal = db.Set<InvoiceList>().FromSqlRaw("select * from invoicelist").Count(),
+                data = Extensions.OrderByDynamic(dataList.AsQueryable(), order.Split(" ")[0], order.Split(" ")[1] != "asc").Skip(model.start).Take(model.length).AsEnumerable().Select(x => new
+                {
+                    DT_RowId = x.InvoiceNum,
+                    InvoiceNo = Customs.MakeGenericInvoiceNo(x.InvoiceNum),
+                    Title = x.InvoiceTitle.ToUpper(),
+                    Date = string.Format("{0:dd/MM/yyyy}", x.InvoiceDate),
+                    GCT = string.Format("{0:C}", x.GCT),
+                    SubTotal = string.Format("{0:C}", x.SubTotal),
+                    Total = string.Format("{0:C}", x.Total)
+                }).AsQueryable().ToStringArray()
+            });
 
 
-        //}
-        //[HttpPost]
-        //public JsonResult NewInvoices(DataTablesParam model)
-        //{
-        //    string order = Customs.GetSortString(model.order, model.columns);
-        //    var data = db.InvoiceList.Where(x => x.Status != "r" && x.IsNewFormat).Search(model.columns.Where(x => x.searchable).ToList(), model.search);
-        //    if (!model.year.HasValue)
-        //        model.year = db.TRN23100.Max(x => x.Requestdt).Year;
-        //    if (model.year != 0)
-        //        data = data.Where(x => x.InvoiceDate.Year == model.year);
-        //    if (model.additional != null && model.additional.ToString() != "a")
-        //        data = model.additional.ToString() == "b" ? data.Where(x => x.BatchId.HasValue) : data.Where(x => x.Status == model.additional.ToString() && !x.BatchId.HasValue);
-        //    var list = data.ToList();
-        //    int tCount = list.Count();
-        //    if (tCount < model.length)
-        //        model.length = tCount;
-        //    var dataList = data.ToList();
-        //    return Json(new DataTableReturn
-        //    {
-        //        draw = model.draw,
-        //        recordsFiltered = tCount,
-        //        recordsTotal = db.InvoiceList.Count(),
-        //        data = dataList.OrderBy(order).Skip(model.start).Take(model.length).AsEnumerable().Select(x => new
-        //        {
-        //            DT_RowId = x.InvoiceNum,
-        //            InvoiceNo = Customs.MakeGenericInvoiceNo(x.InvoiceNum),
-        //            Title = x.InvoiceTitle.ToUpper(),
-        //            //Contractor = x.Contractor,//new HtmlString("<i title='" + DataDictionaries.InvoiceStatuses[x.BatchId.HasValue ? "b" : x.Status] + "' class='fe-flag-filled " + DataDictionaries.InvoiceStatuses[x.BatchId.HasValue ? "b" : x.Status].ToLower() + "'></i>"),
-        //            Date = string.Format("{0:dd/MM/yyyy}", x.InvoiceDate),
-        //            GCT = string.Format("{0:C}", x.GCT),
-        //            SubTotal = string.Format("{0:C}", x.SubTotal),
-        //            Total = string.Format("{0:C}", x.Total)
-        //        }).AsQueryable().ToStringArray()
-        //    });
-        //}
+        }
 
-        //[HttpPost]
-        //public JsonResult Batches(DataTablesParam model)
-        //{
-        //    string order = Customs.GetSortString(model.order, model.columns);
-        //    var data = db.BatchList.Search(model.columns.Where(x => x.searchable).ToList(), model.search);
-        //    if (!model.year.HasValue)
-        //        model.year = db.TRN23100.Max(x => x.Requestdt).Year;
-        //    if (model.year != 0)
-        //        data = data.Where(x => x.BatchDate.Year == model.year);
-        //    return Json(new DataTableReturn
-        //    {
-        //        draw = model.draw,
-        //        recordsFiltered = data.Count(),
-        //        recordsTotal = db.ADM02300.Count(),
-        //        data = data.OrderBy(order).Skip(model.start).Take(model.length).ToList().Select(x => new
-        //        {
-        //            DT_RowId = x.BatchID,
-        //            BatchNo = (x.BatchID * 100000).ToString("X"),
-        //            BatchRange = db.TRN09100.Where(y => y.BatchId == x.BatchID).Min(y => y.InvoiceNum) + " - " + db.TRN09100.Where(y => y.BatchId == x.BatchID).Max(y => y.InvoiceNum),
-        //            Date = string.Format("{0:dddd MMMM dd, yyyy}", x.BatchDate),
-        //            InvoiceCount = x.Count,
-        //            Total = string.Format("{0:C}", x.Total)
-        //        }).AsQueryable().ToStringArray()
-        //    });
-        //}
+        [HttpPost]
+        public JsonResult NewInvoices(DataTablesParam model)
+        {
+            string order = Customs.GetSortString(model.order, model.columns);
+            var data = db.Set<InvoiceList>().FromSqlRaw("select * from invoicelist").Search(model.columns.Where(x => x.searchable).ToList(), model.search);
+            if (!model.year.HasValue)
+                model.year = db.TRN23100.Max(x => x.Requestdt).Year;
+            if (model.year != 0)
+                data = data.Where(x => x.InvoiceDate.Year == model.year);
+            if (model.additional != null && model.additional.ToString() != "a")
+                data = model.additional.ToString() == "b" ? data.Where(x => x.BatchId.HasValue) : data.Where(x => x.Status == model.additional.ToString() && !x.BatchId.HasValue);
+            var list = data.ToList();
+            int tCount = list.Count();
+            if (tCount < model.length)
+                model.length = tCount;
+            var dataList = data.ToList();
+            return Json(new DataTableReturn
+            {
+                draw = model.draw,
+                recordsFiltered = tCount,
+                recordsTotal = db.Set<InvoiceList>().FromSqlRaw("select * from invoicelist").Count(),
+                data = Extensions.OrderByDynamic(dataList.AsQueryable(), order.Split(" ")[0], order.Split(" ")[1] != "asc").Skip(model.start).Take(model.length).AsEnumerable().Select(x => new
+                {
+                    DT_RowId = x.InvoiceNum,
+                    InvoiceNo = Customs.MakeGenericInvoiceNo(x.InvoiceNum),
+                    Title = x.InvoiceTitle.ToUpper(),
+                    Date = string.Format("{0:dd/MM/yyyy}", x.InvoiceDate),
+                    GCT = string.Format("{0:C}", x.GCT),
+                    SubTotal = string.Format("{0:C}", x.SubTotal),
+                    Total = string.Format("{0:C}", x.Total)
+                }).AsQueryable().ToStringArray()
+            });
+        }
+
+        [HttpPost]
+        public JsonResult Batches(DataTablesParam model)
+        {
+            string order = Customs.GetSortString(model.order, model.columns);
+            var data = db.Set<BatchList>().FromSqlRaw("select * from batchlist").Search(model.columns.Where(x => x.searchable).ToList(), model.search);
+            if (!model.year.HasValue)
+                model.year = db.TRN23100.Max(x => x.Requestdt).Year;
+            if (model.year != 0)
+                data = data.Where(x => x.BatchDate.Year == model.year);
+            return Json(new DataTableReturn
+            {
+                draw = model.draw,
+                recordsFiltered = data.Count(),
+                recordsTotal = db.ADM02300.Count(),
+                data = Extensions.OrderByDynamic(data.AsQueryable(), order.Split(" ")[0], order.Split(" ")[1] != "asc").Skip(model.start).Take(model.length).ToList().Select(x => new
+                {
+                    DT_RowId = x.BatchID,
+                    BatchNo = (x.BatchID * 100000).ToString("X"),
+                    BatchRange = db.TRN09100.Where(y => y.BatchId == x.BatchID).Min(y => y.InvoiceNum) + " - " + db.TRN09100.Where(y => y.BatchId == x.BatchID).Max(y => y.InvoiceNum),
+                    Date = string.Format("{0:dddd MMMM dd, yyyy}", x.BatchDate),
+                    InvoiceCount = x.Count,
+                    Total = string.Format("{0:C}", x.Total)
+                }).AsQueryable().ToStringArray()
+            });
+        }
+
         #endregion
 
         #region Report Lists

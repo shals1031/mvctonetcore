@@ -676,6 +676,16 @@ namespace TeliconLatest.DataEntities
             modelBuilder.Entity<MaterialUsage>().HasNoKey();
             modelBuilder.Entity<MaterialUsageDetail>().HasNoKey();
             modelBuilder.Entity<InvoiceSummaryData>().HasNoKey();
+            modelBuilder.Entity<InvoiceList>(entity =>
+            {
+                entity.HasNoKey();
+                entity.ToView("invoicelist");
+            });
+            modelBuilder.Entity<BatchList>(entity =>
+            {
+                entity.HasNoKey();
+                entity.ToView("batchlist");
+            });
 
             OnModelCreatingPartial(modelBuilder);
         }

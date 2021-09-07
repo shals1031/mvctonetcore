@@ -77,7 +77,7 @@ namespace TeliconLatest.Controllers
                 users.Membership.LastLoginDate = DateTime.Now;
                 db.SaveChanges();
 
-                return HttpContext.User.IsInRole("Technician") || HttpContext.User.IsInRole("Supervisor")
+                return roles.Contains("Technician") || roles.Contains("Supervisor")
                     ? RedirectToAction("index", "technician")
                     : RedirectToLocal(returnUrl);
             }

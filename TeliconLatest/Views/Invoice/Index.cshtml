@@ -38,7 +38,7 @@
                 var dtempOptions = $.extend(true, {}, dataTableOptions);
                 dtempOptions.ajax.url = "@Url.Action("invoices","list")";
                 dtempOptions.columnDefs = [
-                        { "targets": 0, "name": "InvoiceNum", "data": "InvoiceNo" },
+                    { "targets": 0, "name": "InvoiceNum", "data": "InvoiceNo", "searchable": false },
                         { "targets": 1, "name": "InvoiceTitle", "data": "Title" },
                         //{ "targets": 2, "name": "Contractor", "data": "Contractor" },
                         { "targets": 2, "name": "InvoiceDate", "data": "Date", "searchable": false },

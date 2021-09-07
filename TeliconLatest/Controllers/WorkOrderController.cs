@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Transactions;
@@ -17,10 +18,13 @@ namespace TeliconLatest.Controllers
     {
         private readonly TeliconDbContext db;
         private readonly IWebHostEnvironment _env;
+        private readonly string settingFilePath = string.Empty;
+
         public WorkOrderController(TeliconDbContext db, IWebHostEnvironment env)
         {
             this.db = db;
             _env = env;
+            settingFilePath = Path.Combine(_env.WebRootPath, "settings.xml");
         }
         //
         // GET: /WorkOrders/

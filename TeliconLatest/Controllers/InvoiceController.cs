@@ -22,13 +22,15 @@ namespace TeliconLatest.Controllers
     {
         private readonly TeliconDbContext db;
         private readonly IWebHostEnvironment _env;
+        private readonly string settingFilePath = string.Empty;
+
         public InvoiceController(TeliconDbContext db, IWebHostEnvironment env)
         {
             this.db = db;
             _env = env;
+            settingFilePath = Path.Combine(_env.WebRootPath, "settings.xml");
         }
-        //
-        // GET: /Invoice/
+
         //[TeliconAuthorize(TaskId = 16)]
         public ActionResult Index()
         {
@@ -278,7 +280,7 @@ namespace TeliconLatest.Controllers
             string format = "ddd MMMM dd, yyyy";
             DateTime dFrom = DateTime.ParseExact(model.from, format, System.Globalization.CultureInfo.InvariantCulture);
             DateTime dTo = DateTime.ParseExact(model.to, format, System.Globalization.CultureInfo.InvariantCulture);
-            var data = db.TRN09100.Where(x => x.TRN09110.Any(y => y.TRN23110.TRN23100.ADM03200.CustID == model.clientID && x.InvoiceDate >= dFrom && x.InvoiceDate <= dTo));
+            var data = db.TRN09100.Include(z1 => z1.TRN09110).ThenInclude(z2 => z2.TRN23110).ThenInclude(z3 => z3.TRN23100).Where(x => x.TRN09110.Any(y => y.TRN23110.TRN23100.ADM03200.CustID == model.clientID && x.InvoiceDate >= dFrom && x.InvoiceDate <= dTo));
             return Json(new DataTableReturn
             {
                 draw = model.draw,
@@ -302,53 +304,57 @@ namespace TeliconLatest.Controllers
             var user = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.NameIdentifier).Value;
             foreach (var id in ids)
             {
-                var activities = db.TRN23110.Where(x => x.TRN09110.Any(y => y.InvoiceNum == id)).AsEnumerable().Select(x => new ClientInvoiceActivities
-                {
-                    ActivityCost = x.ADM01100.GetClientRateAmountForDate(x.ActDate),
-                    ActivityDate = x.ActDate,
-                    ActivityDesc = x.ADM01100.RateDescr,
-                    ActivityLocation = x.Location,
-                    ActivityQty = x.TRN09110.FirstOrDefault(y => y.InvoiceNum == id).InvoicedAmount,
-                    Comments = x.AdtnlDetails
-                }).ToList();
-                var mats = db.TRN23120.Where(x => x.TRN23110.TRN09110.Any(y => y.InvoiceNum == id)).AsEnumerable().Select(x => new ClientInvoiceActivityMaterial
-                {
-                    MatDesc = db.ADM13100.FirstOrDefault(m => m.MaterialID == x.WoMatID).MaterialName,
-                    ActivityDate = x.TRN23110.ActDate,
-                    ActivityLocation = x.TRN23110.Location,
-                    Comments = x.TRN23110.AdtnlDetails,
-                    MatCost = 0,
-                    MatQty = x.WoMatQty
-                }).ToList();
-                var invoice = db.TRN09100.Where(x => x.InvoiceNum == id).AsEnumerable().Select(x => new ClientInvoice
-                {
-                    Title = x.TRN09110.FirstOrDefault().TRN23110.TRN23100.Wo_title.ToUpper(),
-                    Date = x.InvoiceDate,
-                    Client = new ClientData
+                var activities = db.TRN23110.Include(z1 => z1.TRN09110).Include(z2 => z2.ADM01100)
+                    .Where(x => x.TRN09110.Any(y => y.InvoiceNum == id)).AsEnumerable().Select(x => new ClientInvoiceActivities
                     {
+                        ActivityCost = x.ADM01100.GetClientRateAmountForDate(x.ActDate),
+                        ActivityDate = x.ActDate,
+                        ActivityDesc = x.ADM01100.RateDescr,
+                        ActivityLocation = x.Location,
+                        ActivityQty = x.TRN09110.FirstOrDefault(y => y.InvoiceNum == id).InvoicedAmount,
+                        Comments = x.AdtnlDetails
+                    }).ToList();
+                var mats = db.TRN23120.Include(z1 => z1.TRN23110).ThenInclude(z2 => z2.TRN09110).ToList()
+                    .Where(x => x.TRN23110.TRN09110.Any(y => y.InvoiceNum == id)).AsEnumerable().Select(x => new ClientInvoiceActivityMaterial
+                    {
+                        MatDesc = db.ADM13100.FirstOrDefault(m => m.MaterialID == x.WoMatID).MaterialName,
+                        ActivityDate = x.TRN23110.ActDate,
+                        ActivityLocation = x.TRN23110.Location,
+                        Comments = x.TRN23110.AdtnlDetails,
+                        MatCost = 0,
+                        MatQty = x.WoMatQty
+                    }).ToList();
+                var invoice = db.TRN09100.Include(z1 => z1.TRN09110).ThenInclude(z2 => z2.TRN23110).ThenInclude(z3 => z3.TRN23100).ThenInclude(z4 => z4.ADM01400).ThenInclude(z5 => z5.ADM26100)
+                    .Include(z6 => z6.TRN09110).ThenInclude(z7 => z7.TRN23110).ThenInclude(z8 => z8.TRN23100).ThenInclude(z9 => z9.ADM03200)
+                    .Where(x => x.InvoiceNum == id).AsEnumerable().Select(x => new ClientInvoice
+                    {
+                        Title = x.TRN09110.FirstOrDefault().TRN23110.TRN23100.Wo_title.ToUpper(),
                         Date = x.InvoiceDate,
-                        InvoiceNo = x.InvoiceNum,
-                        ReferenceNo = x.TRN09110.FirstOrDefault().TRN23110.TRN23100.Wo_ref,
-                        Attention = x.TRN09110.FirstOrDefault().TRN23110.TRN23100.Requestby,
-                        ClientName = x.TRN09110.FirstOrDefault().TRN23110.TRN23100.ADM03200.CustName,
-                        Currency = x.TRN09110.FirstOrDefault().TRN23110.TRN23100.ADM03200.Currency,
-                        Email = string.IsNullOrEmpty(x.TRN09110.FirstOrDefault().TRN23110.TRN23100.ADM01400.ADM26100.Email) ?
-                            "Not Specified" : x.TRN09110.FirstOrDefault().TRN23110.TRN23100.ADM01400.ADM26100.Email,
-                        Address = x.TRN09110.FirstOrDefault().TRN23110.TRN23100.ADM01400.ADM26100.Addr
-                            + ", " + x.TRN09110.FirstOrDefault().TRN23110.TRN23100.ADM01400.areaName
-                            + ", " + x.TRN09110.FirstOrDefault().TRN23110.TRN23100.ADM01400.ADM26100.Name,
-                        Phone = string.IsNullOrEmpty(x.TRN09110.FirstOrDefault().TRN23110.TRN23100.ADM01400.ADM26100.Phone) ?
-                            "Not Specified" : x.TRN09110.FirstOrDefault().TRN23110.TRN23100.ADM01400.ADM26100.Phone,
-                        PONo = x.TRN09110.FirstOrDefault().TRN23110.TRN23100.PONum
-                    }
-                }).FirstOrDefault();
+                        Client = new ClientData
+                        {
+                            Date = x.InvoiceDate,
+                            InvoiceNo = x.InvoiceNum,
+                            ReferenceNo = x.TRN09110.FirstOrDefault().TRN23110.TRN23100.Wo_ref,
+                            Attention = x.TRN09110.FirstOrDefault().TRN23110.TRN23100.Requestby,
+                            ClientName = x.TRN09110.FirstOrDefault().TRN23110.TRN23100.ADM03200.CustName,
+                            Currency = x.TRN09110.FirstOrDefault().TRN23110.TRN23100.ADM03200.Currency,
+                            Email = string.IsNullOrEmpty(x.TRN09110.FirstOrDefault().TRN23110.TRN23100.ADM01400.ADM26100.Email) ?
+                              "Not Specified" : x.TRN09110.FirstOrDefault().TRN23110.TRN23100.ADM01400.ADM26100.Email,
+                            Address = x.TRN09110.FirstOrDefault().TRN23110.TRN23100.ADM01400.ADM26100.Addr
+                              + ", " + x.TRN09110.FirstOrDefault().TRN23110.TRN23100.ADM01400.areaName
+                              + ", " + x.TRN09110.FirstOrDefault().TRN23110.TRN23100.ADM01400.ADM26100.Name,
+                            Phone = string.IsNullOrEmpty(x.TRN09110.FirstOrDefault().TRN23110.TRN23100.ADM01400.ADM26100.Phone) ?
+                              "Not Specified" : x.TRN09110.FirstOrDefault().TRN23110.TRN23100.ADM01400.ADM26100.Phone,
+                            PONo = x.TRN09110.FirstOrDefault().TRN23110.TRN23100.PONum
+                        }
+                    }).FirstOrDefault();
                 invoice.Client.User = user;
                 invoice.Activities = activities;
                 invoice.Materials = mats;
                 var gct = db.ADM07100.FirstOrDefault(x => x.StartDate >= invoice.Date && x.EndDate <= invoice.Date);
 
                 invoice.GCT = Convert.ToDecimal((gct == null ? db.ADM07100.FirstOrDefault(x => x.EndDate == null).Percentage : gct.Percentage) / 100);
-                invoice.Client.GCTNo = Customs.GetSettingsFileValue("GctReg", "");
+                invoice.Client.GCTNo = Customs.GetSettingsFileValue("GctReg", settingFilePath);
                 invoices.Add(invoice);
             }
             return View(invoices);
@@ -357,19 +363,20 @@ namespace TeliconLatest.Controllers
         public ActionResult BatchPrintOut(int id)
         {
             var user = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.NameIdentifier).Value;
-            var printData = db.TRN09100.Where(x => x.BatchId == id && x.Status == "o").AsEnumerable().Select(x => new SummaryPrintOut
-            {
-                InvoiceID = Reusables.Customs.MakeGenericInvoiceNo(x.InvoiceNum),
-                RefNo = x.TRN09110.FirstOrDefault().TRN23110.TRN23100.Wo_ref,
-                Title = x.TRN09110.FirstOrDefault().TRN23110.TRN23100.Wo_title.ToUpper(),
-                Total = x.InvoiceTotal.Value,
-                GCT = Convert.ToDecimal(((db.ADM07100.FirstOrDefault(x1 => x1.StartDate >= x.InvoiceDate && x1.EndDate <= x.InvoiceDate) == null ? db.ADM07100.FirstOrDefault(x2 => x2.EndDate == null).Percentage : db.ADM07100.FirstOrDefault(x1 => x1.StartDate >= x.InvoiceDate && x1.EndDate <= x.InvoiceDate).Percentage) / 100) * Convert.ToDouble(x.InvoiceTotal.Value)),
-                GrandTotal = x.InvoiceTotal.Value,
-                Contractors = x.TRN09110.FirstOrDefault().TRN23110.TRN23100.ADM03400.Where(yx => yx.CrewLead == true).Select(y => y.ADM03300.FirstName.Substring(0, 1) + ". " + y.ADM03300.LastName).ToList()
-            }).ToList();
+            var printData = db.TRN09100.Include(z1 => z1.TRN09110).ThenInclude(z2 => z2.TRN23110).ThenInclude(z3 => z3.TRN23100).ThenInclude(z4 => z4.ADM03400).ThenInclude(z5 => z5.ADM03300)
+                .Where(x => x.BatchId == id && x.Status == "o").AsEnumerable().ToList().Select(x => new SummaryPrintOut
+                {
+                    InvoiceID = Customs.MakeGenericInvoiceNo(x.InvoiceNum),
+                    RefNo = x.TRN09110.FirstOrDefault().TRN23110.TRN23100.Wo_ref,
+                    Title = x.TRN09110.FirstOrDefault().TRN23110.TRN23100.Wo_title.ToUpper(),
+                    Total = x.InvoiceTotal.Value,
+                    GCT = Convert.ToDecimal(((db.ADM07100.FirstOrDefault(x1 => x1.StartDate >= x.InvoiceDate && x1.EndDate <= x.InvoiceDate) == null ? db.ADM07100.FirstOrDefault(x2 => x2.EndDate == null).Percentage : db.ADM07100.FirstOrDefault(x1 => x1.StartDate >= x.InvoiceDate && x1.EndDate <= x.InvoiceDate).Percentage) / 100) * Convert.ToDouble(x.InvoiceTotal.Value)),
+                    GrandTotal = x.InvoiceTotal.Value,
+                    Contractors = x.TRN09110.FirstOrDefault().TRN23110.TRN23100.ADM03400.Where(yx => yx.CrewLead == true).Select(y => y.ADM03300.FirstName.Substring(0, 1) + ". " + y.ADM03300.LastName).ToList()
+                }).ToList();
 
-
-            var clientId = db.TRN09110.FirstOrDefault(x => x.TRN09100.BatchId == id).TRN23110.TRN23100.ADM03200.CustID;
+            var clientId = db.TRN09110.Include(z1 => z1.TRN09100).Include(z2 => z2.TRN23110).ThenInclude(z3 => z3.TRN23100).ThenInclude(z4 => z4.ADM03200)
+                .FirstOrDefault(x => x.TRN09100.BatchId == id).TRN23110.TRN23100.ADM03200.CustID;
             var summary = new SummaryPrintOutWithClient
             {
                 Client = db.ADM03200.Where(x => x.CustID == clientId).ToList().Select(x => new ClientData
@@ -396,9 +403,8 @@ namespace TeliconLatest.Controllers
             return View(invoice);
         }
         [HttpPost]
-        public async Task<IActionResult> ClientInvoiceToExcel(ClientInvoiceFilter model)
+        public void ClientInvoiceToExcel(ClientInvoiceFilter model)
         {
-            await Task.Yield();
             var stream = new MemoryStream();
             ExcelPackage pck = new ExcelPackage(stream);
             int invNo = 0;
@@ -440,8 +446,9 @@ namespace TeliconLatest.Controllers
                 string logoSearchPath = "/images/print-logo.png";
                 if (Directory.Exists(Path.Combine(_env.WebRootPath, "work")))
                     logoSearchPath = "/work/images/print-logo.png";
-                string logoPath = Path.Combine(_env.WebRootPath, logoSearchPath);
-                FileInfo fi = new FileInfo(logoPath);
+                else
+                    logoSearchPath = Path.Combine(_env.WebRootPath, "Images", "print-logo.png");
+                FileInfo fi = new FileInfo(logoSearchPath);
                 var image = ws.Drawings.AddPicture("print-logo.png", fi);
                 image.SetPosition(0, 0);
                 image.SetSize(205, 111);
@@ -952,11 +959,10 @@ namespace TeliconLatest.Controllers
             }
             if (pck.Workbook.Worksheets.Count() > 0)
             {
-                pck.Save();
-                //Response.ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-                //Response.AddHeader("content-disposition", "attachment;  filename=" + invNo + ".xlsx");                
+                Response.ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+                Response.Headers.Add("content-disposition", "attachment;  filename=" + invNo + ".xlsx");
+                pck.SaveAs(Response.Body);
             }
-            return File(stream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", invNo + ".xlsx");
         }
 
         public ClientInvoice ClientInvoiceData(int id)
@@ -1010,7 +1016,7 @@ namespace TeliconLatest.Controllers
             var gct = db.ADM07100.FirstOrDefault(x => x.StartDate >= invoice.Date && x.EndDate <= invoice.Date);
 
             invoice.GCT = Convert.ToDecimal((gct == null ? db.ADM07100.FirstOrDefault(x => x.EndDate == null).Percentage : gct.Percentage) / 100);
-            invoice.Client.GCTNo = Customs.GetSettingsFileValue("GctReg", "");
+            invoice.Client.GCTNo = Customs.GetSettingsFileValue("GctReg", settingFilePath);
             return invoice;
         }
         #endregion
@@ -1326,9 +1332,8 @@ namespace TeliconLatest.Controllers
             return View();
         }
         [HttpPost]
-        public async Task<IActionResult> InvoiceExportToExcel(InvoiceExportToExcelModel model)
+        public void InvoiceExportToExcel(InvoiceExportToExcelModel model)
         {
-            await Task.Yield();
             var stream = new MemoryStream();
             string docName = model.from + " - " + model.to;
             ExcelPackage pck = new ExcelPackage(stream);
@@ -1352,7 +1357,6 @@ namespace TeliconLatest.Controllers
 
                     #region View and Print Seetings
 
-                    //ws.View.PageLayoutView = true;
                     ws.PrinterSettings.ShowGridLines = false;
 
                     ws.PrinterSettings.PaperSize = ePaperSize.A4;
@@ -1373,11 +1377,12 @@ namespace TeliconLatest.Controllers
                     ws.Column(4).Width = 12.29;
                     ws.Column(5).Width = 15.57;
                     #region Header
-                    string logoSearchPath = "/images/print-logo.png";
+                    string logoSearchPath = "/Images/print-logo.png";
                     if (Directory.Exists(Path.Combine(_env.WebRootPath, "work")))
                         logoSearchPath = "/work/images/print-logo.png";
-                    string logoPath = Path.Combine(_env.WebRootPath, logoSearchPath);
-                    FileInfo fi = new FileInfo(logoPath);
+                    else
+                        logoSearchPath = Path.Combine(_env.WebRootPath, "Images", "print-logo.png");
+                    FileInfo fi = new FileInfo(logoSearchPath);
                     var image = ws.Drawings.AddPicture("print-logo.png", fi);
                     image.SetPosition(0, 0);
                     image.SetSize(205, 111);
@@ -1683,11 +1688,11 @@ namespace TeliconLatest.Controllers
             }
             if (pck.Workbook.Worksheets.Count() > 0)
             {
-                pck.Save();
-                //Response.ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-                //Response.AddHeader("content-disposition", "attachment;  filename=" + docName + ".xlsx");
+                Response.ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+                Response.Headers.Add("content-disposition", "attachment;  filename=" + docName + ".xlsx");
+                pck.SaveAs(Response.Body);
+
             }
-            return File(stream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", docName + ".xlsx");
         }
 
         public ClientInvoice GetClientInvoice(int id)
@@ -1698,9 +1703,10 @@ namespace TeliconLatest.Controllers
                 return null;
             else if (inv.Status.ToLower() == "r")
                 return null;
-            var refNum = db.TRN23110.FirstOrDefault(x => x.TRN09110.Any(y => y.InvoiceNum == id)).TRN23100.Wo_ref;
+            var refNum = db.TRN23110.Include(z1 => z1.TRN09110).Include(z2 => z2.TRN23100)
+                .FirstOrDefault(x => x.TRN09110.Any(y => y.InvoiceNum == id)).TRN23100.Wo_ref;
             var refWOIds = db.TRN23100.Where(x => x.Wo_ref == refNum).Select(x => x.Workid).ToArray();
-            var activities = db.TRN23110.Where(x => x.TRN09110.Any(y => y.InvoiceNum == id)).AsEnumerable().Select(x => new ClientInvoiceActivities
+            var activities = db.TRN23110.Include(z1 => z1.TRN09110).Include(z1 => z1.ADM01100).Where(x => x.TRN09110.Any(y => y.InvoiceNum == id)).AsEnumerable().Select(x => new ClientInvoiceActivities
             {
                 ActivityCost = x.ADM01100.GetClientRateAmountForDate(x.ActDate),
                 ActivityDate = x.ActDate,
@@ -1709,7 +1715,7 @@ namespace TeliconLatest.Controllers
                 ActivityQty = x.TRN09110.FirstOrDefault(y => y.InvoiceNum == id).InvoicedAmount,
                 Comments = x.AdtnlDetails
             }).ToList();
-            var mats = db.TRN23120.Where(x => x.TRN23110.TRN09110.Any(y => y.InvoiceNum == id)).AsEnumerable().Select(x => new ClientInvoiceActivityMaterial
+            var mats = db.TRN23120.Include(z1 => z1.TRN23110).Where(x => x.TRN23110.TRN09110.Any(y => y.InvoiceNum == id)).AsEnumerable().Select(x => new ClientInvoiceActivityMaterial
             {
                 MatDesc = db.ADM13100.FirstOrDefault(m => m.MaterialID == x.WoMatID).MaterialName,
                 ActivityDate = x.TRN23110.ActDate,
@@ -1718,35 +1724,37 @@ namespace TeliconLatest.Controllers
                 MatCost = 0,
                 MatQty = x.WoMatQty
             }).ToList();
-            var invoice = db.TRN09100.Where(x => x.InvoiceNum == id).AsEnumerable().Select(x => new ClientInvoice
-            {
-                Title = x.TRN09110.FirstOrDefault().TRN23110.TRN23100.Wo_title.ToUpper(),
-                Date = x.InvoiceDate,
-                Client = new ClientData
+            var invoice = db.TRN09100.Include(z1 => z1.TRN09110).ThenInclude(z2 => z2.TRN23110).ThenInclude(z3 => z3.TRN23100).ThenInclude(z4 => z4.ADM03200)
+                .Include(z5 => z5.TRN09110).ThenInclude(z6 => z6.TRN23110).ThenInclude(z7 => z7.TRN23100).ThenInclude(z8 => z8.ADM01400).ThenInclude(z9 => z9.ADM26100)
+                .Where(x => x.InvoiceNum == id).AsEnumerable().Select(x => new ClientInvoice
                 {
+                    Title = x.TRN09110.FirstOrDefault().TRN23110.TRN23100.Wo_title.ToUpper(),
                     Date = x.InvoiceDate,
-                    InvoiceNo = x.InvoiceNum,
-                    ReferenceNo = x.TRN09110.FirstOrDefault().TRN23110.TRN23100.Wo_ref,
-                    Attention = x.TRN09110.FirstOrDefault().TRN23110.TRN23100.Requestby,
-                    ClientName = x.TRN09110.FirstOrDefault().TRN23110.TRN23100.ADM03200.CustName,
-                    Currency = x.TRN09110.FirstOrDefault().TRN23110.TRN23100.ADM03200.Currency,
-                    Email = string.IsNullOrEmpty(x.TRN09110.FirstOrDefault().TRN23110.TRN23100.ADM01400.ADM26100.Email) ?
+                    Client = new ClientData
+                    {
+                        Date = x.InvoiceDate,
+                        InvoiceNo = x.InvoiceNum,
+                        ReferenceNo = x.TRN09110.FirstOrDefault().TRN23110.TRN23100.Wo_ref,
+                        Attention = x.TRN09110.FirstOrDefault().TRN23110.TRN23100.Requestby,
+                        ClientName = x.TRN09110.FirstOrDefault().TRN23110.TRN23100.ADM03200.CustName,
+                        Currency = x.TRN09110.FirstOrDefault().TRN23110.TRN23100.ADM03200.Currency,
+                        Email = string.IsNullOrEmpty(x.TRN09110.FirstOrDefault().TRN23110.TRN23100.ADM01400.ADM26100.Email) ?
                        "Not Specified" : x.TRN09110.FirstOrDefault().TRN23110.TRN23100.ADM01400.ADM26100.Email,
-                    Address = x.TRN09110.FirstOrDefault().TRN23110.TRN23100.ADM01400.ADM26100.Addr
+                        Address = x.TRN09110.FirstOrDefault().TRN23110.TRN23100.ADM01400.ADM26100.Addr
                         + ", " + x.TRN09110.FirstOrDefault().TRN23110.TRN23100.ADM01400.areaName
                         + ", " + x.TRN09110.FirstOrDefault().TRN23110.TRN23100.ADM01400.ADM26100.Name,
-                    Phone = string.IsNullOrEmpty(x.TRN09110.FirstOrDefault().TRN23110.TRN23100.ADM01400.ADM26100.Phone) ?
+                        Phone = string.IsNullOrEmpty(x.TRN09110.FirstOrDefault().TRN23110.TRN23100.ADM01400.ADM26100.Phone) ?
                        "Not Specified" : x.TRN09110.FirstOrDefault().TRN23110.TRN23100.ADM01400.ADM26100.Phone,
-                    PONo = x.TRN09110.FirstOrDefault().TRN23110.TRN23100.PONum
-                }
-            }).FirstOrDefault();
+                        PONo = x.TRN09110.FirstOrDefault().TRN23110.TRN23100.PONum
+                    }
+                }).FirstOrDefault();
             invoice.Client.User = user;
             invoice.Activities = activities;
             invoice.Materials = mats;
             var gct = db.ADM07100.FirstOrDefault(x => x.StartDate >= invoice.Date && x.EndDate <= invoice.Date);
 
             invoice.GCT = Convert.ToDecimal((gct == null ? db.ADM07100.FirstOrDefault(x => x.EndDate == null).Percentage : gct.Percentage) / 100);
-            invoice.Client.GCTNo = Customs.GetSettingsFileValue("GctReg", "");
+            invoice.Client.GCTNo = Customs.GetSettingsFileValue("GctReg", settingFilePath);
             return invoice;
         }
 
@@ -2081,8 +2089,9 @@ namespace TeliconLatest.Controllers
                 string logoSearchPath = "/images/print-logo.png";
                 if (Directory.Exists(Path.Combine(_env.WebRootPath, "work")))
                     logoSearchPath = "/work/images/print-logo.png";
-                string logoPath = Path.Combine(_env.WebRootPath, logoSearchPath);
-                FileInfo fi = new FileInfo(logoPath);
+                else
+                    logoSearchPath = Path.Combine(_env.WebRootPath, "Images", "print-logo.png");
+                FileInfo fi = new FileInfo(logoSearchPath);
                 var image = ws.Drawings.AddPicture("print-logo.png", fi);
                 image.SetPosition(0, 0);
                 image.SetSize(205, 111);
@@ -2670,7 +2679,7 @@ namespace TeliconLatest.Controllers
             var gct = db.ADM07100.FirstOrDefault(x => x.StartDate >= invoice.Date && x.EndDate <= invoice.Date);
 
             invoice.GCT = Convert.ToDecimal((gct == null ? db.ADM07100.FirstOrDefault(x => x.EndDate == null).Percentage : gct.Percentage) / 100);
-            invoice.Client.GCTNo = Customs.GetSettingsFileValue("GctReg", "");
+            invoice.Client.GCTNo = Customs.GetSettingsFileValue("GctReg", settingFilePath);
             return invoice;
         }
         #endregion
@@ -2725,8 +2734,9 @@ namespace TeliconLatest.Controllers
                 string logoSearchPath = "/images/print-logo.png";
                 if (Directory.Exists(Path.Combine(_env.WebRootPath, "work")))
                     logoSearchPath = "/work/images/print-logo.png";
-                string logoPath = Path.Combine(_env.WebRootPath, logoSearchPath);
-                FileInfo fi = new FileInfo(logoPath);
+                else
+                    logoSearchPath = Path.Combine(_env.WebRootPath, "Images", "print-logo.png");
+                FileInfo fi = new FileInfo(logoSearchPath);
                 var image = ws.Drawings.AddPicture("print-logo.png", fi);
                 image.SetPosition(0, 0);
                 image.SetSize(205, 111);
@@ -3325,7 +3335,7 @@ namespace TeliconLatest.Controllers
             var gct = db.ADM07100.FirstOrDefault(x => x.StartDate >= invoice.Date && x.EndDate <= invoice.Date);
 
             invoice.GCT = Convert.ToDecimal((gct == null ? db.ADM07100.FirstOrDefault(x => x.EndDate == null).Percentage : gct.Percentage) / 100);
-            invoice.Client.GCTNo = Customs.GetSettingsFileValue("GctReg", "");
+            invoice.Client.GCTNo = Customs.GetSettingsFileValue("GctReg", settingFilePath);
             return invoice;
         }
 
@@ -3340,15 +3350,15 @@ namespace TeliconLatest.Controllers
 
         #region Cabling Work Diary
 
-        [HttpPost]
+        //[HttpPost]
         public void CablingWorkDiary(int id)
         {
             ExcelPackage pck = new ExcelPackage();
             int invNo = 0;
             var invoice = NewSummaryData(id);
-            string comName = Customs.GetSettingsFileValue("Name", "");
-            string street = Customs.GetSettingsFileValue("Street", "");
-            string city = Customs.GetSettingsFileValue("City", "");
+            string comName = Customs.GetSettingsFileValue("Name", settingFilePath);
+            string street = Customs.GetSettingsFileValue("Street", settingFilePath);
+            string city = Customs.GetSettingsFileValue("City", settingFilePath);
             if (invoice != null)
             {
                 #region Cabling Work Diary Work Sheet
@@ -3399,8 +3409,9 @@ namespace TeliconLatest.Controllers
                     logoSearchPath = "/work/images/flow_logo.jpg";
                 if (Directory.Exists(Path.Combine(_env.WebRootPath, "testing")))
                     logoSearchPath = "/testing/images/flow_logo.jpg";
-                string logoPath = Path.Combine(_env.WebRootPath, logoSearchPath);
-                FileInfo fi = new FileInfo(logoPath);
+                else
+                    logoSearchPath = Path.Combine(_env.WebRootPath, "Images", "flow_logo.png");
+                FileInfo fi = new FileInfo(logoSearchPath);
                 var image = ws.Drawings.AddPicture("flow_logo.jpg", fi);
                 image.SetPosition(25, 50);
                 image.SetSize(129, 70);
@@ -4513,8 +4524,9 @@ namespace TeliconLatest.Controllers
                 logoSearchPath = "/images/print-logo.png";
                 if (Directory.Exists(Path.Combine(_env.WebRootPath, "work")))
                     logoSearchPath = "/work/images/print-logo.png";
-                logoPath = Path.Combine(_env.WebRootPath, logoSearchPath);
-                FileInfo fi1 = new FileInfo(logoPath);
+                else
+                    logoSearchPath = Path.Combine(_env.WebRootPath, "Images", "print-logo.png");
+                FileInfo fi1 = new FileInfo(logoSearchPath);
                 var image1 = ws4.Drawings.AddPicture("print-logo.png", fi1);
                 image1.SetPosition(0, 0);
                 image1.SetSize(205, 111);
@@ -4888,53 +4900,18 @@ namespace TeliconLatest.Controllers
                     logoSearchPath = "/images/print-logo.png";
                     if (Directory.Exists(Path.Combine(_env.WebRootPath, "work")))
                         logoSearchPath = "/work/images/print-logo.png";
-                    logoPath = Path.Combine(_env.WebRootPath, logoSearchPath);
-                    fi1 = new FileInfo(logoPath);
+                    else
+                        logoSearchPath = Path.Combine(_env.WebRootPath, "Images", "print-logo.png");
+                    fi1 = new FileInfo(logoSearchPath);
                     image1 = ws5.Drawings.AddPicture("print-logo.png", fi1);
                     image1.SetPosition(0, 0);
                     image1.SetSize(205, 111);
 
-                    //ws5.Cells["C" + y].Value = "P.O. BOX 3069";
-                    //ws5.Cells["C" + y].Style.Font.Bold = true;
-                    //ws5.Cells["C" + y].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
-                    //if (invoice.Client.InvoiceNo > 0)
-                    //{
-                    //    ws5.Cells["D" + y].Value = "Invoice #:";
-                    //    ws5.Cells["E" + y].Value = Customs.MakeGenericInvoiceNo(invoice.Client.InvoiceNo);
-                    //    ws5.Cells["D" + y].Style.Font.Bold = true;
-                    //    ws5.Cells["E" + y].Style.HorizontalAlignment = ExcelHorizontalAlignment.Left;
-                    //}
-                    //ws5.Cells[y, 3, y, 4].Style.Font.Name = "Inherit";
                     y++;
 
-                    //ws5.Cells["C" + y].Value = "Kingston 8";
-                    //ws5.Cells["C" + y].Style.Font.Bold = true;
-                    //ws5.Cells["C" + y].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
-                    //if (invoice.Client.InvoiceNo > 0)
-                    //{
-                    //    ws5.Cells["D" + y].Value = "GCT #:";
-                    //    ws5.Cells["E" + y].Value = invoice.Client.GCTNo;
-                    //    ws5.Cells["D" + y].Style.Font.Bold = true;
-                    //}
-                    //ws5.Cells[y, 3, y, 4].Style.Font.Name = "Inherit";
                     y++;
 
-                    //ws5.Cells["C" + y].Value = "Tel: 618-3628";
-                    //ws5.Cells["C" + y].Style.Font.Bold = true;
-                    //ws5.Cells["C" + y].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
-                    //ws5.Cells[y, 3, y, 4].Style.Font.Name = "Inherit";
-
-                    //ws5.Cells["D" + y].Value = "GR #";
-                    //ws5.Cells["E" + y].Value = "5000433798";
-                    //ws5.Cells["D" + y].Style.Font.Bold = true;
-                    //ws5.Cells[y, 3, y, 4].Style.Font.Name = "Inherit";
                     y++;
-
-                    //ws5.Cells["C" + y].Value = "Email: admin@telicongroup.com";
-                    //ws5.Cells["C" + y].Style.Font.Bold = true;
-                    //ws5.Cells["C" + y].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
-                    //ws5.Cells[y, 3, y, 4].Style.Font.Name = "Inherit";
-                    //y++;
 
                     y++;
                     y++;
@@ -4951,18 +4928,6 @@ namespace TeliconLatest.Controllers
                     ws5.Cells[y, 3, y, 4].Style.Font.Name = "Inherit";
                     ws5.Cells[y, 1, y, 1].Style.Font.Name = "Inherit";
                     y++;
-
-                    //ws5.Cells["A" + y].Value = "Attn.:";
-                    //ws5.Cells["A" + y].Style.Font.Bold = true;
-                    //ws5.Cells[y, 2, y, 3].Merge = true;
-                    //ws5.Cells["B" + y].Value = invoice.Client.Attention;
-
-                    //ws5.Cells["D" + y].Value = "Prepared By:";
-                    //ws5.Cells["D" + y].Style.Font.Bold = true;
-                    //ws5.Cells["E" + y].Value = invoice.Client.User;
-                    //ws5.Cells[y, 3, y, 4].Style.Font.Name = "Inherit";
-                    //ws5.Cells[y, 1, y, 1].Style.Font.Name = "Inherit";
-                    //y++;
 
                     ws5.Cells["A" + y].Value = "Address:";
                     ws5.Cells["A" + y].Style.Font.Bold = true;
@@ -5259,9 +5224,9 @@ namespace TeliconLatest.Controllers
             }
             if (pck.Workbook.Worksheets.Count() > 0)
             {
-                pck.Save();
-                //Response.ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-                //Response.AddHeader("content-disposition", "attachment;  filename=Cabling Work Diary " + invNo + ".xlsx");
+                Response.ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+                Response.Headers.Add("content-disposition", "attachment;  filename=Cabling Work Diary " + invNo + ".xlsx");
+                pck.SaveAs(Response.Body);
             }
         }
 

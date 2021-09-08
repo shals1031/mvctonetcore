@@ -9,7 +9,6 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Transactions;
 using TeliconLatest.DataEntities;
 using TeliconLatest.Models;
@@ -968,48 +967,52 @@ namespace TeliconLatest.Controllers
         public ClientInvoice ClientInvoiceData(int id)
         {
             var user = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.NameIdentifier).Value;
-            var refNum = db.TRN23110.FirstOrDefault(x => x.TRN09110.Any(y => y.InvoiceNum == id)).TRN23100.Wo_ref;
+            var refNum = db.TRN23110.Include(z1 => z1.TRN09110).Include(z2 => z2.TRN23100).FirstOrDefault(x => x.TRN09110.Any(y => y.InvoiceNum == id)).TRN23100.Wo_ref;
             var refWOIds = db.TRN23100.Where(x => x.Wo_ref == refNum).Select(x => x.Workid).ToArray();
-            var activities = db.TRN23110.Where(x => x.TRN09110.Any(y => y.InvoiceNum == id)).AsEnumerable().Select(x => new ClientInvoiceActivities
-            {
-                ActivityCost = x.ADM01100.GetClientRateAmountForDate(x.ActDate),
-                ActivityDate = x.ActDate,
-                ActivityDesc = x.ADM01100.RateDescr,
-                ActivityLocation = x.Location,
-                ActivityQty = x.TRN09110.FirstOrDefault(y => y.InvoiceNum == id).InvoicedAmount,
-                Comments = x.AdtnlDetails
-            }).ToList();
-            var mats = db.TRN23120.Where(x => x.TRN23110.TRN09110.Any(y => y.InvoiceNum == id)).AsEnumerable().Select(x => new ClientInvoiceActivityMaterial
-            {
-                MatDesc = db.ADM13100.FirstOrDefault(m => m.MaterialID == x.WoMatID).MaterialName,
-                ActivityDate = x.TRN23110.ActDate,
-                ActivityLocation = x.TRN23110.Location,
-                Comments = x.TRN23110.AdtnlDetails,
-                MatCost = 0,
-                MatQty = x.WoMatQty
-            }).ToList();
-            var invoice = db.TRN09100.Where(x => x.InvoiceNum == id).AsEnumerable().Select(x => new ClientInvoice
-            {
-                Title = x.TRN09110.FirstOrDefault().TRN23110.TRN23100.Wo_title.ToUpper(),
-                Date = x.InvoiceDate,
-                Client = new ClientData
+            var activities = db.TRN23110.Include(z1 => z1.TRN09110).Include(z2 => z2.ADM01100)
+                .Where(x => x.TRN09110.Any(y => y.InvoiceNum == id)).AsEnumerable().Select(x => new ClientInvoiceActivities
                 {
+                    ActivityCost = x.ADM01100.GetClientRateAmountForDate(x.ActDate),
+                    ActivityDate = x.ActDate,
+                    ActivityDesc = x.ADM01100.RateDescr,
+                    ActivityLocation = x.Location,
+                    ActivityQty = x.TRN09110.FirstOrDefault(y => y.InvoiceNum == id).InvoicedAmount,
+                    Comments = x.AdtnlDetails
+                }).ToList();
+            var mats = db.TRN23120.Include(z1 => z1.TRN23110).ThenInclude(z2 => z2.TRN09110)
+                .Where(x => x.TRN23110.TRN09110.Any(y => y.InvoiceNum == id)).AsEnumerable().ToList().Select(x => new ClientInvoiceActivityMaterial
+                {
+                    MatDesc = db.ADM13100.FirstOrDefault(m => m.MaterialID == x.WoMatID).MaterialName,
+                    ActivityDate = x.TRN23110.ActDate,
+                    ActivityLocation = x.TRN23110.Location,
+                    Comments = x.TRN23110.AdtnlDetails,
+                    MatCost = 0,
+                    MatQty = x.WoMatQty
+                }).ToList();
+            var invoice = db.TRN09100.Include(z1 => z1.TRN09110).ThenInclude(z2 => z2.TRN23110).ThenInclude(z3 => z3.TRN23100).ThenInclude(z4 => z4.ADM03200)
+                .Include(z5 => z5.TRN09110).ThenInclude(z6 => z6.TRN23110).ThenInclude(z7 => z7.TRN23100).ThenInclude(z8 => z8.ADM01400).ThenInclude(z9 => z9.ADM26100)
+                .Where(x => x.InvoiceNum == id).AsEnumerable().Select(x => new ClientInvoice
+                {
+                    Title = x.TRN09110.FirstOrDefault().TRN23110.TRN23100.Wo_title.ToUpper(),
                     Date = x.InvoiceDate,
-                    InvoiceNo = x.InvoiceNum,
-                    ReferenceNo = x.TRN09110.FirstOrDefault().TRN23110.TRN23100.Wo_ref,
-                    Attention = x.TRN09110.FirstOrDefault().TRN23110.TRN23100.Requestby,
-                    ClientName = x.TRN09110.FirstOrDefault().TRN23110.TRN23100.ADM03200.CustName,
-                    Currency = x.TRN09110.FirstOrDefault().TRN23110.TRN23100.ADM03200.Currency,
-                    Email = string.IsNullOrEmpty(x.TRN09110.FirstOrDefault().TRN23110.TRN23100.ADM01400.ADM26100.Email) ?
+                    Client = new ClientData
+                    {
+                        Date = x.InvoiceDate,
+                        InvoiceNo = x.InvoiceNum,
+                        ReferenceNo = x.TRN09110.FirstOrDefault().TRN23110.TRN23100.Wo_ref,
+                        Attention = x.TRN09110.FirstOrDefault().TRN23110.TRN23100.Requestby,
+                        ClientName = x.TRN09110.FirstOrDefault().TRN23110.TRN23100.ADM03200.CustName,
+                        Currency = x.TRN09110.FirstOrDefault().TRN23110.TRN23100.ADM03200.Currency,
+                        Email = string.IsNullOrEmpty(x.TRN09110.FirstOrDefault().TRN23110.TRN23100.ADM01400.ADM26100.Email) ?
                        "Not Specified" : x.TRN09110.FirstOrDefault().TRN23110.TRN23100.ADM01400.ADM26100.Email,
-                    Address = x.TRN09110.FirstOrDefault().TRN23110.TRN23100.ADM01400.ADM26100.Addr
+                        Address = x.TRN09110.FirstOrDefault().TRN23110.TRN23100.ADM01400.ADM26100.Addr
                         + ", " + x.TRN09110.FirstOrDefault().TRN23110.TRN23100.ADM01400.areaName
                         + ", " + x.TRN09110.FirstOrDefault().TRN23110.TRN23100.ADM01400.ADM26100.Name,
-                    Phone = string.IsNullOrEmpty(x.TRN09110.FirstOrDefault().TRN23110.TRN23100.ADM01400.ADM26100.Phone) ?
+                        Phone = string.IsNullOrEmpty(x.TRN09110.FirstOrDefault().TRN23110.TRN23100.ADM01400.ADM26100.Phone) ?
                        "Not Specified" : x.TRN09110.FirstOrDefault().TRN23110.TRN23100.ADM01400.ADM26100.Phone,
-                    PONo = x.TRN09110.FirstOrDefault().TRN23110.TRN23100.PONum
-                }
-            }).FirstOrDefault();
+                        PONo = x.TRN09110.FirstOrDefault().TRN23110.TRN23100.PONum
+                    }
+                }).FirstOrDefault();
             invoice.Client.User = user;
             invoice.Activities = activities;
             invoice.Materials = mats;
@@ -1030,9 +1033,8 @@ namespace TeliconLatest.Controllers
             return View(breakDown);
         }
         [HttpPost]
-        public async Task<IActionResult> BreakDownToExcel(ClientInvoiceFilter model)
+        public void BreakDownToExcel(ClientInvoiceFilter model)
         {
-            await Task.Yield();
             var stream = new MemoryStream();
             string docName = "BreakDown";
             ExcelPackage pck = new ExcelPackage(stream);
@@ -1253,17 +1255,17 @@ namespace TeliconLatest.Controllers
             }
             if (pck.Workbook.Worksheets.Count() > 0)
             {
-                pck.Save();
-                //Response.ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-                //Response.AddHeader("content-disposition", "attachment;  filename=" + docName + ".xlsx");
+                Response.ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+                Response.Headers.Add("content-disposition", "attachment;  filename=" + docName + ".xlsx");
+                pck.SaveAs(Response.Body);
             }
-            return File(stream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", docName + ".xlsx");
         }
 
         public InvoiceBreakDown BreakDownData(int id)
         {
             var breakDown = new InvoiceBreakDown();
-            var workOrder = db.TRN09110.FirstOrDefault(x => x.InvoiceNum == id).TRN23110.TRN23100;
+            var workOrder = db.TRN09110.Include(z1 => z1.TRN23110).ThenInclude(z2 => z2.TRN23100)
+                .FirstOrDefault(x => x.InvoiceNum == id).TRN23110.TRN23100;
             breakDown.DateDispatched = workOrder.Dispatchdt;
             breakDown.DateRequested = workOrder.Requestdt.Day > 14 ?
                 new DateTime(workOrder.Requestdt.Year, workOrder.Requestdt.Month, DateTime.DaysInMonth(workOrder.Requestdt.Year, workOrder.Requestdt.Month)) :
@@ -1272,13 +1274,14 @@ namespace TeliconLatest.Controllers
             breakDown.Title = workOrder.Wo_title.ToUpper();
             breakDown.RefNo = workOrder.Wo_ref;
             breakDown.PONo = workOrder.PONum;
-            breakDown.Activities = db.TRN09110.Where(x => x.InvoiceNum == id).Select(x => new ShortActivity
-            {
-                Date = x.TRN23110.ActDate,
-                Description = x.TRN23110.ADM01100.RateDescr,
-                Location = x.TRN23110.Location,
-                Qty = x.TRN23110.OActQty
-            }).ToList();
+            breakDown.Activities = db.TRN09110.Include(z1 => z1.TRN23110).ThenInclude(z2 => z2.ADM01100)
+                .Where(x => x.InvoiceNum == id).Select(x => new ShortActivity
+                {
+                    Date = x.TRN23110.ActDate,
+                    Description = x.TRN23110.ADM01100.RateDescr,
+                    Location = x.TRN23110.Location,
+                    Qty = x.TRN23110.OActQty
+                }).ToList();
             return breakDown;
         }
 
@@ -1295,9 +1298,9 @@ namespace TeliconLatest.Controllers
                 }
                 else
                 {
-                    var links = db.TRN09110.Where(x => x.InvoiceNum == id).ToList();
+                    var links = db.TRN09110.Include(z1 => z1.TRN23110).Where(x => x.InvoiceNum == id).ToList();
                     var wids = links.Select(x => x.TRN23110.WorkOID).Distinct().ToList();
-                    foreach (var link in db.TRN09110.Where(x => x.InvoiceNum == id).ToList())
+                    foreach (var link in db.TRN09110.Include(z1 => z1.TRN23110).Where(x => x.InvoiceNum == id).ToList())
                     {
                         if (link.TRN23110.InvFlag && link.TRN23110.ActQty == 0 && link.TRN23110.OActQty == 0)
                             db.TRN23110.Remove(link.TRN23110);

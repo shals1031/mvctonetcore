@@ -26,8 +26,7 @@ namespace TeliconLatest.Controllers
             _env = env;
             settingFilePath = Path.Combine(_env.WebRootPath, "settings.xml");
         }
-        //
-        // GET: /WorkOrders/
+
         #region Pages
         //[TeliconAuthorize(TaskId = 15)]
         public ActionResult Index()
@@ -98,7 +97,7 @@ namespace TeliconLatest.Controllers
         //[TeliconAuthorize(TaskId = 15)]
         public ActionResult Edit(int id, string type)
         {
-            ViewBag.Teams = db.ADM03400.Where(x => x.WorkOrderId == id).AsEnumerable().Select(x => new TeamMember
+            ViewBag.Teams = db.ADM03400.Include(z1 => z1.ADM03300).Where(x => x.WorkOrderId == id).AsEnumerable().Select(x => new TeamMember
             {
                 ID = x.ContractorID,
                 ImgUrl = CheckIfUserImgExists(x.ADM03300.EmployeeID),
@@ -111,6 +110,7 @@ namespace TeliconLatest.Controllers
             SetupWorkOrder(model.ClassId, model);
             return View("CreateOrUpdate", model);
         }
+
         [HttpPost]
         //[ValidateAntiForgeryToken]
         //[TeliconAuthorize(TaskId = 15, Mode = ActionMode.Write)]
@@ -141,7 +141,7 @@ namespace TeliconLatest.Controllers
                     });
                 model.Wo_ref = model.Wo_ref.TrimStart().TrimEnd().ToUpper();
                 model.Wo_title = model.Wo_title.TrimStart().TrimEnd().ToUpper();
-                model.Requestby = model.Requestby.ToUpper().TrimStart().TrimEnd();
+                model.Requestby = model.Requestby?.ToUpper().TrimStart().TrimEnd();
 
                 if (model.Workid == 0)
                 {
@@ -163,11 +163,13 @@ namespace TeliconLatest.Controllers
                             });
                         }
                     }
+                    model.Status = string.IsNullOrWhiteSpace(model.Status) ? model.Status = "i" : model.Status;
                     db.SaveChanges();
                 }
                 else
                 {
-                    var order = db.TRN23100.Find(model.Workid);
+                    //var order = db.TRN23100.Find(model.Workid);
+                    var order = db.TRN23100.Include(z1 => z1.TRN23110).ThenInclude(z2 => z2.TRN09110).Where(x => x.Workid == model.Workid).FirstOrDefault();
                     order.Wo_title = model.Wo_title.ToUpper();
                     order.Wo_ref = model.Wo_ref.ToUpper();
                     order.Wo_split = model.Wo_split;
@@ -187,7 +189,7 @@ namespace TeliconLatest.Controllers
                     if (canUpdate)
                         if (await TryUpdateModelAsync(order, "", x => x.Wo_ref, x => x.Requestby, x => x.Wo_title, x => x.DepartmentID, x => x.ClassId, x => x.SpliceDocs, x => x.Requestdt, x => x.Dispatchdt, x => x.CompletionDt, x => x.Wo_client, x => x.Wo_split, x => x.Wo_split2, x => x.PONum, x => x.AreaID))
                         {
-                            if (order.Status.ToLower() == "i")
+                            if (order.Status?.ToLower() == "i")
                             {
                                 int invNo = order.TRN23110.FirstOrDefault().TRN09110.FirstOrDefault().InvoiceNum;
                                 var inv = db.TRN09100.Find(invNo);
@@ -1327,24 +1329,28 @@ namespace TeliconLatest.Controllers
             if (wid.HasValue)
                 wOIds.Add(wid.Value);
             else
-                wOIds.AddRange(db.TRN09110.Where(x => x.InvoiceNum == invID.Value).Select(x => x.TRN23110.WorkOID).Distinct());
-            wid = !wid.HasValue ? db.TRN09110.FirstOrDefault(x => x.InvoiceNum == invID.Value).TRN23110.TRN23100.Workid : wid.Value;
+                wOIds.AddRange(
+                    db.TRN09110.Include(z1 => z1.TRN23110).Where(x => x.InvoiceNum == invID.Value).Select(x => x.TRN23110.WorkOID).Distinct()
+                    );
+            wid = !wid.HasValue ? db.TRN09110.Include(z1 => z1.TRN23110).ThenInclude(z2 => z2.TRN23100)
+                .FirstOrDefault(x => x.InvoiceNum == invID.Value).TRN23110.TRN23100.Workid : wid.Value;
             var invNos = db.TRN09100.AsEnumerable().Where(y => y.Status.ToLower() == "r" && !y.IsNewFormat).Select(y => new SelectListItem
             {
                 Text = Customs.MakeGenericInvoiceNo(y.InvoiceNum).ToString(),
                 Value = y.InvoiceNum.ToString()
             }).ToList();
             ViewBag.InvoiceID = invID.HasValue ? invID.Value : 0;
-            var model = db.TRN23100.AsEnumerable().Where(x => wOIds.Contains(x.Workid)).Select(x => new ConstructorPartial
-            {
-                Dates = invID.HasValue ? x.TRN23110.Where(y => y.OActQty > y.ActQty || y.ActQty <= 0).Select(y => y.ActDate).Distinct().ToList() : x.TRN23110.Select(y => y.ActDate).Distinct().ToList(),
-                InvoiceNos = invNos,
-                WorkOrderId = x.Workid,
-                InvoiceId = Customs.MakeGenericInvoiceNo(db.TRN09100.OrderByDescending(y => y.InvoiceNum).FirstOrDefault().InvoiceNum),
-                UserRole = new string[1], //System.Web.Security.Roles.GetRolesForUser(),
-                Status = x.Submitted && x.Status == "v" ? "v" : x.Submitted && x.Status != "v" ? "s" : x.Status.ToLower(),
-                Title = invID.HasValue ? db.TRN09100.Find(invID.Value).InvoiceTitle.ToUpper() : x.Wo_title.ToUpper()
-            }).FirstOrDefault();
+            var model = db.TRN23100.Include(z1 => z1.TRN23110).ThenInclude(z2 => z2.TRN23100).AsEnumerable().ToList()
+                .Where(x => wOIds.Contains(x.Workid)).Select(x => new ConstructorPartial
+                {
+                    Dates = invID.HasValue ? x.TRN23110.Where(y => y.OActQty > y.ActQty || y.ActQty <= 0).Select(y => y.ActDate).Distinct().ToList() : x.TRN23110.Select(y => y.ActDate).Distinct().ToList(),
+                    InvoiceNos = invNos,
+                    WorkOrderId = x.Workid,
+                    InvoiceId = Customs.MakeGenericInvoiceNo(db.TRN09100.OrderByDescending(y => y.InvoiceNum).FirstOrDefault().InvoiceNum),
+                    UserRole = new string[1], //System.Web.Security.Roles.GetRolesForUser(),
+                    Status = x.Submitted && x.Status == "v" ? "v" : x.Submitted && x.Status != "v" ? "s" : x.Status.ToLower(),
+                    Title = invID.HasValue ? db.TRN09100.Find(invID.Value).InvoiceTitle.ToUpper() : x.Wo_title.ToUpper()
+                }).FirstOrDefault();
             ViewBag.Invoiced = invID.HasValue;
             ViewBag.Type = type;
             ViewBag.SubTotal = GetWorkOrderSubTotal(wid ?? 0);
@@ -1732,7 +1738,7 @@ namespace TeliconLatest.Controllers
                 contract.imgUrl = CheckIfUserImgExists(db.ADM03300.Where(x => x.ConID == contract.id).FirstOrDefault().EmployeeID);
             }
             ViewBag.Contractors = contracts.OrderBy(x => x.Text).ToList();
-            ViewBag.TeamMax = Customs.GetSettingsFileValue("TeamMax", "");
+            ViewBag.TeamMax = Customs.GetSettingsFileValue("TeamMax", settingFilePath);
             List<SelectListItem> vehicals = db.ADM22100.Select(x => new SelectListItem
             {
                 Text = x.PlateNo + " : Owned Company",
@@ -1746,28 +1752,14 @@ namespace TeliconLatest.Controllers
                 Value = x.Value
             }).ToList();
 
-            ViewBag.Areas = db.ADM01400.OrderBy(x => x.ADM26100.Name).Select(x => new SelectListItem
+            ViewBag.Areas = db.ADM01400.Include(z1 => z1.ADM26100).OrderBy(x => x.ADM26100.Name).Select(x => new SelectListItem
             {
                 Text = x.areaName + " (" + x.ADM26100.Name + ")",
                 Value = x.areaID.ToString()
             }).ToList();
             var dbPOes = db.ADM16200.OrderBy(x => x.PONUM).ToList();
             var deps = new List<SelectListItem>();
-            //if (!System.Web.Security.Roles.IsUserInRole("Technician") && !System.Web.Security.Roles.IsUserInRole("Supervisor"))
-            //{
-            //    ViewBag.POes = dbPOes.Where(x => !x.IsClosed).OrderBy(x => x.PONUM).Select(x => new SelectListItem
-            //    {
-            //        Text = x.PONUM + " - " + string.Format("{0:C}", x.BALANCE),
-            //        Value = x.PONUM
-            //    }).ToList();
-            //    deps = db.ADM04200.OrderBy(x => x.Name).Select(x => new SelectListItem
-            //    {
-            //        Text = x.Name,
-            //        Value = x.DepartmentID.ToString()
-            //    }).ToList();
-            //}
-            //else
-            //{
+
             ViewBag.POes = dbPOes.Where(x => !x.IsClosed).OrderBy(x => x.PONUM).Select(x => new SelectListItem
             {
                 Text = x.PONUM,
@@ -1781,7 +1773,6 @@ namespace TeliconLatest.Controllers
                 Value = x.DepartmentID.ToString(),
                 Selected = x.DepartmentID == (user != null ? user.DepartmentID : -1)
             }).ToList();
-            //}
 
             ViewBag.Departments = deps;
         }

@@ -1861,7 +1861,7 @@ namespace TeliconLatest.Controllers
         [HttpPost]
         public JsonResult GetRequestedBy(int areaId)
         {
-            var area = db.ADM01400.Include(z1 => z1.ADM26100).Find(areaId);
+            var area = db.ADM01400.Include(z1 => z1.ADM26100).Where(x => x.areaID == areaId).FirstOrDefault();
             string sup = "";
             if (area != null)
                 sup = area.ADM26100 != null ? area.ADM26100.SupervisorName : "";

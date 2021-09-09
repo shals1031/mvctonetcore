@@ -163,7 +163,7 @@ namespace TeliconLatest.Controllers
                             });
                         }
                     }
-                    model.Status = string.IsNullOrWhiteSpace(model.Status) ? model.Status = "i" : model.Status;
+                    model.Status = string.IsNullOrWhiteSpace(model.Status) ? model.Status = "n" : model.Status;
                     db.SaveChanges();
                 }
                 else
@@ -246,7 +246,7 @@ namespace TeliconLatest.Controllers
             if (merge != null)
             {
                 ViewBag.RefCode = merge.MergedRefNum;
-                var wOActs = db.TRN23110.Where(x => x.WorkOID == merge.WorkOrderId && x.TRN09110.Any());
+                var wOActs = db.TRN23110.Include(z1 => z1.TRN09110).Where(x => x.WorkOID == merge.WorkOrderId && x.TRN09110.Any());
                 if (wOActs.Count() > 0)
                     invID = wOActs.Select(x => x.TRN09110.FirstOrDefault().InvoiceNum).FirstOrDefault();
             }
@@ -264,26 +264,28 @@ namespace TeliconLatest.Controllers
         }
         public ActionResult MergeCandiditates(string code)
         {
-            var candidates = db.TRN23100.Where(x => x.Wo_ref == code && (x.Status != "i" && !x.TRN13110.Any() && !x.TRN13120.Any())).AsEnumerable().Select(x => new WorkOrderPartial
-            {
-                WOId = x.Workid,
-                Title = x.Wo_title.ToUpper(),
-                Status = DataDictionaries.WordOrderStatuses[x.Status],
-                Total = x.TRN23110.Sum(y => Convert.ToDouble(y.OActQty) * y.ADM01100.GetRateAmountForDate(y.ActDate)),
-                IsMerged = db.TRN13120.FirstOrDefault(m => m.WorkOrderId == x.Workid) != null || db.TRN13110.FirstOrDefault(m => m.WorkOrderId == x.Workid) != null
-            }).ToList();
+            var candidates = db.TRN23100.Include(z1 => z1.TRN13110).Include(z2 => z2.TRN13120).Include(z3 => z3.TRN23110).ThenInclude(z4 => z4.ADM01100)
+                .Where(x => x.Wo_ref == code && (x.Status != "i" && !x.TRN13110.Any() && !x.TRN13120.Any())).AsEnumerable().ToList().Select(x => new WorkOrderPartial
+                {
+                    WOId = x.Workid,
+                    Title = x.Wo_title.ToUpper(),
+                    Status = DataDictionaries.WordOrderStatuses[x.Status],
+                    Total = x.TRN23110.Sum(y => Convert.ToDouble(y.OActQty) * y.ADM01100.GetRateAmountForDate(y.ActDate)),
+                    IsMerged = db.TRN13120.FirstOrDefault(m => m.WorkOrderId == x.Workid) != null || db.TRN13110.FirstOrDefault(m => m.WorkOrderId == x.Workid) != null
+                }).ToList();
             return View(candidates);
         }
         public ActionResult MergeCandiditatesWithMerged(string code, int id)
         {
-            var candidates = db.TRN23100.Where(x => x.Wo_ref == code && (x.TRN13110.Any(w => w.MergedOrderId == id) || x.TRN13120.Any(w => w.MergedOrderId == id) || (!x.TRN13110.Any() && !x.TRN13120.Any() && x.Status != "i"))).AsEnumerable().Select(x => new WorkOrderPartial
-            {
-                WOId = x.Workid,
-                Title = x.Wo_title.ToUpper(),
-                Status = DataDictionaries.WordOrderStatuses[x.Status],
-                Total = x.TRN23110.Sum(y => Convert.ToDouble(y.OActQty) * y.ADM01100.GetRateAmountForDate(y.ActDate)),
-                IsMerged = db.TRN13120.FirstOrDefault(m => m.WorkOrderId == x.Workid) != null || db.TRN13110.FirstOrDefault(m => m.WorkOrderId == x.Workid) != null
-            }).ToList();
+            var candidates = db.TRN23100.Include(z1 => z1.TRN13110).Include(z2 => z2.TRN13120).Include(z3 => z3.TRN23110).ThenInclude(z4 => z4.ADM01100)
+                .Where(x => x.Wo_ref == code && (x.TRN13110.Any(w => w.MergedOrderId == id) || x.TRN13120.Any(w => w.MergedOrderId == id) || (!x.TRN13110.Any() && !x.TRN13120.Any() && x.Status != "i"))).AsEnumerable().ToList().Select(x => new WorkOrderPartial
+                {
+                    WOId = x.Workid,
+                    Title = x.Wo_title.ToUpper(),
+                    Status = DataDictionaries.WordOrderStatuses[x.Status],
+                    Total = x.TRN23110.Sum(y => Convert.ToDouble(y.OActQty) * y.ADM01100.GetRateAmountForDate(y.ActDate)),
+                    IsMerged = db.TRN13120.FirstOrDefault(m => m.WorkOrderId == x.Workid) != null || db.TRN13110.FirstOrDefault(m => m.WorkOrderId == x.Workid) != null
+                }).ToList();
             return View("MergeCandiditates", candidates);
         }
         public ActionResult GetMergeReferences(string val)
@@ -294,6 +296,7 @@ namespace TeliconLatest.Controllers
         {
             return PartialView("ReferenceListPartial", GetRefrencesForMerging(val, id));
         }
+
         [HttpPost]
         //[TeliconAuthorize(TaskId = 15, Mode = ActionMode.Write)]
         public async Task<JsonResult> MergeWorkOrdersAsync(List<int> wOIds, int masterWOId, bool isUpdate, int? id, string title)
@@ -421,6 +424,7 @@ namespace TeliconLatest.Controllers
                 throw;
             }
         }
+
         [HttpPost]
         //[TeliconAuthorize(TaskId = 15, Mode = ActionMode.Write)]
         public JsonResult DeleteMerge(string id)
@@ -480,7 +484,8 @@ namespace TeliconLatest.Controllers
                     });
                 if (wOIds != null && wOIds.Count > 0)
                 {
-                    var total = db.TRN23110.Where(x => wOIds.Contains(x.WorkOID)).AsEnumerable().Sum(x => (Convert.ToDouble(x.OActQty) * x.ADM01100.GetClientRateAmountForDate(x.ActDate)));
+                    var total = db.TRN23110.Include(z1 => z1.ADM01100).ToList()
+                        .Where(x => wOIds.Contains(x.WorkOID)).AsEnumerable().Sum(x => (Convert.ToDouble(x.OActQty) * x.ADM01100.GetClientRateAmountForDate(x.ActDate)));
                     var invoice = new TRN09100();
                     if (invID.HasValue)
                     {
@@ -536,8 +541,10 @@ namespace TeliconLatest.Controllers
         {
             string msg = "";
             msg = db.TRN13120.Any(x => x.MergedOrderId == id) ? "" : "notMerged";
-            bool hasActivities = db.TRN13120.Any(x => x.MergedOrderId == id && x.TRN23100.TRN23110.Any()) || db.TRN13120.Any(x => x.MergedOrderId == id && x.TRN13110.Any(a => a.TRN23100.TRN23110.Any()));
-            bool verified = !(db.TRN13120.Any(x => x.MergedOrderId == id && x.TRN23100.Status.ToLower() != "v") || db.TRN13120.Any(x => x.MergedOrderId == id && x.TRN13110.Any(a => a.TRN23100.Status.ToLower() != "v")));
+            bool hasActivities = db.TRN13120.Include(z1 => z1.TRN23100).Include(z2 => z2.TRN13110).ThenInclude(z3 => z3.TRN23100).ThenInclude(z4 => z4.TRN23110)
+                .ToList().Any(x => x.MergedOrderId == id && x.TRN23100.TRN23110.Any()) || db.TRN13120.Any(x => x.MergedOrderId == id && x.TRN13110.Any(a => a.TRN23100.TRN23110.Any()));
+            bool verified = !(db.TRN13120.Include(z1 => z1.TRN23100).Include(z2 => z2.TRN13110).ThenInclude(z3 => z3.TRN23100)
+                .ToList().Any(x => x.MergedOrderId == id && x.TRN23100.Status.ToLower() != "v") || db.TRN13120.Any(x => x.MergedOrderId == id && x.TRN13110.Any(a => a.TRN23100.Status.ToLower() != "v")));
             var data = new
             {
                 any = hasActivities,
@@ -559,7 +566,7 @@ namespace TeliconLatest.Controllers
             using TransactionScope ts = new TransactionScope();
             try
             {
-                if (db.TRN23110.Where(x => x.WorkOID == wid).Any(x => x.TRN09110.Any()))
+                if (db.TRN23110.Include(z1 => z1.TRN09110).Where(x => x.WorkOID == wid).Any(x => x.TRN09110.Any()))
                 {
                     return Json(new JsonReturnParams
                     {
@@ -754,7 +761,7 @@ namespace TeliconLatest.Controllers
                     foreach (var activity in rec.Activities.Where(x => x.Amount <= 0))
                     {
                         var recAct = db.TRN23110.Find(activity.RecID);
-                        if (db.TRN23110.Find(activity.RecID).TRN23120.Any())
+                        if (db.TRN23110.Include(z1 => z1.TRN23120).ToList().Where(x => x.RecID == activity.RecID).FirstOrDefault().TRN23120.Any())
                             db.TRN23120.RemoveRange(db.TRN23110.Find(activity.RecID).TRN23120);
                         if (rec.InvID.HasValue)
                         {
@@ -771,8 +778,9 @@ namespace TeliconLatest.Controllers
                             db.TRN09100.Find(rec.InvID.Value).Status = "r";
                         else
                         {
-                            db.TRN09100.Find(rec.InvID.Value).InvoiceTotal = Convert.ToDecimal(db.TRN09110.Where(x => x.InvoiceNum == rec.InvID.Value).AsEnumerable()
-    .Sum(x => (Convert.ToDouble(x.TRN23110.OActQty) * x.TRN23110.ADM01100.GetPaymentRateAmountForDate(x.TRN23110.ActDate))));
+                            db.TRN09100.Find(rec.InvID.Value).InvoiceTotal = Convert.ToDecimal(db.TRN09110.Include(z1 => z1.TRN23110).ThenInclude(z2 => z2.ADM01100)
+                                .Where(x => x.InvoiceNum == rec.InvID.Value).AsEnumerable()
+                                .Sum(x => (Convert.ToDouble(x.TRN23110.OActQty) * x.TRN23110.ADM01100.GetPaymentRateAmountForDate(x.TRN23110.ActDate))));
                         }
                     }
                 }
@@ -811,7 +819,7 @@ namespace TeliconLatest.Controllers
                     int invID = 0;
                     invID = db.TRN23110.FirstOrDefault(x => x.WorkOID == wid).TRN09110.FirstOrDefault().InvoiceNum;
                     List<int> wOIds = new List<int>();
-                    wOIds.AddRange(db.TRN09110.Where(x => x.InvoiceNum == invID).Select(x => x.TRN23110.WorkOID).Distinct());
+                    wOIds.AddRange(db.TRN09110.Include(z1 => z1.TRN23110).Where(x => x.InvoiceNum == invID).Select(x => x.TRN23110.WorkOID).Distinct());
                     db.TRN23110.Where(x => wOIds.Contains(x.WorkOID) && x.ActDate == oldDate).ToList().ForEach(x => x.ActDate = newDate);
                 }
                 return Json(new JsonReturnParams
@@ -831,6 +839,7 @@ namespace TeliconLatest.Controllers
                 });
             }
         }
+
         [HttpPost]
         //[TeliconAuthorize(TaskId = 15, Mode = ActionMode.Write)]
         public JsonResult UpdateWorkOrderLocation(int wid, DateTime date, string oldLocation, string newLocation, string aditinalDetail)
@@ -861,9 +870,9 @@ namespace TeliconLatest.Controllers
                     else
                     {
                         int invID = 0;
-                        invID = db.TRN23110.FirstOrDefault(x => x.WorkOID == wid).TRN09110.FirstOrDefault().InvoiceNum;
+                        invID = db.TRN23110.Include(z1 => z1.TRN09110).FirstOrDefault(x => x.WorkOID == wid).TRN09110.FirstOrDefault().InvoiceNum;
                         List<int> wOIds = new List<int>();
-                        wOIds.AddRange(db.TRN09110.Where(x => x.InvoiceNum == invID).Select(x => x.TRN23110.WorkOID).Distinct());
+                        wOIds.AddRange(db.TRN09110.Include(z1 => z1.TRN23110).Where(x => x.InvoiceNum == invID).Select(x => x.TRN23110.WorkOID).Distinct());
                         list = db.TRN23110.Where(x => wOIds.Contains(x.WorkOID) && x.ActDate == date && x.Location == oldLocation).ToList();
                     }
                     foreach (TRN23110 item in list)
@@ -906,8 +915,8 @@ namespace TeliconLatest.Controllers
                             db.TRN09110.RemoveRange(db.TRN09110.Where(x => x.InvoiceNum == invID.Value && x.TRN23110.ActDate == date));
                         else
                         {
-                            if (db.TRN23120.Any(m => m.TRN23110.ActDate == date && m.TRN23110.WorkOID == wid))
-                                db.TRN23120.RemoveRange(db.TRN23120.Where(m => m.TRN23110.ActDate == date && m.TRN23110.WorkOID == wid));
+                            if (db.TRN23120.Include(z1 => z1.TRN23110).Any(m => m.TRN23110.ActDate == date && m.TRN23110.WorkOID == wid))
+                                db.TRN23120.RemoveRange(db.TRN23120.Include(z1 => z1.TRN23110).Where(m => m.TRN23110.ActDate == date && m.TRN23110.WorkOID == wid));
                             db.TRN23110.RemoveRange(db.TRN23110.Where(x => x.ActDate == date && x.WorkOID == wid));
                         }
                         break;
@@ -916,8 +925,8 @@ namespace TeliconLatest.Controllers
                             db.TRN09110.RemoveRange(db.TRN09110.Where(x => x.InvoiceNum == invID.Value && x.TRN23110.Location == val));
                         else
                         {
-                            if (db.TRN23120.Any(m => m.TRN23110.Location == val && m.TRN23110.WorkOID == wid))
-                                db.TRN23120.RemoveRange(db.TRN23120.Where(m => m.TRN23110.Location == val && m.TRN23110.WorkOID == wid));
+                            if (db.TRN23120.Include(z1 => z1.TRN23110).Any(m => m.TRN23110.Location == val && m.TRN23110.WorkOID == wid))
+                                db.TRN23120.RemoveRange(db.TRN23120.Include(z1 => z1.TRN23110).Where(m => m.TRN23110.Location == val && m.TRN23110.WorkOID == wid));
                             db.TRN23110.RemoveRange(db.TRN23110.Where(x => x.Location == val && x.WorkOID == wid));
                         }
                         break;
@@ -927,8 +936,8 @@ namespace TeliconLatest.Controllers
                             db.TRN09110.RemoveRange(db.TRN09110.Where(x => x.InvoiceNum == invID.Value && x.WoActID == recId));
                         else
                         {
-                            if (db.TRN23120.Any(m => m.TRN23110.RecID == recId))
-                                db.TRN23120.RemoveRange(db.TRN23120.Where(m => m.TRN23110.RecID == recId));
+                            if (db.TRN23120.Include(z1 => z1.TRN23110).Any(m => m.TRN23110.RecID == recId))
+                                db.TRN23120.RemoveRange(db.TRN23120.Include(z1 => z1.TRN23110).Where(m => m.TRN23110.RecID == recId));
                             db.TRN23110.Remove(db.TRN23110.Find(recId));
                         }
                         break;
@@ -937,7 +946,7 @@ namespace TeliconLatest.Controllers
                 if (invID.HasValue)
                 {
                     if (!db.TRN09110.Any(x => x.InvoiceNum == invID.Value))
-                        saved = ChangeWorkOrderStatus(db.TRN09110.Where(x => x.InvoiceNum == invID.Value).FirstOrDefault().TRN23110.WorkOID, "r");
+                        saved = ChangeWorkOrderStatus(db.TRN09110.Include(z1 => z1.TRN23110).Where(x => x.InvoiceNum == invID.Value).FirstOrDefault().TRN23110.WorkOID, "r");
                 }
                 ts.Complete();
                 return Json(new JsonReturnParams
@@ -1050,7 +1059,7 @@ namespace TeliconLatest.Controllers
             using TransactionScope ts = new TransactionScope();
             try
             {
-                var total = db.TRN23110.Where(x => x.WorkOID == id).AsEnumerable().Sum(x => (Convert.ToDouble(x.OActQty) * x.ADM01100.GetClientRateAmountForDate(x.ActDate)));
+                var total = db.TRN23110.Include(z1 => z1.ADM01100).Where(x => x.WorkOID == id).AsEnumerable().Sum(x => (Convert.ToDouble(x.OActQty) * x.ADM01100.GetClientRateAmountForDate(x.ActDate)));
                 var invoice = new TRN09100();
                 if (invID.HasValue)
                 {
@@ -1120,9 +1129,11 @@ namespace TeliconLatest.Controllers
                 if (User.IsInRole("Technician") || User.IsInRole("Supervisor"))
                 {
                     var deptID = user.DepartmentID;
-                    actsToRemove = db.ADM13100.Where(x => x.ADM01110.Any(a => a.ADM01100.DepartmentId != deptID && a.ADM01100.Active)).Select(x => x.MaterialID).ToList();
+                    actsToRemove = db.ADM13100.Include(z1 => z1.ADM01110).ThenInclude(z2 => z2.ADM01100)
+                        .Where(x => x.ADM01110.Any(a => a.ADM01100.DepartmentId != deptID && a.ADM01100.Active)).Select(x => x.MaterialID).ToList();
                 }
-                actsDdl = db.ADM01110.Where(x => x.ActivID == actId)
+                actsDdl = db.ADM01110.Include(z1 => z1.ADM13100)
+                    .Where(x => x.ActivID == actId)
                     .Select(x => new ConstructorActivityDisplay { Description = x.ADM13100.MaterialName, ActivityID = x.ADM13100.MaterialID, MaxQty = x.ActMatQty }).ToList();
             }
             ViewBag.ActsDdl = actsDdl;
@@ -1269,7 +1280,7 @@ namespace TeliconLatest.Controllers
                 if (invID.HasValue)
                 {
                     if (!db.TRN09110.Any(x => x.InvoiceNum == invID.Value))
-                        saved = ChangeWorkOrderStatus(db.TRN09110.Where(x => x.InvoiceNum == invID.Value).FirstOrDefault().TRN23110.WorkOID, "r");
+                        saved = ChangeWorkOrderStatus(db.TRN09110.Include(z1 => z1.TRN23110).Where(x => x.InvoiceNum == invID.Value).FirstOrDefault().TRN23110.WorkOID, "r");
                 }
                 ts.Complete();
                 return Json(new JsonReturnParams
@@ -1292,7 +1303,7 @@ namespace TeliconLatest.Controllers
         [HttpPost]
         public JsonResult GetMetarials(int actId)
         {
-            var acts = db.ADM01110.Where(x => x.ActivID == actId)
+            var acts = db.ADM01110.Include(z1 => z1.ADM13100).Where(x => x.ActivID == actId)
                     .Select(x => new
                     {
                         activityID = x.ADM13100.MaterialID,
@@ -1365,10 +1376,10 @@ namespace TeliconLatest.Controllers
             if (!invID.HasValue)
                 wOIds.Add(wid);
             else
-                wOIds.AddRange(db.TRN09110.Where(x => x.InvoiceNum == invID.Value).Select(x => x.TRN23110.WorkOID).Distinct());
+                wOIds.AddRange(db.TRN09110.Include(z1 => z1.TRN23110).Where(x => x.InvoiceNum == invID.Value).Select(x => x.TRN23110.WorkOID).Distinct());
 
             var LocIds = invID.HasValue ?
-               db.TRN09110.Where(x => x.InvoiceNum == invID.Value && wOIds.Contains(x.TRN23110.WorkOID) && x.TRN23110.ActDate == date)
+               db.TRN09110.Include(z1 => z1.TRN23110).Where(x => x.InvoiceNum == invID.Value && wOIds.Contains(x.TRN23110.WorkOID) && x.TRN23110.ActDate == date)
                .AsEnumerable().Select(x => x.TRN23110.RecID.ToString().NormalizeSentence(true)).Distinct().ToList()
                : db.TRN23110.Where(x => wOIds.Contains(x.WorkOID) && x.ActDate == date).AsEnumerable()
                .Select(x => x.RecID.ToString()).Distinct().ToList();
@@ -1376,7 +1387,7 @@ namespace TeliconLatest.Controllers
             ViewBag.LocIds = LocIds;
 
             var locations = invID.HasValue ?
-                db.TRN09110.Where(x => x.InvoiceNum == invID.Value && wOIds.Contains(x.TRN23110.WorkOID) && x.TRN23110.ActDate == date)
+                db.TRN09110.Include(z1 => z1.TRN23110).Where(x => x.InvoiceNum == invID.Value && wOIds.Contains(x.TRN23110.WorkOID) && x.TRN23110.ActDate == date)
                 .AsEnumerable().Select(x => x.TRN23110.Location.NormalizeSentence(true)).Distinct().ToList()
                 : db.TRN23110.Where(x => wOIds.Contains(x.WorkOID) && x.ActDate == date).AsEnumerable()
                 .Select(x => x.Location).Distinct().ToList();
@@ -1384,7 +1395,7 @@ namespace TeliconLatest.Controllers
             ViewBag.locations = locations;
 
             var adtnldetails = invID.HasValue ?
-                db.TRN09110.Where(x => x.InvoiceNum == invID.Value && wOIds.Contains(x.TRN23110.WorkOID) && x.TRN23110.ActDate == date)
+                db.TRN09110.Include(z1 => z1.TRN23110).Where(x => x.InvoiceNum == invID.Value && wOIds.Contains(x.TRN23110.WorkOID) && x.TRN23110.ActDate == date)
                 .AsEnumerable().Select(x => x.TRN23110.AdtnlDetails.NormalizeSentence(true)).Distinct().ToList()
                 : db.TRN23110.Where(x => wOIds.Contains(x.WorkOID) && x.ActDate == date).AsEnumerable()
                 .Select(x => x.AdtnlDetails).Distinct().ToList();
@@ -1416,12 +1427,6 @@ namespace TeliconLatest.Controllers
             }
 
             var acts = new List<ActList>();
-            //    db.ADM01100.Where(x => x.ClientID == companyId && x.Active).Select(x => new ActList
-            //{
-            //    activityID = x.RateID,
-            //    description = x.RateDescr,
-            //    maxQty = x.MaxQty
-            //}).ToList();
             if (wo != null && wo.DepartmentID.HasValue)
             {
                 if (User.IsInRole("SuperAdmin") || User.IsInRole("AppAdmin") || User.IsInRole("Admin"))
@@ -1435,9 +1440,6 @@ namespace TeliconLatest.Controllers
                 acts = db.ADM01100.Where(x => x.ClientID == companyId && x.Active)
                         .Select(x => new ActList { activityID = x.RateID, description = x.RateDescr, maxQty = x.MaxQty ?? 0 }).ToList();
 
-            //if (actsToRemove.Any())
-            //    acts.RemoveAll(x => actsToRemove.Contains(x.activityID));
-
             return Json(acts);
         }
         public ViewResult GenerateActivitiesForWorkOrder(int wid, DateTime date, string location, int? invID, string type)
@@ -1446,7 +1448,7 @@ namespace TeliconLatest.Controllers
             if (!invID.HasValue)
                 wOIds.Add(wid);
             else
-                wOIds.AddRange(db.TRN09110.Where(x => x.InvoiceNum == invID.Value).Select(x => x.TRN23110.WorkOID).Distinct());
+                wOIds.AddRange(db.TRN09110.Include(z1 => z1.TRN23110).Where(x => x.InvoiceNum == invID.Value).Select(x => x.TRN23110.WorkOID).Distinct());
 
             var user = db.ADM03300.FirstOrDefault(x => x.Email == User.Identity.Name);
             List<int> allowedActIds = new List<int>();
@@ -1477,13 +1479,12 @@ namespace TeliconLatest.Controllers
                 else
                     actsDdl = db.ADM01100.Where(x => x.ClientID == companyId && x.Active)
                             .Select(x => new ConstructorActivityDisplay { Description = x.RateDescr, ActivityID = x.RateID, MaxQty = x.MaxQty ?? 0 }).ToList();
-                //if (actsToRemove.Any())
-                //    actsDdl.RemoveAll(x => actsToRemove.Contains(x.ActivityID));
             }
 
             ViewBag.ActsDdl = actsDdl;
             var acts = invID.HasValue ?
-                db.TRN09110.Where(x => x.InvoiceNum == invID.Value && wOIds.Contains(x.TRN23110.WorkOID) && x.TRN23110.ActDate == date && x.TRN23110.Location == location)
+                db.TRN09110.Include(z1 => z1.TRN23110).ThenInclude(z1 => z1.ADM01100).ThenInclude(z3 => z3.ADM01110).Include(z4 => z4.TRN23110).ThenInclude(z5 => z5.TRN23120)
+                .Where(x => x.InvoiceNum == invID.Value && wOIds.Contains(x.TRN23110.WorkOID) && x.TRN23110.ActDate == date && x.TRN23110.Location == location)
                 .Select(x => new ConstructorActivity
                 {
                     RID = x.WoActID,
@@ -1561,7 +1562,8 @@ namespace TeliconLatest.Controllers
         public JsonResult CheckMaxQtyExceeded(int id)
         {
             string message = "a";
-            var wo = db.TRN23100.Find(id);
+            var wo = db.TRN23100.Include(z1 => z1.TRN23110).ThenInclude(z2 => z2.ADM01100).ThenInclude(z5 => z5.ADM01110).Include(z3 => z3.TRN23110).ThenInclude(z4 => z4.TRN23120)
+                .Where(x => x.Workid == id).FirstOrDefault();
             if (wo != null)
             {
                 if (wo.TRN23110.Any(x => x.OActQty > x.ADM01100.MaxQty))
@@ -1582,8 +1584,7 @@ namespace TeliconLatest.Controllers
         public JsonResult CheckAuthentication(string uName, string pWord)
         {
             string message = "a";
-            //if (Membership.ValidateUser(uName, pWord))
-            //    if (System.Web.Security.Roles.IsUserInRole(uName, "Technician") && System.Web.Security.Roles.IsUserInRole(uName, "Supervisor"))
+
             message = "";
             return Json(new
             {
@@ -1603,34 +1604,38 @@ namespace TeliconLatest.Controllers
                 var merger = db.TRN13120.Find(id);
                 if (merger != null)
                 {
-                    return db.TRN23100.Where(x => x.Wo_ref == val && (x.Status != "i" || x.TRN13110.Any(m => m.MergedOrderId == id) || x.TRN13120.Any(m => m.MergedOrderId == id))).GroupBy(x => x.Wo_ref).Select(x => new WorkOrderReferencePartial
-                    {
-                        ReferenceCode = x.Key,
-                        Count = x.Count()
-                    }).Where(x => x.Count > 1).ToList();
+                    return db.TRN23100.Include(z1 => z1.TRN13110).Include(z2 => z2.TRN13120)
+                        .Where(x => x.Wo_ref == val && (x.Status != "i" || x.TRN13110.Any(m => m.MergedOrderId == id) || x.TRN13120.Any(m => m.MergedOrderId == id))).GroupBy(x => x.Wo_ref).Select(x => new WorkOrderReferencePartial
+                        {
+                            ReferenceCode = x.Key,
+                            Count = x.Count()
+                        }).Where(x => x.Count > 1).ToList();
                 }
             }
             if (string.IsNullOrEmpty(val))
             {
-                return db.TRN23100.Where(x => x.Status != "i" && !db.TRN13120.Select(m => m.MergedRefNum).Contains(x.Wo_ref)).GroupBy(x => x.Wo_ref).Select(x => new WorkOrderReferencePartial
+                return db.TRN23100.Include(z1 => z1.TRN13120)
+                    .Where(x => x.Status != "i" && !db.TRN13120.Select(m => m.MergedRefNum).Contains(x.Wo_ref)).GroupBy(x => x.Wo_ref).Select(x => new WorkOrderReferencePartial
+                    {
+                        ReferenceCode = x.Key,
+                        Count = x.Count()
+                    }).Where(x => x.Count > 1).ToList();
+            }
+            return db.TRN23100.Include(z1 => z1.TRN13110).Include(z2 => z2.TRN13120)
+                .Where(x => x.Wo_ref.Contains(val) && (x.Status != "i" || x.TRN13110.Any() || x.TRN13120.Any())).GroupBy(x => x.Wo_ref).Select(x => new WorkOrderReferencePartial
                 {
                     ReferenceCode = x.Key,
                     Count = x.Count()
                 }).Where(x => x.Count > 1).ToList();
-            }
-            return db.TRN23100.Where(x => x.Wo_ref.Contains(val) && (x.Status != "i" || x.TRN13110.Any() || x.TRN13120.Any())).GroupBy(x => x.Wo_ref).Select(x => new WorkOrderReferencePartial
-            {
-                ReferenceCode = x.Key,
-                Count = x.Count()
-            }).Where(x => x.Count > 1).ToList();
         }
         public List<WorkOrderReferencePartial> GetRefrencesForMerged(string val)
         {
-            return db.TRN23100.Where(x => x.Wo_ref.Contains(val) && (x.Status != "i" || x.TRN13110.Any() || x.TRN13120.Any())).GroupBy(x => x.Wo_ref).Select(x => new WorkOrderReferencePartial
-            {
-                ReferenceCode = x.Key,
-                Count = x.Count()
-            }).Where(x => x.Count > 1).ToList();
+            return db.TRN23100.Include(z1 => z1.TRN13120).Include(z2 => z2.TRN13110)
+                .Where(x => x.Wo_ref.Contains(val) && (x.Status != "i" || x.TRN13110.Any() || x.TRN13120.Any())).GroupBy(x => x.Wo_ref).Select(x => new WorkOrderReferencePartial
+                {
+                    ReferenceCode = x.Key,
+                    Count = x.Count()
+                }).Where(x => x.Count > 1).ToList();
         }
         public int ChangeWorkOrderStatus(int wid, string type)
         {
@@ -1856,7 +1861,7 @@ namespace TeliconLatest.Controllers
         [HttpPost]
         public JsonResult GetRequestedBy(int areaId)
         {
-            var area = db.ADM01400.Find(areaId);
+            var area = db.ADM01400.Include(z1 => z1.ADM26100).Find(areaId);
             string sup = "";
             if (area != null)
                 sup = area.ADM26100 != null ? area.ADM26100.SupervisorName : "";

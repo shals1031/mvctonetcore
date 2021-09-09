@@ -267,8 +267,8 @@ namespace TeliconLatest.Controllers
                 data = data.Where(x => x.ClassId == model.clas);
             if (model.additional != null && model.additional.ToString() != "a")
             {
-                data = model.additional.ToString() == "s" ? data.Where(x => x.Status.ToLower() == "s" && x.DateSubmitted.HasValue && x.Submitted) :
-                    data.Where(x => x.Status.ToLower() == model.additional.ToString());
+                data = model.additional.ToString() == "s" ? data.Where(x => !string.IsNullOrWhiteSpace(x.Status) && x.Status.ToLower() == "s" && x.DateSubmitted.HasValue && x.Submitted) :
+                    data.Where(x => !string.IsNullOrWhiteSpace(x.Status) && x.Status.ToLower() == model.additional.ToString());
             }
             return Json(new DataTableReturn
             {
@@ -277,14 +277,14 @@ namespace TeliconLatest.Controllers
                 recordsTotal = db.TRN23100.Count(),
                 data = Extensions.OrderByDynamic(data, order.Split(" ")[0], order.Split(" ")[1] != "asc").Skip(model.start).Take(model.length).ToList().Select(x => new
                 {
-                    DT_RowId = DataDictionaries.WordOrderStatuses[x.Status.ToLower()] + "_" + x.Workid,
+                    DT_RowId = DataDictionaries.WordOrderStatuses[x.Status?.ToLower()] + "_" + x.Workid,
                     ReferenceNo = x.Wo_ref,
                     Title = x.Wo_title.ToUpper(),
                     //Title = new HtmlString("<span" + (x.CompletionDt != null && x.CompletionDt.Value - x.Dispatchdt > new TimeSpan(4, 0, 0, 0,0) ? " style='color:red;'" : "") + ">" + x.Wo_title.ToUpper() + "</span>"),
                     Date = string.Format("{0:MMM dd, yyyy}", x.Requestdt),
                     //Submitted = new HtmlString("<i class='fe-" + (x.Submitted ? "ok yes" : "cancel-1 no") + "'></i>"),
                     Completiondt = x.CompletionDt != null ? string.Format("{0:MMM dd, yyyy}", x.CompletionDt.Value) : "",
-                    Status = new HtmlString("<i title='" + DataDictionaries.WordOrderStatuses[x.Status.ToLower()] + "' class='fe-flag-filled " + DataDictionaries.WordOrderStatuses[x.Status.ToLower()].ToLower() + "'></i>")
+                    Status = new HtmlString("<i title='" + DataDictionaries.WordOrderStatuses[x.Status?.ToLower()] + "' class='fe-flag-filled " + DataDictionaries.WordOrderStatuses[x.Status?.ToLower()].ToLower() + "'></i>")
                 }).AsQueryable().ToStringArray()
             });
         }
